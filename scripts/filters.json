@@ -1,0 +1,254 @@
+{
+    "Filters": [
+        {
+            "Name": "Negative",
+            "Func": "negative",
+            "Description": "Creates a negative of an 8bit image.",
+            "Parameters": []
+        },
+        {
+            "Name": "Convert to Grayscale",
+            "Func": "to_grayscale",
+            "Description": "Converts a color image to a single-channel 8bit grayscale [0..255].",
+            "Parameters": []
+        },
+        {
+            "Name": "Convert to RGB",
+            "Func": "to_rgb",
+            "Description": "Converts to three-channel 8bit RGB (red-green-blue) colorspace.",
+            "Parameters": []
+        },
+        {
+            "Name": "Convert to HSV",
+            "Func": "to_hsv",
+            "Description": "Converts to three-channel 8bit HSV (hue-saturation-value) colorspace.",
+            "Parameters": []
+        },
+        {
+            "Name": "Convert to L*a*b*",
+            "Func": "to_lab",
+            "Description": "Converts to three-channel 8bit L*a*b* (CIELab) colorspace.",
+            "Parameters": []
+        },
+        {
+            "Name": "Single image channel",
+            "Func": "select_channel",
+            "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b).",
+            "Parameters": [
+                {
+                    "PName": "Channel number",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 1,
+                    "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
+            "Name": "Highpass",
+            "Func": "highpass",
+            "Description": "Accentuates high frequency image content such as tracer particles.",
+            "Parameters": [
+                {
+                    "PName": "Sigma",
+                    "PType": "int",
+                    "PUpper": 153,
+                    "PStart": 51,
+                    "PLower": 3,
+                    "PStep": 2
+                }
+            ]
+        },
+        {
+            "Name": "Intensity capping",
+            "Func": "intensity_capping",
+            "Description": "Limits pixel values using global mean and variance. If tracer particles are darker than the water surface, apply negative filter before this one.",
+            "Parameters": [
+                {
+                    "PName": "Num. standard deviations (n)",
+                    "PType": "float",
+                    "PUpper": 5.0,
+                    "PStart": 0.0,
+                    "PLower": -5.0,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "Mode (1 = LoD, 2 = DoL)",
+                    "PType": "int",
+                    "PUpper": 2,
+                    "PStart": 1,
+                    "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
+            "Name": "Brightness/Contrast adj.",
+            "Func": "brightness_contrast",
+            "Description": "Adjusts overall brightness and contrast using linear transformation [Alpha*Y + Beta].",
+            "Parameters": [
+                {
+                    "PName": "Alpha",
+                    "PType": "float",
+                    "PUpper": 5.0,
+                    "PStart": 1.0,
+                    "PLower": 0.0,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "Beta",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
+            "Name": "Gamma adjustment",
+            "Func": "gamma",
+            "Description": "Adjusts gamma exposure of the image using linear transformation [Gamma*Y].",
+            "Parameters": [
+                {
+                    "PName": "Gamma",
+                    "PType": "float",
+                    "PUpper": 3.0,
+                    "PStart": 1.0,
+                    "PLower": 0.0,
+                    "PStep": 0.1
+                }
+            ]
+        },
+        {
+            "Name": "Gaussian CDF lookup",
+            "Func": "gaussian_lookup",
+            "Description": "Adjusts exposure using Gaussian cumulative distribution function as a lookup table.",
+            "Parameters": [
+                {
+                    "PName": "Sigma",
+                    "PType": "int",
+                    "PUpper": 250,
+                    "PStart": 50,
+                    "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
+            "Name": "Channel thresholding filter",
+            "Func": "thresholding",
+            "Description": "Filter image by thresholding individual image channels (returns a binarized [0, 1] image).",
+            "Parameters": [
+                {
+                    "PName": "Channel 1 low",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": 0,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 1 high",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 255,
+                    "PLower": 0,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 2 low",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": 0,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 2 high",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 255,
+                    "PLower": 0,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 3 low",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": 0,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 3 high",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 255,
+                    "PLower": 0,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
+            "Name": "Denoise",
+            "Func": "denoise",
+            "Description": "Removes salt-and-pepper type noise with a median filter.",
+            "Parameters": [
+                {
+                    "PName": "Kernel size",
+                    "PType": "int",
+                    "PUpper": 31,
+                    "PStart": 3,
+                    "PLower": 3,
+                    "PStep": 2
+                }
+            ]
+        },
+        {
+            "Name": "Background removal",
+            "Func": "remove_background",
+            "Description": "Subtracts background (median of sequence) from individual images.",
+            "Parameters": [
+                {
+                    "PName": "Number of images for calculating",
+                    "PType": "int",
+                    "PUpper": 100,
+                    "PStart": 10,
+                    "PLower": 2,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
+            "Name": "Hist. equalization",
+            "Func": "histeq",
+            "Description": "Stretches the histogram of the image to improve dynamic range and accentuate details.",
+            "Parameters": []
+        },
+        {
+            "Name": "CLAHE",
+            "Func": "clahe",
+            "Description": "Adaptive version of the histogram equalization with histogram clipping.",
+            "Parameters": [
+                {
+                    "PName": "Clip limit",
+                    "PType": "float",
+                    "PUpper": 10.0,
+                    "PStart": 2.0,
+                    "PLower": 0.1,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "Tile size",
+                    "PType": "int",
+                    "PUpper": 64,
+                    "PStart": 8,
+                    "PLower": 4,
+                    "PStep": 4
+                }
+            ]
+        }
+    ]
+}

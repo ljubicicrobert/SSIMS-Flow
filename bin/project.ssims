@@ -1,0 +1,55 @@
+﻿[Project settings]
+Name = 
+Folder = 
+Description = 
+Date = 
+PythonInterpreter = 
+
+[Frames]
+VideoPath = 
+Framerate = 
+Extension = jpg
+Quality = 95
+Scale = 1.0
+Start = 0
+End = 999999
+Undistort = 0
+
+[Feature tracking]
+InterrogationAreaSize = 11
+SearchAreaSize = 21
+ExpandSA = 0
+ExpandSACoef = 2.0
+ExpandSAThreshold = 0.50
+UpdateKernels = 0
+
+[Transformation]
+Extension = jpg
+Quality = 95
+Method = 3
+UseRANSAC = 0
+RANSACThreshold = 2.0
+Orthorectify = 0
+GSD = 100
+FeatureMask = 
+PaddX = 0-0
+PaddY = 0-0
+
+[Enhancement]
+Folder = 
+Extension = jpg
+
+[Optical flow]
+Folder = 
+Extension = jpg
+Step = 1
+Scale = 1.0
+Pooling = 16
+AngleMain = 0
+AngleRange = 60
+Framerate = 
+GSD = 
+ChainStart = 
+ChainEnd = 
+ChainCount = 100
+InterpOrder = 3

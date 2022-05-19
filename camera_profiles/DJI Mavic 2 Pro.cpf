@@ -1,0 +1,17 @@
+[Camera]
+Model = DJI Mavic 2 Pro
+
+[Intrinsics]
+fx = 0.8308250783
+fy = 0.8336311717
+cx = 0.5084247558
+cy = 0.2694237964
+
+[Radial]
+k1 = 0.0237
+k2 = -0.0513
+k3 = 0.0501
+
+[Tangential]
+p1 = -0.0051
+p2 = 0.0029
