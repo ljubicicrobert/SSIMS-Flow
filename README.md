@@ -58,7 +58,7 @@ The tool will automatically check for latest releases of the tool on program sta
 
 ### Project settings
 
-<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/main.png">
+<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/main.png">
 
 Main information about the project will be shown in the **Project settings** panel once the GUI has started. These include project name, location on disk, description, data of creation, and interpreter used for backend. Interpreted choice will be memorized for each project.
 
@@ -91,7 +91,7 @@ Completed project stages, which have available results, will be indicated by the
 
 ### Video unpacking
 
-<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/unpack_video.png">
+<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/unpack_video.png">
 
 The workflow of the tool requires that the video is unpacked into individual frames. The source video can be selected in the **Unpack video** panel, after which the video metadata will be shown below. You can specify the resulting frames' file extension, image quality parameter (0-100), and a scaling factor. Furthermore, you can choose to only unpack a section of the original video, defined by the starting and end time in the video.
 
@@ -100,7 +100,7 @@ The resulting frames will be unpacked to folder `%PROJECT_FOLDER%\frames`.
 
 ### Camera calibration
 
-<img align="right" width="786" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/camera_calibration.png">
+<img align="right" width="786" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/camera_calibration.png">
 
 During the video unpacking, it is also possible to remove camera distortion using intrinsic camera parameters - focal length, principal point, radial and tangential distortion coefficients. These parameters can be provided by:
 
@@ -119,7 +119,7 @@ Camera parameters will be saved to `%PROJECT_FOLDER%\camera_parameters.cpf`, and
 
 ### Stabilization/orthorectification
 
-<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/stab_ortho.png">
+<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/stab_ortho.png">
 
 #### Feature tracking
 
@@ -147,7 +147,7 @@ The results of the feature tracking will be stored in the `%PROJECT_FOLDER\trans
 
 #### Feature selection
 
-<img align="right" width="800" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/select_features.png">
+<img align="right" width="800" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/select_features.png">
 
 Not all of the tracked features have to be used for the transformation (stabilization) of frames. You can select features that will be used for the transformation using the **Select features for transformation** button. This will open a new form which display the positions and coordinates of tracked features. From the given list, you can choose which ones will be used to stabilize the original images.
 
@@ -155,7 +155,7 @@ Not all of the tracked features have to be used for the transformation (stabiliz
 
 To further help you choose the best features, an additional analysis is available by clicking the **Plot SSIM** scores button in the top-left corner of the Select features for transformation window. This will run the ssim_scores.py script and will show a bar graph of SSIM tracking scores for all frames. In the bar graph, better features will have a higher SSIM score and lower variance, which can help you decide which ones to keep and which ones to remove from the transformation.
 
-<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/ssim_scores.png">
+<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/ssim_scores.png">
 
 
 #### Image transformation
@@ -175,7 +175,7 @@ The most important parameter is the **transformation method** which can signific
 
 #### Orthorectification
 
-<img align="right" width="269" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/orthorectification.png">
+<img align="right" width="269" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/orthorectification.png">
 
 The tool also offers a simple orthorectification to be performed by estimating the transformation matrix between the in-image positions of tracking features and their corresponding real-world coordinates.
 
@@ -192,7 +192,7 @@ You should also set a ground sampling distance (GSD, in px/m) to rescale the ima
 
 ### Image enhancement
 
-<img align="right" width="912" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/filtering.png">
+<img align="right" width="912" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/filtering.png">
 
 Image filtering/enhancement is often a crucial part of the image velocimetry workflow. This tools offers a form in which such filtering can easily be performed. For those users unfamiliar with the image filtering/enhancement process, it is advisable to visit the [Image enhancement for UAV velocimetry](https://github.com/ljubicicrobert/Image-enhancement-for-UAV-velocimetry) repository. In that repository, a detailed overview of different aspects of image enhancement is provided through a series of Jupyter notebooks.
 
@@ -211,7 +211,7 @@ You can preview the results of the current stack (with the currently set paramet
 
 ### Optical flow (OF)
 
-<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/optical_flow.png">
+<img align="right" width="662" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/optical_flow.png">
 
 Estimation of surface velocity field is performed using the Gunnar Farnebäck method (Farnebäck 2003). This method is a dense optical flow method, which provides estimation of motion (in X and Y directions) for all pixels in the image.
 
@@ -227,7 +227,7 @@ However, keeping information about per-pixel motion in high-resolution images re
 
 ### Post-OF analyses
 
-<img align="right" width="1352" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/optical_flow_analyses.png">
+<img align="right" width="1352" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/optical_flow_analyses.png">
 
 Once the optical flow analyses have been completed and the surface velocity field has been estimated, an estimation of the flow/discharge can be obtained by clicking on the **Analyze results** button in the Optical flow panel. This will open a new window, where you can define a profile (cross-section) of the channel, either from pixel coordinate values, or by choosing two points from an appropriate image.
 
@@ -242,7 +242,7 @@ Finally, in order to obtain the flow estimation, you need to enter the depth pro
 
 ### Video creation
 
-<img align="right" width="573" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/master/screenshots/create_video.png">
+<img align="right" width="573" src="https://github.com/ljubicicrobert/SSIMS-Flow/blob/main/screenshots/create_video.png">
 
 Videos can be created using this tool regardless of whether the project has been set up or loaded. In the **Create video** panel, frames folder can be either selected manually, or, if the project results are available, from stabilized, orthorectified, or enhanced images.
 
