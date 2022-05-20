@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
         fresh_folder(results_folder, exclude=['depth_profile.txt'])
         fresh_folder(results_folder + '/magnitudes')
-        fresh_folder(results_folder + '/angles')
+        fresh_folder(results_folder + '/directions')
         
         frames_list = glob('{}/*.{}'.format(frames_folder, ext))
         num_frames = len(frames_list)
@@ -121,16 +121,6 @@ if __name__ == '__main__':
         except Exception:
             pass
 
-        # plt.imshow(prev_frame)
-        # plt.title('Use MOUSE RIGHT to select points and MOUSE MIDDLE to remove last point')
-        # plt.axis('off')
-        # plt.tight_layout()
-
-        # ld = LineDrawer()
-        # xp, yp = ld.draw_line()
-
-        # plt.show()
-
         if scale != 1.0:
             prev_frame = cv2.resize(prev_frame, (int(w * scale), int(h * scale)))
             h, w = prev_frame.shape
@@ -142,9 +132,8 @@ if __name__ == '__main__':
         padd_w = w//pooling//10
 
         flow_shown = plt.imshow(flow_hsv[:, :, 0], cmap='jet', vmax=1, vmin=0)
-        bar = plt.colorbar(flow_shown)
-        bar.set_label('Velocity magnitude [px/frame]')
-        # quiver = plt.quiver(X, Y, np.zeros(X.shape), np.zeros(X.shape), color='w', scale=500, lw=0.1)
+        cbar = plt.colorbar(flow_shown)
+        cbar.set_label('Velocity magnitude [px/frame]')
         plt.title('Frame: 1/{}'.format(num_frames))
         plt.axis('off')
         plt.tight_layout()
@@ -173,7 +162,6 @@ if __name__ == '__main__':
                 next_frame = cv2.resize(next_frame, (w, h))
 
             flow = cv2.calcOpticalFlowFarneback(prev_frame, next_frame, None, *[0.5, 3, 7, 1, 7, 1.5, cv2.OPTFLOW_FARNEBACK_GAUSSIAN])
-            # us, vs = flow[..., 0], flow[..., 1]
             magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
 
             # Filter by vector angle
@@ -198,7 +186,7 @@ if __name__ == '__main__':
 
             n = str(i).rjust(num_digits, '0')
             np.savetxt('{}/magnitudes/{}.txt'.format(results_folder, n), magnitude, fmt='%.2f')
-            np.savetxt('{}/angles/{}.txt'.format(results_folder, n), angle, fmt='%.1f')
+            np.savetxt('{}/directions/{}.txt'.format(results_folder, n), angle, fmt='%.1f')
 
             flow_shown.set_data(mag_max)
             flow_shown.set_clim(vmax=np.max(mag_max[padd_h: -padd_h, padd_w: -padd_w]))
@@ -232,8 +220,8 @@ if __name__ == '__main__':
 
         angle_mean = np.nanmean(angle_stack, axis=2)
         if angle_func.__name__ == "bitwise_or":
-                angle_mean += angle_upper
-                angle_mean = np.where(angle_mean >= 360, angle_mean - 360, angle_mean)
+            angle_mean += angle_upper
+            angle_mean = np.where(angle_mean >= 360, angle_mean - 360, angle_mean)
 
         np.savetxt('{}/mag_max.txt'.format(results_folder), mag_max, fmt='%.3f')
         np.savetxt('{}/angle_mean.txt'.format(results_folder), angle_mean, fmt='%.3f')
