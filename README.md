@@ -16,11 +16,11 @@ The tool is based on an older tool SSIMS, which was only aimed at image preproce
 
 ## Requirements and installation
 
-The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and only compiled only for x64 architecture**. At request, I can compile for x86 version, but will likely not bother otherwise.
+The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and only compiled for x64 architecture only**. At request, I can compile for x86 version, but will likely not bother otherwise.
 
 The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
 
-The backend requires that Python 3+ exists in the **%PATH% environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in %PATH% and allow you to choose the correct interpreter in the GUI.
+The backend requires that Python 3+ exists in the **%PATH% environmental variable** in Windows. Please make sure that this is the case <ins>before</ins> running SSIMS-Flow! The tool will recognize multiple instances of Python in %PATH% and allow you to choose the correct interpreter in the GUI.
 
 So far, the package was tested using **Python** versions **3.6.8, 3.7.2, 3.7.6, 3.8.5** and **3.9.10**. You can download latest Python from the [official site](https://www.python.org/downloads/)
 
@@ -34,7 +34,7 @@ scipy >= 1.0                        # pip install scipy
 skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 ```
 
->**Note #1**: If you are using distributions of Python such as Anaconda or Winpython, you will likely have all the necessary libraries with the possible exception of `opencv-python`.
+>**Note #1**: If you are using distributions of Python such as Anaconda or WinPython, you will likely have all the necessary libraries with the possible exception of `opencv-python`.
 
 >**Note #2**: The tool might also work fine with `opencv-python` version 3.6, but this is yet to be tested.
 
@@ -44,9 +44,9 @@ skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 >```
 
 
-## New versions
+## New versions (checking for updates)
 
-The tool will automatically check for latest releases of the tool on program start. If new release was found in the official repository a form will be displayed from where you can read the new release information, choose to view/download the new release on/from GitHub, or pause automatic checking for new versions for some period of time.
+The tool will automatically check for latest release of the tool on program start. If new release was found in the [official repository](https://github.com/ljubicicrobert/SSIMS-Flow), a form will be displayed from where you can read the new release information, choose to view/download the new release on/from GitHub, or pause automatic checking for new versions for some period of time.
 
 > **Note #4**: You can also manually check for new releases through the _About_ tab.
 
