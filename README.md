@@ -16,7 +16,7 @@ The tool is based on an older tool SSIMS, which was only aimed at image preproce
 
 ## Requirements and installation
 
-The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor (SSIMS), this tool is written entirely (backend and GUI) for Windows OS and only compiled only for x64 architecture**. At request, I can compile for x86 version, but will likely not bother otherwise.
+The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and only compiled only for x64 architecture**. At request, I can compile for x86 version, but will likely not bother otherwise.
 
 The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
 
