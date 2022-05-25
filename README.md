@@ -43,6 +43,8 @@ skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 >pip install matplotlib==3.2.1
 >```
 
+> Symantec Norton appears to flag the SSIMS_Flow.exe and C++ DLLs as threats dou to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
+
 
 ## New versions
 
