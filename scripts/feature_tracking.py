@@ -591,9 +591,9 @@ if __name__ == '__main__':
 				np.savetxt('{}/gcps_csv/{}.txt'.format(results_folder, str(n).rjust(numbering_len, '0')), markers, fmt='%.3f', delimiter=' ')
 				np.savetxt('{}/ssim_scores.txt'.format(results_folder), ssim_scores, fmt='%.3f', delimiter=' ')
 
-				print_and_log(
-					tag_string('info', 'Markers: {}'.format(print_markers(markers))), printer, logger
-				)
+				# print_and_log(
+				# 	tag_string('info', 'Markers: {}'.format(print_markers(markers))), printer, logger
+				# )
 
 				print_and_log(
 					tag_string('info', 'Frame processing time = {:.3f} sec'.format(timer.interval())), printer, logger
