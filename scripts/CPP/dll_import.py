@@ -41,18 +41,3 @@ class DLL_Loader:
         func.restype = type_dict[ret_type]
         func.argtypes = [type_dict[x] for x in arg_types]
         return func
-
-
-if __name__ == "__main__":
-    loader = DLL_Loader(r'C:\Users\rljub\OneDrive\Robert\Programiranje\SSIMS-FLOW\bin\scripts\CPP', 'filtering.dll')
-    func = loader.get_function('void', 'intensity_capping', ['2Dbyte*', 'uint', 'double'])
-
-    import cv2
-    import matplotlib.pyplot as plt
-
-    img = ~cv2.imread(r'D:\SSIMS_Flow_demo\transformation\frames_stabilized\300.jpg', 0)
-
-    func(img, img.size, 0.0)
-    
-    plt.imshow(~img)
-    plt.show()
