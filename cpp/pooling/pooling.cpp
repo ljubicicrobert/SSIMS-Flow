@@ -1,16 +1,16 @@
 #include "pooling.h"
 
-float mag_pool(float* array, int size, float k) {
-    int numValid = 0;
-    float sum = 0;
-    float maskedSum = 0;
-    Byte* mask = new Byte[size];
+double mag_pool(float* array, unsigned int size, double k) {
+    unsigned int numValid = 0;
+    double sum = 0;
+    double maskedSum = 0;
+    byte* mask = new byte[size];
 
     for (int i = 0; i < size; i++) {
         sum += array[i];
     }
 
-    float mean = sum / size;
+    double mean = sum / size;
 
     for (int i = 0; i < size; i++) {
         if (array[i] >= k * mean) {

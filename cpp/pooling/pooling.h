@@ -2,4 +2,4 @@
 
 #include "common.h"
 
-DLL_API float mag_pool(float* array, int size, float k);
+DLL_API double mag_pool(float* array, unsigned int size, double k);
