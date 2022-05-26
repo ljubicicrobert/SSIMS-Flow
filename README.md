@@ -11,16 +11,16 @@ This tool represents a feature-complete solution for the estimation of open-chan
 7. Estimation of open channel flow/discharge using surface velocity field and bathymetric data,
 8. Creation of videos from individual frames.
 
-The tool is based on an older tool SSIMS, which was only aimed at image preprocessing for UAV velocimetry, which it effectively replaces.
+The tool replaces an older tool [SSIMS](https://github.com/ljubicicrobert/SSIMS), which was only aimed at image preprocessing for UAV velocimetry.
 
 
 ## Requirements and installation
 
-The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and only compiled only for x64 architecture**. At request, I can compile for x86 version, but will likely not bother otherwise.
+The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and compiled for x64 architecture only**. At request, I can compile for x86 version, but will likely not bother otherwise.
 
 The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
 
-The backend requires that Python 3+ exists in the **%PATH% environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in %PATH% and allow you to choose the correct interpreter in the GUI.
+The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
 
 So far, the package was tested using **Python** versions **3.6.8, 3.7.2, 3.7.6, 3.8.5** and **3.9.10**. You can download latest Python from the [official site](https://www.python.org/downloads/)
 
@@ -43,7 +43,7 @@ skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 >pip install matplotlib==3.2.1
 >```
 
-> Symantec Norton appears to flag the SSIMS_Flow.exe and C++ DLLs as threats dou to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
+> Symantec Norton appears to flag the SSIMS_Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
 
 
 ## New versions
@@ -255,7 +255,7 @@ Videos can be created using this tool regardless of whether the project has been
 
 &#9744; Creation of videos using optical flow data
 
-&#9744; Compiling bottlenecks into C++ to reduce the overall computational complexity
+&#9744; Compiling bottlenecks into C++ to improve the overall computational efficiency
 
 
 ## Acknowledgements

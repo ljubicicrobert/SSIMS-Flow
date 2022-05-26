@@ -1,6 +1,5 @@
-#define EXTERN_C extern "C"
-#define DLL_API EXTERN_C __declspec(dllexport)
+#pragma once
 
-typedef unsigned char Byte;
+#include "common.h"
 
 DLL_API float mag_pool(float* array, int size, float k);
