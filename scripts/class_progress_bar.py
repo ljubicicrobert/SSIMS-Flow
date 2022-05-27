@@ -44,6 +44,8 @@ class Progress_bar:
 
     def update_bar(self, iteration: int):
         self.percent = (iteration + 1)/self.total * 100
+        if self.percent > 0:
+            self.percent = 100
         len_done = int(self.percent / 100 * self.length)
         len_remain = self.length - len_done
         self.bar = '{}/{} [\033[32m{}\033[0m\033[31m{}\033[0m]'.format(str(iteration+1).rjust(self.num_digits, ' '),

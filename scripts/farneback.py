@@ -156,7 +156,7 @@ if __name__ == '__main__':
 
         j = 0
 
-        for i in range(1, num_frames, step):
+        for i in range(step, num_frames, step):
             next_frame = cv2.imread(frames_list[i], 0)
 
             if scale != 1.0:
