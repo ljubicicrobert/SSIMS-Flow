@@ -331,7 +331,8 @@ if __name__ == '__main__':
 		
 		img_list = glob('{}/*.{}'.format(frames_folder, ext))
 		num_frames = len(img_list)
-		filters_data = np.loadtxt(results_folder + '/filters.txt', dtype='str', delimiter='/', ndmin=2)
+		filters_data = np.loadtxt(results_folder + ('/filters.txt' if args.multi else '/filters_preview.txt'),
+								  dtype='str', delimiter='/', ndmin=2)
 		
 		fig, ax = plt.subplots()
 		fig.canvas.mpl_connect('key_press_event', keypress)
@@ -362,7 +363,7 @@ if __name__ == '__main__':
 			print(' ' * 11 + filter_text)
 		print()
 
-		if args.multi == 0:
+		if not args.multi:
 			img_path = img_list[0]
 			img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
 			colorspace = 'rgb'
