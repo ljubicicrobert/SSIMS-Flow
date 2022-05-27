@@ -53,3 +53,4 @@ ChainStart =
 ChainEnd = 
 ChainCount = 100
 InterpOrder = 3
+Alpha = 0.85

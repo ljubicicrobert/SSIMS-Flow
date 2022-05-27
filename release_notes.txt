@@ -1,3 +1,27 @@
+SSIMS-Flow v0.1.0.4
+
+Major:
+- Added step-by-step image enhancement preview
+
+Minor:
+- Small changes to GUI
+- Fix: Prevent form locking when Create/Load project is canceled
+- Fix: Loading feature tracking IA and SA sizes back to GUI from Matplotlib
+
+===============================================================================
+
+SSIMS-Flow v0.1.0.3
+
+- Minor fixes and improvements
+
+===============================================================================
+
+SSIMS-Flow v0.1.0.2
+
+- Minor optimization
+
+===============================================================================
+
 SSIMS-Flow v0.1.0.1
 
 - Added 2D plots to Optical flow analyses

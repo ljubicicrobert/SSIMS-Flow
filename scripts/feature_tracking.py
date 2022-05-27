@@ -16,7 +16,6 @@ https://www.gnu.org/licenses/gpl-3.0.en.html.
 Created by Robert Ljubicic.
 """
 
-
 try:
 	from __init__ import *
 	from math import log
@@ -501,6 +500,8 @@ if __name__ == '__main__':
 			logger.log(tag_string('info', 'Output to [{}]'.format(results_folder)), to_print=True)
 			logger.log(tag_string('info', 'Total frames = {}'.format(num_frames)), to_print=True)
 			logger.log(tag_string('info', 'Number of markers = {}'.format(len(markers))), to_print=True)
+			logger.log(tag_string('info', 'IA size = {} px'.format(k_size)), to_print=True)
+			logger.log(tag_string('info', 'SA size = {} px'.format(search_size)), to_print=True)
 			logger.log(tag_string('info', 'Log file {}/\n'.format(log_path)), to_print=True)
 
 			printer = Console_printer()
@@ -535,9 +536,7 @@ if __name__ == '__main__':
 						if xx != 0 and yy != 0:
 							search_space = cv2.getRectSubPix(img_ch, (search_size, search_size), (xx, yy))
 
-							rel_center, ssim_max = find_gcp(search_space,
-															kernels[j],
-															)
+							rel_center, ssim_max = find_gcp(search_space, kernels[j])
 
 							if expand_ssim_search and ssim_max < expand_ssim_thr:
 								print_and_log(
