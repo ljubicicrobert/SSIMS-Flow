@@ -16,6 +16,7 @@ https://www.gnu.org/licenses/gpl-3.0.en.html.
 Created by Robert Ljubicic.
 """
 
+
 try:
     from __init__ import *
     from os import path
@@ -27,6 +28,7 @@ try:
     from class_timing import Timer, time_hms
     from CPP.dll_import import DLL_Loader
     from skimage.measure import block_reduce
+    from ctypes import c_uint, c_double
 
     import matplotlib.pyplot as plt
 
@@ -34,7 +36,7 @@ try:
     dll_name = 'CPP/pooling.dll'
     dll_loader = DLL_Loader(dll_path, dll_name)
     # float mag_pool(float* array, int size, float k)
-    mag_pool = dll_loader.get_function('float', 'mag_pool', ['float*', 'int', 'float'])
+    mag_pool = dll_loader.get_function('double', 'mag_pool', ['float*', 'uint', 'double'])
     
 except Exception:
     print()
@@ -68,7 +70,7 @@ def pooling_mask(array, axis: int, k: float = 1.0):
             # thr = np.mean(subarray)
             # mask = np.where(subarray < k*thr, np.NaN, 1)
             # res[i, j] = np.nanmean(subarray * mask)
-            res[i, j] = mag_pool(subarray.ravel(), int(subarray.size), k)
+            res[i, j] = mag_pool(subarray.ravel(), c_uint(subarray.size), c_double(k))
 
     return res
     

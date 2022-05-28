@@ -27,6 +27,7 @@ try:
 	from inspect import getfullargspec
 	from feature_tracking import fresh_folder
 	from CPP.dll_import import DLL_Loader
+	from ctypes import c_size_t, c_double
 
 	import matplotlib.pyplot as plt
 	import scipy.stats as stats
@@ -34,7 +35,7 @@ try:
 	dll_path = path.split(path.realpath(__file__))[0]
 	dll_name = 'CPP/filtering.dll'
 	dll_loader = DLL_Loader(dll_path, dll_name)
-	cpp_intensity_capping = dll_loader.get_function('void', 'intensity_capping', ['byte*', 'int', 'double'])
+	cpp_intensity_capping = dll_loader.get_function('void', 'intensity_capping', ['byte*', 'size_t', 'double'])
 
 except Exception as ex:
 	print()
@@ -163,7 +164,7 @@ def intensity_capping(img, n_std=0.0, mode=1):
 	img_gray = ~img_gray if mode == 1 else img_gray
 
 	img_ravel = img_gray.ravel()
-	cpp_intensity_capping(img_ravel, img_ravel.size, n_std)
+	cpp_intensity_capping(img_ravel, c_size_t(img_ravel.size), c_double(n_std))
 	img_cap = ~img_ravel.reshape(img_gray.shape) if mode == 1 else img_ravel.reshape(img_gray.shape)
 
 	return cv2.merge([img_cap, img_cap, img_cap])
@@ -330,7 +331,8 @@ if __name__ == '__main__':
 		
 		img_list = glob('{}/*.{}'.format(frames_folder, ext))
 		num_frames = len(img_list)
-		filters_data = np.loadtxt(results_folder + '/filters.txt', dtype='str', delimiter='/', ndmin=2)
+		filters_data = np.loadtxt(results_folder + ('/filters.txt' if args.multi else '/filters_preview.txt'),
+								  dtype='str', delimiter='/', ndmin=2)
 		
 		fig, ax = plt.subplots()
 		fig.canvas.mpl_connect('key_press_event', keypress)
@@ -361,7 +363,7 @@ if __name__ == '__main__':
 			print(' ' * 11 + filter_text)
 		print()
 
-		if args.multi == 0:
+		if not args.multi:
 			img_path = img_list[0]
 			img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
 			colorspace = 'rgb'

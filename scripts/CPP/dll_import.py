@@ -17,6 +17,7 @@ type_dict = {
     'int8':     ctypes.c_int8,
     'uint8':    ctypes.c_uint8,
     'byte':     ctypes.c_uint8,
+    'size_t':   ctypes.c_size_t,
 
     'char*':    ctypes.c_char_p,
     'double*':  np.ctypeslib.ndpointer(dtype='float64', ndim=1, flags='CONTIGUOUS'),
