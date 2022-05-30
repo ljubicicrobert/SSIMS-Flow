@@ -1,3 +1,11 @@
+SSIMS-Flow v0.1.0.5
+
+Minor:
+- Fix wrong first image pair for optical flow when step != 1
+- Prevent progress bar overflow
+
+===============================================================================
+
 SSIMS-Flow v0.1.0.4
 
 Major:

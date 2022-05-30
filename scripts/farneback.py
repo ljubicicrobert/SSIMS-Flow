@@ -67,9 +67,6 @@ def pooling_mask(array, axis: int, k: float = 1.0):
     for i in range(res.shape[0]):
         for j in range(res.shape[1]):
             subarray = array[i, j, :, :]
-            # thr = np.mean(subarray)
-            # mask = np.where(subarray < k*thr, np.NaN, 1)
-            # res[i, j] = np.nanmean(subarray * mask)
             res[i, j] = mag_pool(subarray.ravel(), c_uint(subarray.size), c_double(k))
 
     return res
@@ -156,7 +153,7 @@ if __name__ == '__main__':
 
         j = 0
 
-        for i in range(1, num_frames, step):
+        for i in range(step, num_frames, step):
             next_frame = cv2.imread(frames_list[i], 0)
 
             if scale != 1.0:
