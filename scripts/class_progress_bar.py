@@ -44,7 +44,7 @@ class Progress_bar:
 
     def update_bar(self, iteration: int):
         self.percent = (iteration + 1)/self.total * 100
-        if self.percent > 0:
+        if self.percent > 100:
             self.percent = 100
         len_done = int(self.percent / 100 * self.length)
         len_remain = self.length - len_done
