@@ -1,3 +1,13 @@
+SSIMS-Flow v0.1.1.0
+
+Major:
+- Added splash screen
+
+Minor:
+- GUI now remembers selected radio buttons in Enhance and Optical flow panels
+
+===============================================================================
+
 SSIMS-Flow v0.1.0.5
 
 Minor:

@@ -33,7 +33,7 @@ try:
 	import matplotlib.pyplot as plt
 
 	dll_path = path.split(path.realpath(__file__))[0]
-	dll_name = 'CPP/ssim.dll' if name == 'nt' else 'CPP/libssim.so'
+	dll_name = 'CPP/ssim.dll'
 	dll_loader = DLL_Loader(dll_path, dll_name)
 	# float SSIM_Byte(Byte* pDataX, Byte* pDataY, int step, int width, int height, int win_size, int maxVal);
 	fast_ssim = dll_loader.get_function('float', 'SSIM_Byte', ['byte*', 'byte*', 'int', 'int', 'int', 'int', 'int'])
