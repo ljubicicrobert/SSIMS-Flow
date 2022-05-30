@@ -160,7 +160,7 @@ if __name__ == '__main__':
                 next_frame_bgr = cv2.resize(next_frame_bgr, (w, h))
                 next_frame = cv2.resize(next_frame, (w, h))
 
-            flow = cv2.calcOpticalFlowFarneback(prev_frame, next_frame, None, *[0.5, 3, 7, 1, 7, 1.5, cv2.OPTFLOW_FARNEBACK_GAUSSIAN])
+            flow = cv2.calcOpticalFlowFarneback(prev_frame, next_frame, None, *[0.5, 3, 15, 1, 7, 1.5, cv2.OPTFLOW_FARNEBACK_GAUSSIAN])
             magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
 
             # Filter by vector angle
