@@ -1,4 +1,4 @@
-# SSIMS-Flow: UAV image velocimetry workbench
+# SSIMS Flow: UAV image velocimetry workbench
 
 This tool represents a feature-complete solution for the estimation of open-channel flow (discharge) from UAV videos using Farneback dense optical flow algorithm. The integrated workflow enables:
 
@@ -43,7 +43,7 @@ skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 >pip install matplotlib==3.2.1
 >```
 
-> Symantec Norton appears to flag the SSIMS_Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
+> Symantec Norton appears to flag the SSIMS-Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
 
 
 ## New versions
@@ -55,7 +55,7 @@ The tool will automatically check for latest releases of the tool on program sta
 
 ## Usage
 
-**Unlike its predecessor, SSIMS-Flow is meant to be used ONLY through the graphical user interface (GUI)**. Usage through the terminal is possible but discouraged. Those interested in such approach can check the `ArgumentParser` objects in source files for more details.
+**Unlike its predecessor, SSIMS Flow is meant to be used ONLY through the graphical user interface (GUI)**. Usage through the terminal is possible but discouraged. Those interested in such approach can check the `ArgumentParser` objects in source files for more details.
 
 
 ### Project settings
@@ -116,7 +116,7 @@ When option (3) is selected, the form will expand to reveal additional options a
 
 > **Note #6**: If certain images have a relatively high reprojection error value, it can be beneficial to remove them from the calibration folder and repeat the calibration procedure, as this might improve the calibration accuracy. For best results try to keep between 15 and 30 images with chequerboard (target) pattern. Also, generation and manual inspection of undistorted chequerboard images is highly advised.
 
-Camera parameters will be saved to `%PROJECT_FOLDER%\camera_parameters.cpf`, and can be viewed and modified using any text editor. Copying this file to the `%INSTALATION_FOLDER%\camera_profiles` folder of the SSIMS-Flow tool will make this camera profile available in the dropdown list of the Camera parameters form for all projects.
+Camera parameters will be saved to `%PROJECT_FOLDER%\camera_parameters.cpf`, and can be viewed and modified using any text editor. Copying this file to the `%INSTALATION_FOLDER%\camera_profiles` folder of the SSIMS Flow tool will make this camera profile available in the dropdown list of the Camera parameters form for all projects.
 
 
 ### Stabilization/orthorectification
@@ -125,7 +125,7 @@ Camera parameters will be saved to `%PROJECT_FOLDER%\camera_parameters.cpf`, and
 
 #### Feature tracking
 
-Despite the modern UAVs having sophisticated in-built camera/video stabilization, in most cases it is necessary to perform additional stabilization to ensure that the coordinate system of the video remains constant throughout the entire sequence of frames. SSIMS-Flow uses the same stabilization strategy as its precursor (SSIMS tool), which consists of the following steps:
+Despite the modern UAVs having sophisticated in-built camera/video stabilization, in most cases it is necessary to perform additional stabilization to ensure that the coordinate system of the video remains constant throughout the entire sequence of frames. SSIMS Flow uses the same stabilization strategy as its precursor (SSIMS tool), which consists of the following steps:
 
 1. Selecting features for tracking, to estimate the camera motion,
 2. Selecting features for image transformation,
@@ -206,7 +206,7 @@ Users can perform filtering of images in a folder using the **Enhance images** p
 
 Some of the available filter are just colorspace model conversions (titled _Convert to..._). These will transform the image from the previous colorspace to the chosen one. **Default colorspace model**, which is active when the image is loaded for filtering, is **RGB**.
 
-> SSIMS-Flow will keep track of the colorspace conversions during filtering. For example, if _Convert to L\*a\*b\*_ is in the stack, followed by the _Single image channel_, by choosing the channel in the **Filter parameters** form, the user will effectively be selecting a channel of the image from its L\*a\*b\* colorspace model. Some filters will implicitly convert the image to a single-channel grayscale colorspace.
+> SSIMS Flow will keep track of the colorspace conversions during filtering. For example, if _Convert to L\*a\*b\*_ is in the stack, followed by the _Single image channel_, by choosing the channel in the **Filter parameters** form, the user will effectively be selecting a channel of the image from its L\*a\*b\* colorspace model. Some filters will implicitly convert the image to a single-channel grayscale colorspace.
 
 You can preview the results of the current stack (with the currently set parameters) by clicking the **Preview results** button. Once you are happy with the results, you can start creating filtered/enhanced images by clicking the **Filter frames** button in the lower right corner. This will apply the selected filters to all frames in the selected folder, and the resulting images will be stored in the `%PROJECT_FOLDER\enhancement%` folder.
 
@@ -287,7 +287,7 @@ Farnebäck, G. (2003) *Two-frame motion estimation based on polynomial expansion
 
 
 ## How to cite
-Ljubicic, R. (2022) *SSIMS-Flow: Preprocessing tool for UAV image velocimetry*, [https://github.com/ljubicicrobert/SSIMS-Flow](https://github.com/ljubicicrobert/SSIMS-Flow)
+Ljubicic, R. (2022) *SSIMS Flow: Preprocessing tool for UAV image velocimetry*, [https://github.com/ljubicicrobert/SSIMS-Flow](https://github.com/ljubicicrobert/SSIMS-Flow)
 
 &nbsp;&nbsp;&nbsp;&nbsp;or (for image stabilization/orthorectification only)
 
