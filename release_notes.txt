@@ -1,6 +1,14 @@
+SSIMS-Flow v0.1.1.3
+
+Minor:
+- Fix missing C++ function for Optical flow analysis
+
+===============================================================================
+
 SSIMS-Flow v0.1.1.2
 
 Minor:
+- GUI tweaks
 - Fixed a bug in Image enhancement where filters.txt could not be found
 
 ===============================================================================
