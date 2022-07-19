@@ -1,3 +1,10 @@
+SSIMS-Flow v0.1.1.2
+
+Minor:
+- Fixed a bug in Image enhancement where filters.txt could not be found
+
+===============================================================================
+
 SSIMS-Flow v0.1.1.1
 
 Minor:
