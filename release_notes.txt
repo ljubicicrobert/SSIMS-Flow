@@ -1,3 +1,26 @@
+SSIMS-Flow v0.2.0.0
+
+Major:
+- Fixed a bug where parameters do not reset properly on Create new project
+- Fixed slow opening of Select features form
+- Fixed obscure MathDomain error during subpixel estimation
+- Fixed Tracking and Transformation parameters saving
+- Added NULL exception when cloud video meta being read (OneDrive)
+- Fixed number of features not updating in Select features after retracking
+- Fixed wrong framerate detected in Create video form
+
+NOTE: Projects created using earlier versions of the tool might not work
+correctly with this version.
+
+===============================================================================
+
+SSIMS-Flow v0.1.1.4
+
+Minor:
+- Fix occurrence of NaN in flow direction
+
+===============================================================================
+
 SSIMS-Flow v0.1.1.3
 
 Minor:
