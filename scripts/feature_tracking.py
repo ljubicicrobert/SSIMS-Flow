@@ -365,6 +365,9 @@ def find_gcp(search_area: np.ndarray, kernel: np.ndarray) -> tuple:
 
 	x_pix, y_pix = np.unravel_index(np.argmax(ssim_map), ssim_map.shape)
 
+	# To avoid negative or zero numbers in log function, SSIM goes from -1 to 1
+	ssim_map += 2
+
 	# Gaussian 2x3 fit
 	dx = (log(ssim_map[x_pix-1, y_pix]) - log(ssim_map[x_pix+1, y_pix])) / (2*(log(ssim_map[x_pix-1, y_pix]) + log(ssim_map[x_pix+1, y_pix]) - 2*log(ssim_map[x_pix, y_pix])))
 	dy = (log(ssim_map[x_pix, y_pix-1]) - log(ssim_map[x_pix, y_pix+1])) / (2*(log(ssim_map[x_pix, y_pix-1]) + log(ssim_map[x_pix, y_pix+1]) - 2*log(ssim_map[x_pix, y_pix])))
@@ -519,6 +522,7 @@ if __name__ == '__main__':
 			timer = Timer(total_iter=num_frames)
 
 			ssim_scores = np.zeros([num_frames, len(markers)])
+			ssim_score_averages = np.zeros(len(markers))
 
 			for n in range(num_frames):
 				try:
@@ -589,6 +593,7 @@ if __name__ == '__main__':
 
 				np.savetxt('{}/gcps_csv/{}.txt'.format(results_folder, str(n).rjust(numbering_len, '0')), markers, fmt='%.3f', delimiter=' ')
 				np.savetxt('{}/ssim_scores.txt'.format(results_folder), ssim_scores, fmt='%.3f', delimiter=' ')
+				np.savetxt('{}/ssim_score_averages.txt'.format(results_folder), np.average(ssim_scores, axis=0), fmt='%.3f', delimiter=' ')
 
 				# print_and_log(
 				# 	tag_string('info', 'Markers: {}'.format(print_markers(markers))), printer, logger

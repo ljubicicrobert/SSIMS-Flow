@@ -70,6 +70,10 @@ def pooling_mask(array, axis: int, k: float = 1.0):
             res[i, j] = mag_pool(subarray.ravel(), c_uint(subarray.size), c_double(k))
 
     return res
+
+
+def nan_locate(y):
+    return np.isnan(y), lambda z: z.nonzero()[0]
     
 
 if __name__ == '__main__':
@@ -180,6 +184,9 @@ if __name__ == '__main__':
                 mag_max = np.zeros(magnitude.shape)
                 angle_stack = np.ndarray([mag_max.shape[0], mag_max.shape[1], len(range(1, num_frames, step))])
             mag_max = np.maximum(mag_max, magnitude)
+
+            nans, x = nan_locate(angle)
+            angle[nans] = np.interp(x(nans), x(~nans), angle[~nans], period=360)
 
             angle_stack[:, :, j] = angle
 
