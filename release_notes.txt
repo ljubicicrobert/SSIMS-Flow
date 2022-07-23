@@ -1,3 +1,12 @@
+SSIMS-Flow v0.2.0.1
+
+Minor:
+- Creating a new project will not delete the videos with extensions .mp4, .avi,
+.mov, .mkv, .webm, and .wmv (case insensitive) from the project folder. It is,
+however, not recommended to keep the video in the project folder.
+
+===============================================================================
+
 SSIMS-Flow v0.2.0.0
 
 Major:
