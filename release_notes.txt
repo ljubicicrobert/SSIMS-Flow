@@ -1,3 +1,11 @@
+SSIMS-Flow v0.2.0.2
+
+Minor:
+- Fixed a bug where enhancement and optical flow are not available if
+stabilization was not performed
+
+===============================================================================
+
 SSIMS-Flow v0.2.0.1
 
 Minor:

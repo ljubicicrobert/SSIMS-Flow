@@ -126,7 +126,10 @@ if __name__ == '__main__':
         step = float(cfg[section]['Step'])
         scale = float(cfg[section]['Scale'])
         fps = float(cfg[section]['Framerate'])		# frames/sec
-        gsd = float(cfg[section]['GSD'])           	# px/m
+        try:
+            gsd = float(cfg[section]['GSD'])        # px/m
+        except Exception as ex:
+            gsd = float(cfg['Transformation']['GSD'])        # px/m
         pooling = float(cfg[section]['Pooling'])   	# px
         gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
