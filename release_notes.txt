@@ -1,3 +1,10 @@
+SSIMS-Flow v0.2.0.3
+
+Minor:
+- Fixed a bug where enhancement was not detected on project load
+
+===============================================================================
+
 SSIMS-Flow v0.2.0.2
 
 Minor:
