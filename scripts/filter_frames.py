@@ -200,7 +200,7 @@ def thresholding(img, c1u=255, c1l=0, c2u=255, c2l=0, c3u=255, c3l=0):
 
 
 def denoise(img, ksize=3):
-	return cv2.medianBlur(img, ksize)
+	return cv2.medianBlur(img, int(ksize))
 
 
 def remove_background(img, num_frames_background=10):
