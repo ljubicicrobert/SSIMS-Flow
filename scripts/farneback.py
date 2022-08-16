@@ -29,6 +29,7 @@ try:
     from CPP.dll_import import DLL_Loader
     from skimage.measure import block_reduce
     from ctypes import c_uint, c_double
+    from warnings import catch_warnings, simplefilter
 
     import matplotlib.pyplot as plt
 
@@ -177,8 +178,10 @@ if __name__ == '__main__':
                 angle = np.where(angle <= 0, angle + 360, angle)
 
             if pooling > 1:
-                magnitude = block_reduce(magnitude, (pooling, pooling), pooling_mask)
-                angle = block_reduce(angle, (pooling, pooling), np.nanmean)
+                with catch_warnings():
+                    simplefilter("ignore", category=RuntimeWarning)
+                    magnitude = block_reduce(magnitude, (pooling, pooling), pooling_mask)
+                    angle = block_reduce(angle, (pooling, pooling), np.nanmean)
 
             if mag_max is None:
                 mag_max = np.zeros(magnitude.shape)
@@ -186,7 +189,10 @@ if __name__ == '__main__':
             mag_max = np.maximum(mag_max, magnitude)
 
             nans, x = nan_locate(angle)
-            angle[nans] = np.interp(x(nans), x(~nans), angle[~nans], period=360)
+            try:
+                angle[nans] = np.interp(x(nans), x(~nans), angle[~nans], period=360)
+            except ValueError:
+                pass
 
             angle_stack[:, :, j] = angle
 

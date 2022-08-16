@@ -1,7 +1,16 @@
+SSIMS-Flow v0.2.0.4
+
+Minor:
+- Suppressed annoying RuntimeWarning for np.mean()
+- Now catching strange ValueError when interpolating vector angles
+
+===============================================================================
+
 SSIMS-Flow v0.2.0.3
 
 Minor:
 - Fixed a bug where enhancement was not detected on project load
+- Fixed median filter
 
 ===============================================================================
 
