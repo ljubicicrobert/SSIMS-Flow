@@ -1,3 +1,10 @@
+SSIMS-Flow v0.2.0.5
+
+Minor:
+- Minor GUI bugfixes in Create Video panel
+
+===============================================================================
+
 SSIMS-Flow v0.2.0.4
 
 Minor:
