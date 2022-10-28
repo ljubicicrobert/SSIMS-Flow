@@ -384,7 +384,7 @@ def fresh_folder(folder_path, ext='*', exclude=list()):
 	else:
 		files = glob('{}/*.{}'.format(folder_path, ext))
 		for f in files:
-			if f not in exclude:
+			if path.basename(f) not in exclude:
 				remove(f)
 
 

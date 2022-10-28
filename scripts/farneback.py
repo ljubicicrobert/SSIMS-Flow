@@ -75,7 +75,7 @@ def pooling_mask(array, axis: int, k: float = 1.0):
 
 def nan_locate(y):
     return np.isnan(y), lambda z: z.nonzero()[0]
-    
+
 
 if __name__ == '__main__':
     try:
@@ -190,7 +190,12 @@ if __name__ == '__main__':
 
             nans, x = nan_locate(angle)
             try:
-                angle[nans] = np.interp(x(nans), x(~nans), angle[~nans], period=360)
+                if 315 <= angle_main <= 360 or \
+                     0 <= angle_main <= 45 or \
+                   135 <= angle_main <= 225:
+                    angle[nans] = np.interp(x(nans), x(~nans), angle[~nans], period=360)
+                else:
+                    angle[nans] = np.interp(x(nans.T), x(~nans.T), angle[~nans].T, period=360).T
             except ValueError:
                 pass
 

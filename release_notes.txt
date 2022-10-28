@@ -1,3 +1,10 @@
+SSIMS-Flow v0.2.0.6
+
+Minor:
+- [depth_profile.txt] will not get deleted now on repeated optical flow
+
+===============================================================================
+
 SSIMS-Flow v0.2.0.5
 
 Minor:
