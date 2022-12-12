@@ -1,3 +1,10 @@
+SSIMS-Flow v0.2.1.2
+
+Minor:
+- Fixed Enhancement form not refreshing filters after a new project is loaded
+
+===============================================================================
+
 SSIMS-Flow v0.2.1.1
 
 Minor:
