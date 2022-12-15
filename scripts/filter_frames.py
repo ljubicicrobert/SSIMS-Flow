@@ -224,7 +224,7 @@ def remove_background(img, num_frames_background=10):
 		back = np.median(stack, axis=3)
 		cv2.imwrite(img_back_path, back)
 
-	return cv2.subtract(back, img)
+	return cv2.subtract(back.astype('uint8'), img.astype('uint8'))
 
 
 def histeq(img):

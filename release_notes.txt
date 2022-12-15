@@ -1,3 +1,10 @@
+SSIMS-Flow v0.2.1.3
+
+Minor:
+- Fixed a type mismatch bug when using Background removal filter
+
+===============================================================================
+
 SSIMS-Flow v0.2.1.2
 
 Minor:
