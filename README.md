@@ -238,7 +238,7 @@ Once the optical flow analyses have been completed and the surface velocity fiel
 
 > KEEP IN MIND that if you choose the profile from an image, you should choose it from a frame of the same folder which was used for optical flow analysis. In certain cases the image enhancement step will degrade visual information which can be used to identify the channel cross-section. If this is the case, you should use the frames from folder which was used to obtain enhanced images (e.g., orthorectified or stabilized frames).
 
-Once the profile (cross-section) has been selected, click the **Generate profile data** to create an analysis of the time averaged surface velocities in that profile. You can control the interpolation of values from 2D optical flow data onto 1D profile data by defining a number of interpolation points and the interpolation order used for spline interpolation.
+Once the profile (cross-section) has been selected, click the **Generate profile data** to create an analysis of the time averaged surface velocities in that profile. You can control the interpolation of values from 2D optical flow data onto 1D profile data by defining a number of interpolation points.
 
 Graphical representation of the data can be obtained by selecting columns using checkboxes just below the column headers. Velocity data will be shown on the primary Y axis and direction/angle data on the secondary Y axis.
 
