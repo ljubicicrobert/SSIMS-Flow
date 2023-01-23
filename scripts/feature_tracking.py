@@ -20,7 +20,7 @@ try:
 	from __init__ import *
 	from math import log
 	from itertools import product
-	from os import makedirs, remove, path, name
+	from os import makedirs, remove, path
 	from sys import exit
 	from matplotlib.widgets import Slider
 	from class_logger import Logger
@@ -31,6 +31,7 @@ try:
 	from CPP.dll_import import DLL_Loader
 
 	import matplotlib.pyplot as plt
+	import ctypes
 
 	dll_path = path.split(path.realpath(__file__))[0]
 	dll_name = 'CPP/ssim.dll'
@@ -71,7 +72,7 @@ def to_int(x: float) -> int:
 	return int(round(x))
 
 
-def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hide_sliders=False) -> list:
+def get_gcps_from_image(image_orig: np.ndarray, initial=[], verbose=False, ia=11, sa=21, hide_sliders=False) -> list:
 	"""
 	Extracts [x, y] pixel coordinates from an image using right mouse click.
 	Use middle mouse button or BACKSPACE key to remove the last selected point from the list.
@@ -94,6 +95,7 @@ def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hid
 	sw = sa // 2
 	points = []
 	org = []
+	marker_text = []
 	axcolor = 'lightgoldenrodyellow'
 	valfmt = "%d"
 
@@ -114,40 +116,49 @@ def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hid
 
 		return s[:-1]
 
+	def add_marker(x, y):
+		p = [to_int(x*1), to_int(y*1)]
+		points.append(p)
+		marker_text.append(ax.text(x+2, y-2, s=len(points), color='r'))
+
+		sec_s = image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1]
+		sec_i = image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1]
+
+		org.append(image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1].copy())
+
+		sec_i = sec_i ** ia_c
+		image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1] = sec_i
+
+		sec_s = sec_s ** sa_c
+		image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = sec_s
+
+		image[p[1], p[0]] = 0
+
+		points_list.set_text(xy2str(points))
+		img_ref.set_data(image)
+
+	def remove_last_marker():
+		p = points.pop()
+		o = org.pop()
+		del ax.texts[-1]
+		marker_text.pop()
+
+		image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = o
+
+		points_list.set_text(xy2str(points))
+		img_ref.set_data(image)
+
 	def getPixelValue(event):
 		global p_list
 
 		if event.button == 2 and len(points) > 0:
-			p = points.pop()
-			o = org.pop()
-
-			image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = o
-
-			points_list.set_text(xy2str(points))
-			img_ref.set_data(image)
+			remove_last_marker()
 			update_ia(sl_ax_ia_size.val)
 			update_sa(sl_ax_sa_size.val)
 			plt.draw()
 
 		if event.button == 3:
-			p = [to_int(event.xdata), to_int(event.ydata)]
-			points.append(p)
-
-			sec_s = image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1]
-			sec_i = image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1]
-
-			org.append(image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1].copy())
-
-			sec_i = sec_i ** ia_c
-			image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1] = sec_i
-
-			sec_s = sec_s ** sa_c
-			image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = sec_s
-
-			image[p[1], p[0]] = 0
-
-			points_list.set_text(xy2str(points))
-			img_ref.set_data(image)
+			add_marker(event.xdata, event.ydata)
 			update_ia(sl_ax_ia_size.val)
 			update_sa(sl_ax_sa_size.val)
 			plt.draw()
@@ -321,6 +332,10 @@ def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hid
 				  fontsize=9,
 				  )
 
+	if initial != []:
+		for i in range(len(initial)):
+			add_marker(initial[i][0], initial[i][1])
+
 	try:
 		mng = plt.get_current_fig_manager()
 		mng.window.state('zoomed')
@@ -470,9 +485,31 @@ if __name__ == '__main__':
 
 		img_path = raw_frames_list[0]
 		img = cv2.imread(img_path)
+		img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 		img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-		markers = get_gcps_from_image(img_rgb, ia=k_size, sa=search_size, verbose=False)
+		initial_gcps = []
+
+		dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+		parameters =  cv2.aruco.DetectorParameters()
+		detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+		corners, ids, rejectedImgPoints = detector.detectMarkers(img_gray)
+
+		try:
+			if len(ids) > 0:
+				ids_sorted = ids[:, 0].argsort()
+				corners = [corners[x] for x in ids_sorted]
+				MessageBox = ctypes.windll.user32.MessageBoxW
+				response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 4)
+
+				if response == 6:
+					for i in range(len(ids)):
+						c = corners[i][0]
+						initial_gcps.append([c[:, 0].mean(), c[:, 1].mean()])
+		except Exception as ex:
+			pass
+
+		markers = get_gcps_from_image(img_rgb, initial=initial_gcps, ia=k_size, sa=search_size, verbose=False)
 
 		if len(markers) == 1:
 			tag_print('error', 'Number of GCPs must be at least 2!')

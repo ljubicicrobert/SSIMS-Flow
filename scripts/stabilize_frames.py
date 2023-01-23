@@ -30,6 +30,8 @@ try:
 	from class_logger import time_hms
 	from class_timing import Timer, time_hms
 
+	import ctypes
+
 except Exception as ex:
 	print()
 	tag_print('exception', 'Import failed! \n')
@@ -296,12 +298,35 @@ if __name__ == '__main__':
 			'        repeat the feature tracking with features which are available in all frames.'
 
 		img = cv2.imread(raw_frames_list[0], cv2.COLOR_BGR2RGB)
+		img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
 		h, w = img.shape[:2]
 
 		if orthorectify:
 			gcps_real = np.multiply(np.loadtxt('{}/gcps_real.txt'.format(results_folder), dtype='float32', delimiter=' '), px_ratio)
-			gcps_image = np.asarray(get_gcps_from_image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), verbose=False, hide_sliders=True))
+
+			initial_gcps = []
+
+			dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+			parameters =  cv2.aruco.DetectorParameters()
+			detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+			corners, ids, rejectedImgPoints = detector.detectMarkers(img_gray)
+
+			try:
+				if len(ids) > 0:
+					ids_sorted = ids[:, 0].argsort()
+					corners = [corners[x] for x in ids_sorted]
+					MessageBox = ctypes.windll.user32.MessageBoxW
+					response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 4)
+
+					if response == 6:
+						for i in range(len(ids)):
+							c = corners[i][0]
+							initial_gcps.append([c[:, 0].mean(), c[:, 1].mean()])
+			except Exception as ex:
+				pass
+
+			gcps_image = np.asarray(get_gcps_from_image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), initial=initial_gcps, verbose=False, hide_sliders=True))
 
 			assert gcps_real.shape == gcps_image.shape,\
 				tag_string('error', 'Number of GCPs [{}] not equal to number of selected features [{}]'.format(gcps_real.shape[0], gcps_image.shape[0]))
@@ -387,7 +412,7 @@ if __name__ == '__main__':
 				timer.update()
 				console_printer.add_line(progress_bar.get(i))
 				console_printer.add_line(
-					tag_string('info', 'Frame processing time = {:.3f}'
+					tag_string('info', 'Frame processing time = {:.3f} sec'
 						.format(timer.interval())
 					)
 				)

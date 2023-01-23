@@ -24,8 +24,6 @@ try:
 	from scipy.ndimage import map_coordinates
 	from scipy.signal import medfilt
 	from math import atan2
-	from feature_tracking import fresh_folder
-	from farneback import get_angle_range
 
 except Exception as ex:
 	print()
@@ -44,20 +42,23 @@ def values_along_line(img: np.ndarray, xs: list, ys: list, count: int, order=3):
 	return coordinates, map_coordinates(img, np.vstack((y_range, x_range)), order=order)
 
 
-if __name__ == '__main__':
+def main(cfg_path=None):
 	try:
-		parser = ArgumentParser()
-		parser.add_argument('--cfg', type=str, help='Path to project configuration file')
-		args = parser.parse_args()
-
-		cfg = configparser.ConfigParser()
-		cfg.optionxform = str
-
 		try:
-			cfg.read(args.cfg, encoding='utf-8-sig')
+			if cfg_path is None:
+				parser = ArgumentParser()
+				parser.add_argument('--cfg', type=str, help='Path to project configuration file')
+				args = parser.parse_args()
+
+				cfg = configparser.ConfigParser()
+				cfg.optionxform = str
+				cfg.read(args.cfg, encoding='utf-8-sig')
+			else:
+				cfg.read(cfg_path, encoding='utf-8-sig')
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
+			print('\n{}'.format(format_exc()))
 			input('\nPress ENTER/RETURN key to exit...')
 			exit()
 
@@ -68,17 +69,29 @@ if __name__ == '__main__':
 
 		input_folder = unix_path(project_folder) + '/optical_flow'
 
-		field_raw_mag = np.loadtxt('{}/mag_max.txt'.format(input_folder))	# px/frame
+		profile_source = int(cfg[section]['ProfileSource'])
+
+		if profile_source == 0:
+			field_raw_mag = np.loadtxt('{}/mag_mean.txt'.format(input_folder))	# px/frame
+		elif profile_source == 1:
+			field_raw_mag = np.loadtxt('{}/mag_max.txt'.format(input_folder))	# px/frame
+
 		field_raw_angle = np.loadtxt('{}/angle_mean.txt'.format(input_folder))
 
-		step = float(cfg[section]['Step'])
+		# Fallback for pre 0.3.x.x config versions
+		try:
+			frames_step = float(cfg['Frames']['Step'])
+		except configparser.NoOptionError:
+			frames_step = 1.0
+		
+		optical_flow_step = float(cfg[section]['Step'])
 		scale = float(cfg[section]['Scale'])
 		fps = float(cfg[section]['Framerate'])		# frames/sec
 		gsd = float(cfg[section]['GSD'])           	# px/m
 		pooling = float(cfg[section]['Pooling'])   	# px
 		gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
-		v_ratio = fps / gsd / step / scale         	# (frame*m) / (s*px)
+		v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
 		field_raw_mag *= v_ratio					# px/frame * ((frame*m) / (s*px)) = m/s
 
 		field_median_mag = medfilt(field_raw_mag, [3, 3])
@@ -90,7 +103,7 @@ if __name__ == '__main__':
 		x_start, y_start = [float(x)/pooling*scale for x in cfg[section]['ChainStart'].replace(' ', '').split(',')[:2]]
 		x_end, y_end = [float(x)/pooling*scale for x in cfg[section]['ChainEnd'].replace(' ', '').split(',')[:2]]
 		count = int(cfg[section]['ChainCount'])
-		order = int(cfg[section]['InterpOrder'])
+		order = 3
 
 		dx = x_end - x_start
 		dy = y_end - y_start
@@ -110,18 +123,17 @@ if __name__ == '__main__':
 		field_angle_diff = field_raw_angle - chainage_direction
 		field_angle_corr = np.abs(np.sin(field_angle_diff / 180 * np.pi))
 
-		line_raw_mag = map_coordinates(field_raw_mag, np.vstack((y_range, x_range)), order=order)
+		line_raw_mag = np.abs(map_coordinates(field_raw_mag, np.vstack((y_range, x_range)), order=order))
 		line_raw_us = map_coordinates(field_raw_us, np.vstack((y_range, x_range)), order=order)
 		line_raw_vs = map_coordinates(field_raw_vs, np.vstack((y_range, x_range)), order=order)
 		line_raw_angle = cv2.cartToPolar(line_raw_us, line_raw_vs, angleInDegrees=True)[1].ravel()
 
-		line_median_mag = map_coordinates(field_median_mag, np.vstack((y_range, x_range)), order=order)
+		line_median_mag = np.abs(map_coordinates(field_median_mag, np.vstack((y_range, x_range)), order=order))
 		line_median_us = map_coordinates(field_median_us, np.vstack((y_range, x_range)), order=order)
 		line_median_vs = map_coordinates(field_median_vs, np.vstack((y_range, x_range)), order=order)
 		line_median_angle = cv2.cartToPolar(line_median_us, line_median_vs, angleInDegrees=True)[1].ravel()
 
 		line_corr = map_coordinates(field_angle_corr, np.vstack((y_range, x_range)), order=1)
-		# line_corr[line_corr > 1] = 1	# because of high order interpolation
 
 		line_raw_mag_corr = line_corr * line_raw_mag
 		line_median_mag_corr = line_corr * line_median_mag
@@ -185,22 +197,6 @@ if __name__ == '__main__':
 
 		np.savetxt('{}/profile_data.txt'.format(input_folder), table_data, fmt=table_data_fmt_str, header=table_data_header_str, delimiter=',', comments='')
 
-		# np.savetxt('{}/chainage.txt'.format(results_folder), chainage_pooled, fmt=fmt_vel)
-
-		# np.savetxt('{}/raw_magnitude_total.txt'.format(results_folder), line_raw_mag, fmt=fmt_vel)
-		# np.savetxt('{}/raw_direction.txt'.format(results_folder), line_raw_angle, fmt=fmt_angle)
-		# np.savetxt('{}/raw_u.txt'.format(results_folder), line_raw_us, fmt=fmt_vel)
-		# np.savetxt('{}/raw_v.txt'.format(results_folder), line_raw_vs, fmt=fmt_vel)
-
-		# np.savetxt('{}/median_magnitude_total.txt'.format(results_folder), line_median_mag, fmt=fmt_vel)
-		# np.savetxt('{}/median_direction.txt'.format(results_folder), line_median_angle, fmt=fmt_angle)
-		# np.savetxt('{}/median_u.txt'.format(results_folder), line_median_us, fmt=fmt_vel)
-		# np.savetxt('{}/median_v.txt'.format(results_folder), line_median_vs, fmt=fmt_vel)
-
-		# np.savetxt('{}/direction_corr.txt'.format(results_folder), line_corr, fmt=fmt_vel)
-		# np.savetxt('{}/raw_magnitude_normal.txt'.format(results_folder), line_raw_mag_corr, fmt=fmt_vel)
-		# np.savetxt('{}/median_magnitude_normal.txt'.format(results_folder), line_median_mag_corr, fmt=fmt_vel)
-
 		tag_print('end', 'Chainage data saved to [{}/profile_data.txt]'.format(input_folder))
 		input('\nPress ENTER/RETURN key to exit...')
 
@@ -209,3 +205,7 @@ if __name__ == '__main__':
 		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
 		print('\n{}'.format(format_exc()))
 		input('\nPress ENTER/RETURN key to exit...')
+
+
+if __name__ == '__main__':
+	main()

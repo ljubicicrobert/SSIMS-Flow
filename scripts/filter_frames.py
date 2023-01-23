@@ -265,8 +265,36 @@ def keypress(event):
 		is_original = not is_original
 		plt.draw()
 
-	elif event.key == 'escape':
+	elif event.key == 'down':
+		if sl_ax_frame_num.val == 0:
+			sl_ax_frame_num.set_val(num_frames - 1)
+		else:
+			sl_ax_frame_num.set_val(sl_ax_frame_num.val - 1)
+
+	elif event.key == 'up':
+		if sl_ax_frame_num.val == num_frames - 1:
+			sl_ax_frame_num.set_val(0)
+		else:
+			sl_ax_frame_num.set_val(sl_ax_frame_num.val + 1)
+
+	elif event.key == 'pageup':
+		if sl_ax_frame_num.val >= num_frames - 10:
+			sl_ax_frame_num.set_val(0)
+		else:
+			sl_ax_frame_num.set_val(sl_ax_frame_num.val + 10)
+
+	elif event.key == 'pagedown':
+		if sl_ax_frame_num.val <= 9:
+			sl_ax_frame_num.set_val(num_frames - 1)
+		else:
+			sl_ax_frame_num.set_val(sl_ax_frame_num.val - 10)
+
+	elif event.key == 'escape' or event.key == 'q':
 		exit()
+
+	update_frame(sl_ax_frame_num.val)
+
+	
 
 
 def update_frame(val):
@@ -388,6 +416,19 @@ if __name__ == '__main__':
 			else:
 				img_shown = ax.imshow(img)
 
+			commands = 'Use slider to select frame,\n' \
+					   'use UP and DOWN keys to move by +/- 1 frame\n' \
+					   'or PageUP and PageDOWN keys to move by +/- 10 frames\n' \
+					   'Press ESC or Q to exit'
+
+			commands_toggle = plt.text(0.98, 0.97, commands,
+									horizontalalignment='right',
+									verticalalignment='top',
+									transform=ax.transAxes,
+									bbox=dict(facecolor='white', alpha=0.5),
+									fontsize=9,
+									)
+
 			plt.text(0.02, 0.97, legend,
 					horizontalalignment='left',
 					verticalalignment='top',
@@ -427,7 +468,7 @@ if __name__ == '__main__':
 				timer.update()
 				console_printer.add_line(progress_bar.get(j))
 				console_printer.add_line(
-					tag_string('info', 'Frame processing time = {:.3f}'
+					tag_string('info', 'Frame processing time = {:.3f} sec'
 						.format(timer.interval())
 					)
 				)
