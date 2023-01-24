@@ -412,7 +412,6 @@ def print_markers(marker_list):
 	return s[:-2]
 
 
-
 def print_and_log(string, printer_obj: Console_printer, logger_obj: Logger):
 	logger_obj.log(printer_obj.add_line(string))
 
@@ -500,7 +499,8 @@ if __name__ == '__main__':
 				ids_sorted = ids[:, 0].argsort()
 				corners = [corners[x] for x in ids_sorted]
 				MessageBox = ctypes.windll.user32.MessageBoxW
-				response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 4)
+				response = MessageBox(None, 'A total of {} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?'.format(ids.shape[0]),
+									  'ArUco markers detected', 4)
 
 				if response == 6:
 					for i in range(len(ids)):
@@ -521,7 +521,7 @@ if __name__ == '__main__':
 		cfg[section]['InterrogationAreaSize'] = str(k_size)
 		cfg['Transformation']['FeatureMask'] = '1'*len(markers)
 		
-		with open(args.cfg, 'w') as configfile:
+		with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 			cfg.write(configfile)
 
 		markers_mask = [1] * len(markers)
@@ -580,9 +580,10 @@ if __name__ == '__main__':
 							rel_center, ssim_max = find_gcp(search_space, kernels[j])
 
 							if expand_ssim_search and ssim_max < expand_ssim_thr:
-								print_and_log(
-									tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)), printer, logger
-								)
+								# print_and_log(
+								# 	tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)), printer, logger
+								# )
+								logger.log(tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)))
 
 								is_expanded_search = True
 								search_size = exp_search_size
@@ -608,17 +609,19 @@ if __name__ == '__main__':
 							try:
 								cv2.getRectSubPix(img_ch, (search_size, search_size), (real_x, real_y))
 							except SystemError:
-								print_and_log(
-									tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
-								)
+								# print_and_log(
+								# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
+								# )
+								logger.log(tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)))
 
 								markers[j] = [0, 0]
 								markers_mask[j] = 0
 
 						else:
-							print_and_log(
-								tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
-							)
+							# print_and_log(
+							# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
+							# )
+							logger.log(tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)))
 
 							markers[j] = [0, 0]
 							markers_mask[j] = 0

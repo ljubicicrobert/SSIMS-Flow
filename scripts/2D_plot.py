@@ -24,6 +24,7 @@ try:
     from class_console_printer import tag_print, unix_path
 
     import matplotlib.pyplot as plt
+    import ctypes
 
 except Exception as ex:
     print()
@@ -186,7 +187,7 @@ if __name__ == '__main__':
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
             data = [us, vs, mags, dirs]
             img = data[args.data]
-        elif mode == 2:     # Instantaneous
+        elif mode == 2:     # Instantaneous      
             mags = np.loadtxt(mag_list[0]) * v_ratio
             dirs = np.loadtxt(dir_list[0])
             h, w = mags.shape
@@ -220,7 +221,7 @@ if __name__ == '__main__':
             pass
 
         ax.set_title('{}, frame #0/{}'.format(data_type, num_frames - 1)
-                     if mode == 1
+                     if mode == 2
                      else 'Time averaged values: {}'.format(data_type))
         plt.show()
 

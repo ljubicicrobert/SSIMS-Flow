@@ -215,7 +215,7 @@ if __name__ == '__main__':
 			'p2': '{:.8f}'.format(dist[0, 3]),
 		}
 
-		with open('{}/{}.cpf'.format(frames_folder, camera_model), 'w') as configfile:
+		with open('{}/{}.cpf'.format(frames_folder, camera_model), 'w', encoding='utf-8-sig') as configfile:
 			cfg.write(configfile)
 
 		print()

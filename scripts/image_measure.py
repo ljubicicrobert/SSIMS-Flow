@@ -111,7 +111,7 @@ def select_profile(event):
 			cfg[section]['ChainStart'] = '{}, {}'.format(points[0][0], points[0][1])
 			cfg[section]['ChainEnd'] = '{}, {}'.format(points[1][0], points[1][1])
 
-			with open(args.cfg, 'w') as configfile:
+			with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 				cfg.write(configfile)
 
 			plt.close()

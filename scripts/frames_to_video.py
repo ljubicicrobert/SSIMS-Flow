@@ -93,7 +93,7 @@ def framesToVideo(output, folder='.', ext='jpg', codec='MJPG', fps=30.00, scale=
 		tag_print('info', 'Writing results to [{}]'.format(saveStr))
 		tag_print('info', 'Codec: {}'.format(codec))
 		tag_print('info', 'Framerate: {:.2f}'.format(fps))
-		tag_print('info', 'Scale: {:.1f}'.format(scale))
+		tag_print('info', 'Scale: {:.2f}'.format(scale))
 		print()
 
 	i = 0

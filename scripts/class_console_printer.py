@@ -94,7 +94,7 @@ class Console_printer:
         self.first_iter = True
         self.lines = []
 
-    def count(self):
+    def count(self) -> int:
         return len(self.lines)
 
     def clear_lines(self, num_lines: int):
@@ -127,10 +127,6 @@ class Console_printer:
     def overwrite(self):
         self.clear_all()
         self.write()
-
-    def single_line(self, line: str):
-        self.add_line(line)
-        self.overwrite()
 
 
 if __name__ == '__main__':

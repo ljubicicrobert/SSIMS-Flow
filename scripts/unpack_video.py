@@ -118,7 +118,7 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		tag_print('info', 'Extraction of frames from [{}] starting from frame {}/{}'.format(video, start, num_frames_total))
 		tag_print('info', 'Extension: {}'.format(ext))
 		tag_print('info', 'Quality: {}'.format(qual))
-		tag_print('info', 'Scale: {:.1f}'.format(scale))
+		tag_print('info', 'Scale: {:.2f}'.format(scale))
 		tag_print('info', 'Step: {}'.format(step))
 		print()
 
@@ -179,7 +179,7 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		extracted_size += path.getsize(save_str) / (1024 * 1024)
 
 		if step != 1:
-			vidcap.set(cv2.CAP_PROP_POS_FRAMES, i)
+			vidcap.set(cv2.CAP_PROP_POS_FRAMES, i + step)
 
 		success, image = vidcap.read()
 
@@ -226,7 +226,7 @@ if __name__ == '__main__':
 		frame_ext = cfg.get(section, 'Extension', fallback='jpg')
 		frame_qual = int(cfg.get(section, 'Quality', fallback='95'))
 		frame_scale = float(cfg.get(section, 'Scale', fallback='1.0'))
-		frame_step = float(cfg.get(section, 'Step', fallback='1'))
+		frame_step = int(cfg.get(section, 'Step', fallback='1'))
 		unpack_start = int(cfg.get(section, 'Start', fallback='0'))
 
 		vidcap = cv2.VideoCapture(video_path)

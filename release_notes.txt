@@ -5,10 +5,11 @@ Major:
 averaging of velocity magnitudes
 - Added automatic recognition of ArUco markers (default 4x4_50 dictionary)
 in the first frame, which can be used for stabilization and orthorectification
-(compatible with OpenCV 4.7)
+(compatible with OpenCV 4.7+)
 - Added option to delete unnecessary data after analyses (Delete data form)
 
 Minor:
+- Added "Load recent projects" option to main form
 - Added option to only print time averaged optical flow data (to save space)
 - Added option to only extract every Nth frame from the video
 - Tweaks to Farneback method parameters to make it less sensitive to low displacements
@@ -16,6 +17,7 @@ Minor:
 where previous folder would be mentioned in the pop-up Message Box
 - Both time averaged (mag_mean) and local maximal magnitudes (mag_max) are now saved
 and can be plotted in the Optical Flow Analyses form
+- Fixed issues with Unicode support in config files
 
 Update is NOT compatible with projects and results of releases 0.2.X.X.
 
