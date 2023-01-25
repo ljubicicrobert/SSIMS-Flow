@@ -27,16 +27,16 @@ class Progress_bar:
     Use .show(iter) to update the bar and print it to console.
     """
     
-    def __init__(self, total: int, prefix='Progress ', length=50, char_done='#', char_remain=' ', suffix_fmt='{:.1f}%'):
+    def __init__(self, total: int, prefix='Progress ', width=80, char_done='#', char_remain=' ', suffix_fmt='{:.1f}%'):
         self.total = total
         self.prefix = prefix
-        self.length = length
         self.char_done = char_done
         self.char_remain = char_remain
         self.suffix_fmt = suffix_fmt
-        self.bar = '[{}]'.format(char_remain * length)
         self.percent = 0
         self.num_digits = floor(log10(total)) + 1
+        self.bar_length = width - len(prefix) - 2*self.num_digits - 8
+        self.bar = '[{}]'.format(char_remain * self.bar_length)
 
     def set_total(self, total):
         self.total = total
@@ -44,8 +44,10 @@ class Progress_bar:
 
     def update_bar(self, iteration: int):
         self.percent = (iteration + 1)/self.total * 100
-        len_done = int(self.percent / 100 * self.length)
-        len_remain = self.length - len_done
+        if self.percent > 100:
+            self.percent = 100
+        len_done = int(self.percent / 100 * self.bar_length)
+        len_remain = self.bar_length - len_done
         self.bar = '{}/{} [\033[32m{}\033[0m\033[31m{}\033[0m]'.format(str(iteration+1).rjust(self.num_digits, ' '),
                                                                        self.total,
                                                                        self.char_done * len_done,

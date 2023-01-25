@@ -72,7 +72,7 @@ def get_camera_parameters(path: str) -> tuple:
 
 
 def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
-				  start=0, start_num=0, end=MAX_FRAMES_DEFAULT, qual=95, scale=None, interp=cv2.INTER_CUBIC,
+				  start=0, start_num=0, end=MAX_FRAMES_DEFAULT, qual=95, scale=None, step=1, interp=cv2.INTER_CUBIC,
 				  camera_matrix=None, dist=None, cp=None, pb=None, verbose=False,) -> bool:
 	"""
 	Extracts all num_frames from a video to separate images. Optionally writes to a specified folder,
@@ -89,6 +89,7 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 	:param end:				End frame MAX_FRAMES_DEFAULT global.
 	:param qual:			Output image quality in range (1-100). Default is 95.
 	:param scale:			Scale parameter for the output images. Default is None, which preserves the original size.
+	:param step:			Step to export every Nth frame. Default is 1, i.e., every frame.
 	:param interp:			Interpolation algorithm for image resizing from cv2 package. Default is cv2.INTER_CUBIC.
 	:param camera_matrix:	Camera matrix. If None, no camera rectification will be performed.
 							Note that parameters [fx, fy, cx, cy] are divided by image size so they are dimensionless here.
@@ -106,7 +107,7 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 
 	vidcap = cv2.VideoCapture(video)
 	num_frames_total = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
-	vidcap.set(1, start)
+	vidcap.set(cv2.CAP_PROP_POS_FRAMES, start)
 	success, image = vidcap.read()
 
 	height, width = image.shape[:2]
@@ -117,21 +118,23 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		tag_print('info', 'Extraction of frames from [{}] starting from frame {}/{}'.format(video, start, num_frames_total))
 		tag_print('info', 'Extension: {}'.format(ext))
 		tag_print('info', 'Quality: {}'.format(qual))
-		tag_print('info', 'Scale: {:.1f}'.format(scale))
+		tag_print('info', 'Scale: {:.2f}'.format(scale))
+		tag_print('info', 'Step: {}'.format(step))
 		print()
 
 	i = start
 	j = start_num
+	extracted_frames = 0
 	success = True
-	size = 0
+	extracted_size = 0
 
 	if not end:
 		end = MAX_FRAMES_DEFAULT
 
-	num_frames_to_extract = end - start - 1
+	frame_range = end - start - 1
 
 	if cp and pb:
-		pb.set_total(num_frames_to_extract)
+		pb.set_total(frame_range)
 
 	num_len = int(log(end-start, 10)) + 1
 	fresh_folder(folder, ext=ext)
@@ -157,9 +160,9 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 
 		if verbose:
 			if cp and pb:
-				cp.single_line(pb.get(i - start))
+				cp.single_line(pb.get(int(i - start)))
 			else:
-				tag_print('info', 'Extracting frame: {}'.format(i))
+				tag_print('info', 'Extracting frame: {}'.format(int(i)))
 
 		if ext.lower() in ['jpg', 'jpeg']:
 			cv2.imwrite(save_str, image,
@@ -173,17 +176,22 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		else:
 			cv2.imwrite(save_str, image)
 
-		size += path.getsize(save_str) / (1024 * 1024)
+		extracted_size += path.getsize(save_str) / (1024 * 1024)
+
+		if step != 1:
+			vidcap.set(cv2.CAP_PROP_POS_FRAMES, i + step)
+
 		success, image = vidcap.read()
 
-		i += 1
-		j += 1
+		i = int(i + step)
+		j = int(j + step)
+		extracted_frames += 1
 
 	if verbose:
 		print()
 		tag_print('end', 'Images written to folder [{}]'.format(folder))
-		tag_print('end', 'Total number of extracted images is {}'.format(i-start))
-		tag_print('end', 'Total size of extracted images is {:.2f} MB'.format(size))
+		tag_print('end', 'Total number of extracted images is {}'.format(extracted_frames))
+		tag_print('end', 'Total size of extracted images is {:.2f} MB'.format(extracted_size))
 
 	vidcap.release()  # Clear video from memory
 
@@ -218,6 +226,7 @@ if __name__ == '__main__':
 		frame_ext = cfg.get(section, 'Extension', fallback='jpg')
 		frame_qual = int(cfg.get(section, 'Quality', fallback='95'))
 		frame_scale = float(cfg.get(section, 'Scale', fallback='1.0'))
+		frame_step = int(cfg.get(section, 'Step', fallback='1'))
 		unpack_start = int(cfg.get(section, 'Start', fallback='0'))
 
 		vidcap = cv2.VideoCapture(video_path)
@@ -238,6 +247,7 @@ if __name__ == '__main__':
 					  ext=			 frame_ext,
 					  qual=			 frame_qual,
 					  scale=		 frame_scale,
+					  step=			 frame_step,
 					  start=		 unpack_start,
 					  end=			 unpack_end,
 					  camera_matrix= camera_matrix,

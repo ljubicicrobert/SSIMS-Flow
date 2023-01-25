@@ -24,6 +24,7 @@ try:
     from class_console_printer import tag_print, unix_path
 
     import matplotlib.pyplot as plt
+    import ctypes
 
 except Exception as ex:
     print()
@@ -100,7 +101,7 @@ if __name__ == '__main__':
     try:
         parser = ArgumentParser()
         parser.add_argument('--cfg', type=str, help='Path to project configuration file')
-        parser.add_argument('--mode', type=int, help='0 = time averaged, 1 = instantaneous', default=0)
+        parser.add_argument('--mode', type=int, help='0 = time averaged, 1 = maximal, 2 = instantaneous', default=0)
         parser.add_argument('--data', type=int, help='Which data to plot, see __types__ for more details')
         args = parser.parse_args()
 
@@ -123,24 +124,31 @@ if __name__ == '__main__':
 
         section = 'Optical flow'
 
-        step = float(cfg[section]['Step'])
+        frames_step = float(cfg['Frames']['Step'])
+        optical_flow_step = float(cfg[section]['Step'])
         scale = float(cfg[section]['Scale'])
         fps = float(cfg[section]['Framerate'])		# frames/sec
-        gsd = float(cfg[section]['GSD'])           	# px/m
+        try:
+            gsd = float(cfg[section]['GSD'])        # px/m
+        except Exception as ex:
+            gsd = float(cfg['Transformation']['GSD'])        # px/m
         pooling = float(cfg[section]['Pooling'])   	# px
         gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
-        v_ratio = fps / gsd / step / scale         	# (frame*m) / (s*px)
+        v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
 
-        mag_list = glob('{}/optical_flow/magnitudes/*.txt'.format(project_folder))
-        dir_list = glob('{}/optical_flow/directions/*.txt'.format(project_folder))
-        num_frames = len(mag_list)
+        average_only = int(cfg[section]['AverageOnly'])   	# px
 
-        if num_frames == 0:
-            print()
-            tag_print('error', 'No optical flow data found in [{}/optical_flow/]'.format(project_folder))
-            input('\nPress ENTER/RETURN to exit...')
-            exit()
+        if average_only == 0:
+            mag_list = glob('{}/optical_flow/magnitudes/*.txt'.format(project_folder))
+            dir_list = glob('{}/optical_flow/directions/*.txt'.format(project_folder))
+            num_frames = len(mag_list)
+
+            if num_frames == 0:
+                print()
+                tag_print('error', 'No optical flow data found in [{}/optical_flow/]'.format(project_folder))
+                input('\nPress ENTER/RETURN to exit...')
+                exit()
 
         fig, ax = plt.subplots()
         plt.subplots_adjust(bottom=0.13)
@@ -159,17 +167,27 @@ if __name__ == '__main__':
                                  fontsize=9,
                                  )
 
-        if mode == 0:
+        if mode == 0:       # Time averaged
             legend_toggle.set_visible(False)
 
-            mags = np.loadtxt('{}/optical_flow/mag_max.txt'.format(project_folder)) * v_ratio
+            mags = np.loadtxt('{}/optical_flow/mag_mean.txt'.format(project_folder)) * v_ratio	# px/frame
             dirs = np.loadtxt('{}/optical_flow/angle_mean.txt'.format(project_folder))
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
             data = [us, vs, mags, dirs]
             img = data[args.data]
-        else:
+        elif mode == 1:     # Maximal
+            legend_toggle.set_visible(False)
+
+            mags = np.loadtxt('{}/optical_flow/mag_max.txt'.format(project_folder)) * v_ratio	# px/frame
+            dirs = np.loadtxt('{}/optical_flow/angle_mean.txt'.format(project_folder))
+            h, w = mags.shape
+
+            us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
+            data = [us, vs, mags, dirs]
+            img = data[args.data]
+        elif mode == 2:     # Instantaneous      
             mags = np.loadtxt(mag_list[0]) * v_ratio
             dirs = np.loadtxt(dir_list[0])
             h, w = mags.shape
@@ -203,7 +221,7 @@ if __name__ == '__main__':
             pass
 
         ax.set_title('{}, frame #0/{}'.format(data_type, num_frames - 1)
-                     if mode == 1
+                     if mode == 2
                      else 'Time averaged values: {}'.format(data_type))
         plt.show()
 

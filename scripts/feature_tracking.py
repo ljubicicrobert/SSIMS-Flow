@@ -20,7 +20,7 @@ try:
 	from __init__ import *
 	from math import log
 	from itertools import product
-	from os import makedirs, remove, path, name
+	from os import makedirs, remove, path
 	from sys import exit
 	from matplotlib.widgets import Slider
 	from class_logger import Logger
@@ -31,9 +31,10 @@ try:
 	from CPP.dll_import import DLL_Loader
 
 	import matplotlib.pyplot as plt
+	import ctypes
 
 	dll_path = path.split(path.realpath(__file__))[0]
-	dll_name = 'CPP/ssim.dll' if name == 'nt' else 'CPP/libssim.so'
+	dll_name = 'CPP/ssim.dll'
 	dll_loader = DLL_Loader(dll_path, dll_name)
 	# float SSIM_Byte(Byte* pDataX, Byte* pDataY, int step, int width, int height, int win_size, int maxVal);
 	fast_ssim = dll_loader.get_function('float', 'SSIM_Byte', ['byte*', 'byte*', 'int', 'int', 'int', 'int', 'int'])
@@ -71,7 +72,7 @@ def to_int(x: float) -> int:
 	return int(round(x))
 
 
-def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hide_sliders=False) -> list:
+def get_gcps_from_image(image_orig: np.ndarray, initial=[], verbose=False, ia=11, sa=21, hide_sliders=False) -> list:
 	"""
 	Extracts [x, y] pixel coordinates from an image using right mouse click.
 	Use middle mouse button or BACKSPACE key to remove the last selected point from the list.
@@ -94,6 +95,7 @@ def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hid
 	sw = sa // 2
 	points = []
 	org = []
+	marker_text = []
 	axcolor = 'lightgoldenrodyellow'
 	valfmt = "%d"
 
@@ -114,40 +116,49 @@ def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hid
 
 		return s[:-1]
 
+	def add_marker(x, y):
+		p = [to_int(x*1), to_int(y*1)]
+		points.append(p)
+		marker_text.append(ax.text(x+2, y-2, s=len(points), color='r'))
+
+		sec_s = image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1]
+		sec_i = image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1]
+
+		org.append(image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1].copy())
+
+		sec_i = sec_i ** ia_c
+		image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1] = sec_i
+
+		sec_s = sec_s ** sa_c
+		image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = sec_s
+
+		image[p[1], p[0]] = 0
+
+		points_list.set_text(xy2str(points))
+		img_ref.set_data(image)
+
+	def remove_last_marker():
+		p = points.pop()
+		o = org.pop()
+		del ax.texts[-1]
+		marker_text.pop()
+
+		image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = o
+
+		points_list.set_text(xy2str(points))
+		img_ref.set_data(image)
+
 	def getPixelValue(event):
 		global p_list
 
 		if event.button == 2 and len(points) > 0:
-			p = points.pop()
-			o = org.pop()
-
-			image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = o
-
-			points_list.set_text(xy2str(points))
-			img_ref.set_data(image)
+			remove_last_marker()
 			update_ia(sl_ax_ia_size.val)
 			update_sa(sl_ax_sa_size.val)
 			plt.draw()
 
 		if event.button == 3:
-			p = [to_int(event.xdata), to_int(event.ydata)]
-			points.append(p)
-
-			sec_s = image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1]
-			sec_i = image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1]
-
-			org.append(image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1].copy())
-
-			sec_i = sec_i ** ia_c
-			image[p[1] - iw: p[1] + iw + 1, p[0] - iw: p[0] + iw + 1] = sec_i
-
-			sec_s = sec_s ** sa_c
-			image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = sec_s
-
-			image[p[1], p[0]] = 0
-
-			points_list.set_text(xy2str(points))
-			img_ref.set_data(image)
+			add_marker(event.xdata, event.ydata)
 			update_ia(sl_ax_ia_size.val)
 			update_sa(sl_ax_sa_size.val)
 			plt.draw()
@@ -321,6 +332,10 @@ def get_gcps_from_image(image_orig: np.ndarray, verbose=False, ia=11, sa=21, hid
 				  fontsize=9,
 				  )
 
+	if initial != []:
+		for i in range(len(initial)):
+			add_marker(initial[i][0], initial[i][1])
+
 	try:
 		mng = plt.get_current_fig_manager()
 		mng.window.state('zoomed')
@@ -365,6 +380,9 @@ def find_gcp(search_area: np.ndarray, kernel: np.ndarray) -> tuple:
 
 	x_pix, y_pix = np.unravel_index(np.argmax(ssim_map), ssim_map.shape)
 
+	# To avoid negative or zero numbers in log function, SSIM goes from -1 to 1
+	ssim_map += 2
+
 	# Gaussian 2x3 fit
 	dx = (log(ssim_map[x_pix-1, y_pix]) - log(ssim_map[x_pix+1, y_pix])) / (2*(log(ssim_map[x_pix-1, y_pix]) + log(ssim_map[x_pix+1, y_pix]) - 2*log(ssim_map[x_pix, y_pix])))
 	dy = (log(ssim_map[x_pix, y_pix-1]) - log(ssim_map[x_pix, y_pix+1])) / (2*(log(ssim_map[x_pix, y_pix-1]) + log(ssim_map[x_pix, y_pix+1]) - 2*log(ssim_map[x_pix, y_pix])))
@@ -381,7 +399,7 @@ def fresh_folder(folder_path, ext='*', exclude=list()):
 	else:
 		files = glob('{}/*.{}'.format(folder_path, ext))
 		for f in files:
-			if f not in exclude:
+			if path.basename(f) not in exclude:
 				remove(f)
 
 
@@ -392,7 +410,6 @@ def print_markers(marker_list):
 		s += '{}=({:.2f}, {:.2f}), '.format(i, x, y)
 	
 	return s[:-2]
-
 
 
 def print_and_log(string, printer_obj: Console_printer, logger_obj: Logger):
@@ -467,9 +484,32 @@ if __name__ == '__main__':
 
 		img_path = raw_frames_list[0]
 		img = cv2.imread(img_path)
+		img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 		img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-		markers = get_gcps_from_image(img_rgb, ia=k_size, sa=search_size, verbose=False)
+		initial_gcps = []
+
+		dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+		parameters =  cv2.aruco.DetectorParameters()
+		detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+		corners, ids, rejectedImgPoints = detector.detectMarkers(img_gray)
+
+		try:
+			if len(ids) > 0:
+				ids_sorted = ids[:, 0].argsort()
+				corners = [corners[x] for x in ids_sorted]
+				MessageBox = ctypes.windll.user32.MessageBoxW
+				response = MessageBox(None, 'A total of {} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?'.format(ids.shape[0]),
+									  'ArUco markers detected', 4)
+
+				if response == 6:
+					for i in range(len(ids)):
+						c = corners[i][0]
+						initial_gcps.append([c[:, 0].mean(), c[:, 1].mean()])
+		except Exception as ex:
+			pass
+
+		markers = get_gcps_from_image(img_rgb, initial=initial_gcps, ia=k_size, sa=search_size, verbose=False)
 
 		if len(markers) == 1:
 			tag_print('error', 'Number of GCPs must be at least 2!')
@@ -481,7 +521,7 @@ if __name__ == '__main__':
 		cfg[section]['InterrogationAreaSize'] = str(k_size)
 		cfg['Transformation']['FeatureMask'] = '1'*len(markers)
 		
-		with open(args.cfg, 'w') as configfile:
+		with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 			cfg.write(configfile)
 
 		markers_mask = [1] * len(markers)
@@ -519,6 +559,7 @@ if __name__ == '__main__':
 			timer = Timer(total_iter=num_frames)
 
 			ssim_scores = np.zeros([num_frames, len(markers)])
+			ssim_score_averages = np.zeros(len(markers))
 
 			for n in range(num_frames):
 				try:
@@ -539,9 +580,10 @@ if __name__ == '__main__':
 							rel_center, ssim_max = find_gcp(search_space, kernels[j])
 
 							if expand_ssim_search and ssim_max < expand_ssim_thr:
-								print_and_log(
-									tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)), printer, logger
-								)
+								# print_and_log(
+								# 	tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)), printer, logger
+								# )
+								logger.log(tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)))
 
 								is_expanded_search = True
 								search_size = exp_search_size
@@ -567,17 +609,19 @@ if __name__ == '__main__':
 							try:
 								cv2.getRectSubPix(img_ch, (search_size, search_size), (real_x, real_y))
 							except SystemError:
-								print_and_log(
-									tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
-								)
+								# print_and_log(
+								# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
+								# )
+								logger.log(tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)))
 
 								markers[j] = [0, 0]
 								markers_mask[j] = 0
 
 						else:
-							print_and_log(
-								tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
-							)
+							# print_and_log(
+							# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
+							# )
+							logger.log(tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)))
 
 							markers[j] = [0, 0]
 							markers_mask[j] = 0
@@ -589,6 +633,7 @@ if __name__ == '__main__':
 
 				np.savetxt('{}/gcps_csv/{}.txt'.format(results_folder, str(n).rjust(numbering_len, '0')), markers, fmt='%.3f', delimiter=' ')
 				np.savetxt('{}/ssim_scores.txt'.format(results_folder), ssim_scores, fmt='%.3f', delimiter=' ')
+				np.savetxt('{}/ssim_score_averages.txt'.format(results_folder), np.average(ssim_scores, axis=0), fmt='%.3f', delimiter=' ')
 
 				# print_and_log(
 				# 	tag_string('info', 'Markers: {}'.format(print_markers(markers))), printer, logger

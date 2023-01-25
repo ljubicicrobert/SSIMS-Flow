@@ -54,7 +54,7 @@
                     "PName": "Sigma",
                     "PType": "int",
                     "PUpper": 153,
-                    "PStart": 51,
+                    "PStart": 21,
                     "PLower": 3,
                     "PStep": 2
                 }

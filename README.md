@@ -22,19 +22,20 @@ The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [offici
 
 The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
 
-So far, the package was tested using **Python** versions **3.6.8, 3.7.2, 3.7.6, 3.8.5** and **3.9.10**. You can download latest Python from the [official site](https://www.python.org/downloads/)
+So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.10, 3.10.7]**. You can download latest Python from the [official site](https://www.python.org/downloads/)
 
 Python library requirements (other than the standard library):
 ```python
 numpy >= 1.19                       # pip install numpy
-opencv-python >= 4.0                # pip install opencv-python
+opencv-python >= 4.7                # pip install opencv-python
+opencv-contrib-python >= 4.7        # pip install opencv-contrib-python
 matplotlib >= 3.0                   # pip install matplotlib
 mplcursors >= 0.3                   # pip install mplcursors
 scipy >= 1.0                        # pip install scipy
 skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 ```
 
->**Note #1**: If you are using distributions of Python such as Anaconda or Winpython, you will likely have all the necessary libraries with the possible exception of `opencv-python`.
+>**Note #1**: If you are using distributions of Python such as Anaconda or Winpython, you will likely have all the necessary libraries with the possible exception of `opencv-python` and `opencv-contrib-python`.
 
 >**Note #2**: The tool might also work fine with `opencv-python` version 3.6, but this is yet to be tested.
 
@@ -43,7 +44,7 @@ skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 >pip install matplotlib==3.2.1
 >```
 
-> Symantec Norton appears to flag the SSIMS_Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
+> Symantec Norton appears to flag the SSIMS-Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
 
 
 ## New versions
@@ -74,7 +75,7 @@ All of the project metadata will be contained in the file `%PROJECT_FOLDER%\proj
 
 Loading an existing project requires that you select an appropriate `project.ssims` file, which will load all the project information to the GUI.
 
-> **Note #5**: Please note that some sections of the GUI will be unavailable until you create a new project or load an existing one.
+> **Note #5**: Some sections of the GUI will be unavailable until you create a new project or load an existing one.
 
 
 ### Project status
@@ -95,7 +96,7 @@ Completed project stages, which have available results, will be indicated by the
 
 <img align="right" width="500" src="screenshots/unpack_video.png">
 
-The workflow of the tool requires that the video is unpacked into individual frames. The source video can be selected in the **Unpack video** panel, after which the video metadata will be shown below. You can specify the resulting frames' file extension, image quality parameter (0-100), and a scaling factor. Furthermore, you can choose to only unpack a section of the original video, defined by the starting and end time in the video.
+The workflow of the tool requires that the video is unpacked into individual frames. The source video can be selected in the **Unpack video** panel, after which the video metadata will be shown below. You can specify the resulting frames' file extension, image quality parameter (0-100), scaling factor, and frame stepping (to extract every Nth frame). Furthermore, you can choose to only unpack a section of the original video, defined by the starting and end time in the video.
 
 The resulting frames will be unpacked to folder `%PROJECT_FOLDER%\frames`.
 
@@ -132,6 +133,8 @@ Despite the modern UAVs having sophisticated in-built camera/video stabilization
 3. Image transformation.
 
 Clicking the **Track features** button in the bottom-left corner of the **Stabilize/Orthorectify** panel will open a new window to allow you to manually select static features which will be tracked in order to estimate the direction and magnitude of camera motion. This information will later be used to annul such motion and to provide a constant coordinate system. Selected static features should be motionless and (optimally) present throughout the entire video.
+
+If the first frame contains **ArUco markers** (from the default 4x4_50 dictionary), they will be automatically detected. A prompt will ask you if you want them to be preselected as features to be tracked. Features will be sorted in order of the detected ArUco markers, starting from 1.
 
 Use the RIGHT mouse button to select the static feature. Once a feature is selected, a regions representing interrogation area (IA) and search area (SA) will be shown around it.
 
@@ -185,7 +188,7 @@ The tool also offers a simple orthorectification to be performed by estimating t
 
 By clicking **Apply** the GCP list will be saved and number of selected GCPs will be shown in the button label. IF orthorectification is configured, after clicking the **Image transformation** button you will be prompted to select in-image positions of these GCPs, which **CAN BE DIFFERENT** from those features tracked for the stabilization purposes.
 
-> **Note #10**: The number of GCPs defined in the table and those selected in the image after clicking **Image transformation** button MUST BE THE SAME!
+> **Note #10**: The number of GCPs defined in the table and those selected in the image after clicking **Image transformation** button MUST BE THE SAME! ArUco markers will also be detected in the first frame, and a prompt will appear to ask you if you want them preselected as GCPs.
 
 Clicking **Cancel** will turn the orthorectification step off for the project workflow, and only image stabilization will then be performed.
 
@@ -224,7 +227,7 @@ However, keeping information about per-pixel motion in high-resolution images re
 3. The idea further is to reduce the size of the resulting matrix by aggregating the results from PxP sized blocks, where P is the **pooling block size** in pixels. We can assume that the tracer particle seeding is sparse (which is often true) which means that only a handful of pixels in each block will be likely to represent actual tracer motion, while the rest of the pixels will have magnitudes close to zero. A fair strategy for isolating valid pixels and their magnitudes is to calculate the mean magnitude of the block, select pixels with magnitudes greater than said mean, and then adopt the mean of those selected pixels as the representative magnitude of that pooling block. The same procedure is performed for all blocks in the image.
 4. The resulting matrix will have P*P times fewer pixels, whilst still adequately representing the flow field.
 5. Angles are pooled in a similar manner, but just using the mean of the block values.
-6. While steps 3-5 cover the issue of spatial aggregation, temporal aggregation is performed by selecting the maximal pooled magnitude of the pixels obtained using the provided frame sequence. In order to reduce the chances of accidental overestimation of time-aggregated magnitudes, the parameters of the Farnebäck optical flow method have been chosen in such way to sacrifice a bit of computational speed for additional robustness.
+6. Temporal aggregation is performed in a similar manner, by applying thresholded mean over several iterations.
 
 
 ### Post-OF analyses
@@ -235,7 +238,7 @@ Once the optical flow analyses have been completed and the surface velocity fiel
 
 > KEEP IN MIND that if you choose the profile from an image, you should choose it from a frame of the same folder which was used for optical flow analysis. In certain cases the image enhancement step will degrade visual information which can be used to identify the channel cross-section. If this is the case, you should use the frames from folder which was used to obtain enhanced images (e.g., orthorectified or stabilized frames).
 
-Once the profile (cross-section) has been selected, click the **Generate profile data** to create an analysis of the time averaged surface velocities in that profile. You can control the interpolation of values from 2D optical flow data onto 1D profile data by defining a number of interpolation points and the interpolation order used for spline interpolation.
+Once the profile (cross-section) has been selected, click the **Generate profile data** to create an analysis of the time averaged surface velocities in that profile. You can control the interpolation of values from 2D optical flow data onto 1D profile data by defining a number of interpolation points.
 
 Graphical representation of the data can be obtained by selecting columns using checkboxes just below the column headers. Velocity data will be shown on the primary Y axis and direction/angle data on the secondary Y axis.
 
@@ -247,6 +250,11 @@ Finally, in order to obtain the flow estimation, you need to enter the depth pro
 <img align="right" width="440" src="screenshots/create_video.png">
 
 Videos can be created using this tool regardless of whether the project has been set up or loaded. In the **Create video** panel, frames folder can be either selected manually, or, if the project results are available, from stabilized, orthorectified, or enhanced images.
+
+
+### Delete data
+
+User can choose to delete unnecessary intemediary data after project completion by selecting appropriate checkboxes. Total number of files and size of a specific group of data will be shown on the righthand side of the form.
 
 
 ## Future features

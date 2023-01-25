@@ -1,3 +1,166 @@
+SSIMS-Flow v0.3.0.0
+
+Major:
+- Applied pooling to temporal axis, which greatly improves the accuracy of time
+averaging of velocity magnitudes
+- Added automatic recognition of ArUco markers (default 4x4_50 dictionary)
+in the first frame, which can be used for stabilization and orthorectification
+(compatible with OpenCV 4.7+)
+- Added option to delete unnecessary data after analyses (Delete data form)
+
+Minor:
+- Added "Load recent projects" option to main form
+- Added option to only print time averaged optical flow data (to save space)
+- Added option to only extract every Nth frame from the video
+- Tweaks to Farneback method parameters to make it less sensitive to low displacements
+- Fixed a UI bug when creating a new project in an existing folder non-empty folder
+where previous folder would be mentioned in the pop-up Message Box
+- Both time averaged (mag_mean) and local maximal magnitudes (mag_max) are now saved
+and can be plotted in the Optical Flow Analyses form
+- Fixed issues with Unicode support in config files
+
+Update is NOT compatible with projects and results of releases 0.2.X.X.
+
+===============================================================================
+
+SSIMS-Flow v0.2.1.3
+
+Minor:
+- Fixed a type mismatch bug when using Background removal filter
+
+===============================================================================
+
+SSIMS-Flow v0.2.1.2
+
+Minor:
+- Fixed Enhancement form not refreshing filters after a new project is loaded
+
+===============================================================================
+
+SSIMS-Flow v0.2.1.1
+
+Minor:
+- Fixed a bug where Measure option would not work when Orthorectification table is empty
+
+===============================================================================
+
+SSIMS-Flow v0.2.1.0
+
+Major:
+- Added option to export Optical Flow data to XSLX file
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.6
+
+Minor:
+- [depth_profile.txt] will not get deleted now on repeated optical flow
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.5
+
+Minor:
+- Minor GUI bugfixes in Create Video panel
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.4
+
+Minor:
+- Suppressed annoying RuntimeWarning for np.mean()
+- Now catching strange ValueError when interpolating vector angles
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.3
+
+Minor:
+- Fixed a bug where enhancement was not detected on project load
+- Fixed median filter
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.2
+
+Minor:
+- Fixed a bug where enhancement and optical flow are not available if
+stabilization was not performed
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.1
+
+Minor:
+- Creating a new project will not delete the videos with extensions .mp4, .avi,
+.mov, .mkv, .webm, and .wmv (case insensitive) from the project folder. It is,
+however, not recommended to keep the video in the project folder.
+
+===============================================================================
+
+SSIMS-Flow v0.2.0.0
+
+Major:
+- Fixed a bug where parameters do not reset properly on Create new project
+- Fixed slow opening of Select features form
+- Fixed obscure MathDomain error during subpixel estimation
+- Fixed Tracking and Transformation parameters saving
+- Added NULL exception when cloud video meta being read (OneDrive)
+- Fixed number of features not updating in Select features after retracking
+- Fixed wrong framerate detected in Create video form
+
+NOTE: Projects created using earlier versions of the tool might not work
+correctly with this version.
+
+===============================================================================
+
+SSIMS-Flow v0.1.1.4
+
+Minor:
+- Fix occurrence of NaN in flow direction
+
+===============================================================================
+
+SSIMS-Flow v0.1.1.3
+
+Minor:
+- Fix missing C++ function for Optical flow analysis
+
+===============================================================================
+
+SSIMS-Flow v0.1.1.2
+
+Minor:
+- GUI tweaks
+- Fixed a bug in Image enhancement where filters.txt could not be found
+
+===============================================================================
+
+SSIMS-Flow v0.1.1.1
+
+Minor:
+- GUI tweaks
+
+===============================================================================
+
+SSIMS-Flow v0.1.1.0
+
+Major:
+- Added splash screen
+
+Minor:
+- GUI now remembers selected radio buttons in Enhance and Optical flow panels
+
+===============================================================================
+
+SSIMS-Flow v0.1.0.5
+
+Minor:
+- Fix wrong first image pair for optical flow when step != 1
+- Prevent progress bar overflow
+
+===============================================================================
+
 SSIMS-Flow v0.1.0.4
 
 Major:
