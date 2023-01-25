@@ -1,5 +1,8 @@
 #pragma once
 
-#include "common.h"
+#define EXTERN_C extern "C"
+#define DLL_API EXTERN_C __declspec(dllexport)
+
+typedef unsigned char byte;
 
 DLL_API void intensity_capping(byte* array, size_t array_size, double n_std);
