@@ -124,6 +124,10 @@ class Console_printer:
         stdout.flush()
         self.lines = []
 
+    def single_line(self, line: str):
+        self.add_line(line)
+        self.overwrite()
+
     def overwrite(self):
         self.clear_all()
         self.write()
