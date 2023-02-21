@@ -168,13 +168,7 @@ def get_gcps_from_image(image_orig: np.ndarray, initial=[], verbose=False, ia=11
 		global show_legend
 
 		if event.key == 'd' and len(points) > 0:
-			p = points.pop()
-			o = org.pop()
-
-			image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = o
-
-			points_list.set_text(xy2str(points))
-			img_ref.set_data(image)
+			remove_last_marker()
 			update_ia(sl_ax_ia_size.val)
 			update_sa(sl_ax_sa_size.val)
 			plt.draw()

@@ -134,7 +134,7 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 	frame_range = end - start - 1
 
 	if cp and pb:
-		pb.set_total(frame_range)
+		pb.set_total(frame_range + 1)
 
 	num_len = int(log(end-start, 10)) + 1
 	fresh_folder(folder, ext=ext)

@@ -149,14 +149,16 @@ def highpass(img, sigma=51):
 	
 	
 def normalize_image(img, lower=None, upper=None):
+	img_gray = convert_img(img, colorspace, 'grayscale')
+	
 	if lower is None:
-		lower = np.min(img)
+		lower = 0
 	if upper is None:
-		upper = np.max(img)
+		upper = 255
 
-	img_c = ((img - lower) / (upper - lower) * 255).astype('uint8')
+	img_norm = ((img_gray - lower) / (upper - lower) * 255).astype('uint8')
 
-	return img_c
+	return cv2.merge([img_norm, img_norm, img_norm])
 
 
 def intensity_capping(img, n_std=0.0, mode=1):

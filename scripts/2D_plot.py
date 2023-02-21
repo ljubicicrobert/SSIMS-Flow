@@ -39,6 +39,7 @@ __types__ = [
     'V(x,y)',
     'Magnitudes',
     'Flow direction',
+    'Threshold ratio',
 ]
 
 __units__ = [
@@ -46,6 +47,7 @@ __units__ = [
     '[m/s]',
     '[m/s]',
     '[deg]',
+    '[-]',
 ]
 
 
@@ -172,10 +174,11 @@ if __name__ == '__main__':
 
             mags = np.loadtxt('{}/optical_flow/mag_mean.txt'.format(project_folder)) * v_ratio	# px/frame
             dirs = np.loadtxt('{}/optical_flow/angle_mean.txt'.format(project_folder))
+            thrs = np.loadtxt('{}/optical_flow/threshold_ratios.txt'.format(project_folder))
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data = [us, vs, mags, dirs]
+            data = [us, vs, mags, dirs, thrs]
             img = data[args.data]
         elif mode == 1:     # Maximal
             legend_toggle.set_visible(False)

@@ -1,3 +1,12 @@
+SSIMS-Flow v0.3.0.1
+
+Minor:
+- Add Normalize image filter
+- Fix marker numbers not being deleted when using keyboard (D key)
+- Add Threshold ratio 2D plot button
+
+===============================================================================
+
 SSIMS-Flow v0.3.0.0
 
 Major:
