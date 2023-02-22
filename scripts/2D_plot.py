@@ -24,7 +24,6 @@ try:
     from class_console_printer import tag_print, unix_path
 
     import matplotlib.pyplot as plt
-    import ctypes
 
 except Exception as ex:
     print()

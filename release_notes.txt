@@ -1,3 +1,17 @@
+SSIMS-Flow v0.3.1.0
+
+Major:
+- GUI is now locale invariant, and will force the use of decimal dot (.)
+regardless of Windows Regional Settings. When editing [project.ssims] file
+manually, users should ONLY USE decimal dot (.) as a separator.
+
+Minor:
+- Replaced numpy.ctypeslib.load_library() with ctypes.CDLL() due to changes in
+Python 3.8+ versions which cause a bug where a C++ libraries could not be
+properly loaded. If the problem persists, please let me know.
+
+===============================================================================
+
 SSIMS-Flow v0.3.0.1
 
 Minor:

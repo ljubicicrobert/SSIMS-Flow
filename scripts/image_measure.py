@@ -47,7 +47,7 @@ def xy2str(points_list: list, distance: float) -> str:
 	if distance > 0:
 		s += 'Distance = {:.1f} px'.format(distance)
 	if get_profile:
-		s += 'Press ENTER/RETURN to accept profile'
+		s += '\nPress ENTER/RETURN to accept profile'
 
 	return s
 

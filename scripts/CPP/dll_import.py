@@ -35,8 +35,8 @@ class DLL_Loader:
     def __init__(self, path, name):
         self.dll_path = path
         self.dll_name = name
-        self.dll = np.ctypeslib.load_library(name, path)
-        
+        self.dll = ctypes.CDLL(r'{}\\{}'.format(path, name), winmode=0)
+
     def get_function(self, ret_type, func_name, arg_types):
         func = self.dll.__getattr__(func_name)
         func.restype = type_dict[ret_type]
