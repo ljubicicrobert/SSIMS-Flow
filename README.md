@@ -23,11 +23,12 @@ The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [offici
 **IMPORTANT**: Some parts of the code are written in C++ and available through DLLs. These require both:
 1. [Microsoft Visual C++ Redistributable packages for Visual Studio 2013](https://aka.ms/highdpimfc2013x64enu) for MSVCR120.dll,
 2. [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) for MSVCR140.dll.
+
 If you get a message that DLL import has failed, please install both of these packages.
 
 The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
 
-So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.10, 3.10.7]**. You can download latest Python from the [official site](https://www.python.org/downloads/)
+So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.5, 3.9.10, 3.10.7, 3.10.10]**. You can download latest Python from the [official site](https://www.python.org/downloads/). **Python 3.11 appears to lack scikit-image package, and will not work.**
 
 Python library requirements (other than the standard library):
 ```python
