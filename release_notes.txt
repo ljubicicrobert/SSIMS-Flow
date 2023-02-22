@@ -1,3 +1,12 @@
+SSIMS-Flow v0.3.1.1
+
+Minor:
+- Recompiled ssim.dll with MSVCR140.dll, now same as pooling.dll and filtering.dll
+to remove dependency on MS Visual C++ Redist. 2013. Now only Redist. 2015-2022
+(multi-install) is required (thanks Khim for the help and patience)
+
+===============================================================================
+
 SSIMS-Flow v0.3.1.0
 
 Major:

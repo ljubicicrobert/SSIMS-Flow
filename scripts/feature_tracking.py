@@ -33,8 +33,8 @@ try:
 	import matplotlib.pyplot as plt
 	import ctypes
 
-	dll_path = path.split(path.realpath(__file__))[0]
-	dll_name = 'CPP/ssim.dll'
+	dll_path = path.split(path.realpath(__file__))[0] + '\\CPP'
+	dll_name = 'ssim.dll'
 	dll_loader = DLL_Loader(dll_path, dll_name)
 	# float SSIM_Byte(Byte* pDataX, Byte* pDataY, int step, int width, int height, int win_size, int maxVal);
 	fast_ssim = dll_loader.get_function('float', 'SSIM_Byte', ['byte*', 'byte*', 'int', 'int', 'int', 'int', 'int'])
@@ -505,7 +505,7 @@ if __name__ == '__main__':
 
 		markers = get_gcps_from_image(img_rgb, initial=initial_gcps, ia=k_size, sa=search_size, verbose=False)
 
-		if len(markers) == 1:
+		if len(markers) < 2:
 			tag_print('error', 'Number of GCPs must be at least 2!')
 			input('\nPress ENTER/RETURN key to exit...')
 			exit()

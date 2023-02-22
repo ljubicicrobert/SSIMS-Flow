@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 
 __package_name__ = 'SSIMS-Flow: UAV image velocimetry workbench'
 __description__ = 'Workbench for obtaining open-channel flow from UAV videos using dense optical flow'
-__version__ = '0.3.1.0'
+__version__ = '0.3.1.1'
 __status__ = 'beta'
 __date_deployed__ = '2022-02-22'
 
