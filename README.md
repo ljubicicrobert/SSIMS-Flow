@@ -20,9 +20,11 @@ The package consists of a backend (written in Python 3 and C++) and frontend GUI
 
 The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
 
+**IMPORTANT**: Some parts of the code are written in C++ and are available through DLLs. These require [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) as they depend on MSVCR140.dll. If you get a message that DLL import has failed, please install the required MS Redistributable.
+
 The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
 
-So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.10, 3.10.7]**. You can download latest Python from the [official site](https://www.python.org/downloads/)
+So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.5, 3.9.10, 3.10.7, 3.10.10]**. You can download latest Python from the [official site](https://www.python.org/downloads/). **Python 3.11 appears to lack scikit-image package, and will not work.**
 
 Python library requirements (other than the standard library):
 ```python
