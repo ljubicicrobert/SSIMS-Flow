@@ -91,6 +91,10 @@ def is_grayscale(img: np.ndarray) -> bool:
 	Checks whether all three image channels are identical,
 	i.e., if image is grayscale.
 	"""
+	try:
+		img[:, :, 0]
+	except IndexError:
+		return True
 	
 	if (img[:, :, 0] == img[:, :, 1]).all() and (img[:, :, 0] == img[:, :, 2]).all():
 		return True
@@ -195,10 +199,10 @@ def gaussian_lookup(img, sigma=51):
 	return cv2.LUT(img, cdf_norm)
 	
 	
-def thresholding(img, c1u=255, c1l=0, c2u=255, c2l=0, c3u=255, c3l=0):
-	mask = cv2.inRange(img, (c1l, c2l, c3l), (c1u, c2u, c3u))
+def thresholding(img, c1l=0, c1u=255, c2l=0, c2u=255, c3l=0, c3u=255):
+	mask = cv2.inRange(img, (int(c1l), int(c2l), int(c3l)), (int(c1u), int(c2u), int(c3u)))
 
-	return mask
+	return cv2.merge([mask, mask, mask])
 
 
 def denoise(img, ksize=3):
