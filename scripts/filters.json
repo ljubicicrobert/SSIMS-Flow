@@ -31,6 +31,37 @@
             "Parameters": []
         },
         {
+            "Name": "Rearrange channels",
+            "Func": "rearrange_channels",
+            "Description": "Rearranges channels of a three-channel image in the last selected colorspace.",
+            "Parameters": [
+                {
+                    "PName": "Channel 1",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 1,
+                    "PLower": 1,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 2",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 2,
+                    "PLower": 1,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 3",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 3,
+                    "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+        {
             "Name": "Single image channel",
             "Func": "select_channel",
             "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b).",

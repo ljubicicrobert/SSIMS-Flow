@@ -128,6 +128,10 @@ def to_hsv(img):
 
 def to_lab(img):
 	return convert_img(img, colorspace, 'lab')
+
+
+def rearrange_channels(img, c1=1, c2=2, c3=3):
+	return cv2.merge([img[:, :, int(c1 - 1)], img[:, :, int(c2 - 1)], img[:, :, int(c3 - 1)]])
 	
 
 def select_channel(img, channel=1):

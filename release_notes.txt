@@ -1,3 +1,10 @@
+SSIMS-Flow v0.3.2.0
+
+Minor:
+- Added Rearrange channels filter
+
+===============================================================================
+
 SSIMS-Flow v0.3.1.2
 
 Minor:
