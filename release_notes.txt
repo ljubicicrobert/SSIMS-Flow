@@ -1,3 +1,11 @@
+SSIMS-Flow v0.3.2.1
+
+Minor:
+- Fixed bugs with global histogram equalization and CLAHE for multi-channel
+inputs
+
+===============================================================================
+
 SSIMS-Flow v0.3.2.0
 
 Minor:

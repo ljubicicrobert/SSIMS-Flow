@@ -68,14 +68,14 @@ def convert_img(img: str, from_cs: str, to_cs: str) -> np.ndarray:
 	to_cs_index = colorspaces_list.index(to_cs)
 	conv_codes = color_conv_codes[from_cs_index][to_cs_index]
 
+	if to_cs == from_cs:
+		return img
+
 	if from_cs == 'grayscale':
 		try:
 			img = img[:, :, 0]
 		except IndexError:
 			pass
-
-	if to_cs == from_cs:
-		return img
 
 	if len(conv_codes) == 0:
 		return img
@@ -157,7 +157,7 @@ def highpass(img, sigma=51):
 	
 	
 def normalize_image(img, lower=None, upper=None):
-	img_gray = convert_img(img, colorspace, 'grayscale')
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	
 	if lower is None:
 		lower = 0
@@ -170,7 +170,7 @@ def normalize_image(img, lower=None, upper=None):
 
 
 def intensity_capping(img, n_std=0.0, mode=1):
-	img_gray = convert_img(img, colorspace, 'grayscale')
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	img_gray = ~img_gray if mode == 1 else img_gray
 
 	img_ravel = img_gray.ravel()
@@ -238,14 +238,14 @@ def remove_background(img, num_frames_background=10):
 
 
 def histeq(img):
-	img_gray = convert_img(img, colorspace, 'grayscale')
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	eq = cv2.equalizeHist(img_gray)
 	
 	return convert_img(eq, 'grayscale', colorspace)
 
 
 def clahe(img, clip=2.0, tile=8):
-	img_gray = convert_img(img, colorspace, 'grayscale')
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	clahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=(int(tile), int(tile)))
 	img_clahe = clahe.apply(img_gray)
 	
@@ -321,7 +321,11 @@ def update_frame(val):
 	if is_original:
 		img_shown.set_data(original)
 	else:
-		img_shown.set_data(img[:, :, 0] if is_grayscale(img) else img)
+		try:
+			img[:, :, 0]
+			img_shown.set_data(img[:, :, 0] if is_grayscale(img) else img)
+		except IndexError:
+			img_shown.set_data(img)
 
 	plt.draw()
 	return
@@ -422,7 +426,10 @@ if __name__ == '__main__':
 			ax.axis('off')
 
 			if is_grayscale(img):
-				img_shown = ax.imshow(img[:, :, 0], cmap=colormap)
+				try:
+					img_shown = ax.imshow(img[:, :, 0], cmap=colormap)
+				except IndexError:
+					img_shown = ax.imshow(img, cmap=colormap)
 			else:
 				img_shown = ax.imshow(img)
 
