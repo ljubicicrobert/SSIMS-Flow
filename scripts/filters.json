@@ -4,36 +4,47 @@
             "Name": "Negative",
             "Func": "negative",
             "Description": "Creates a negative of an 8bit image.",
+            "ColorspaceAfter": "",
             "Parameters": []
         },
+
         {
             "Name": "Convert to Grayscale",
             "Func": "to_grayscale",
             "Description": "Converts a color image to a single-channel 8bit grayscale [0..255].",
+            "ColorspaceAfter": "Grayscale",
             "Parameters": []
         },
+
         {
             "Name": "Convert to RGB",
             "Func": "to_rgb",
             "Description": "Converts to three-channel 8bit RGB (red-green-blue) colorspace.",
+            "ColorspaceAfter": "RGB",
             "Parameters": []
         },
+
         {
             "Name": "Convert to HSV",
             "Func": "to_hsv",
             "Description": "Converts to three-channel 8bit HSV (hue-saturation-value) colorspace.",
+            "ColorspaceAfter": "HSV",
             "Parameters": []
         },
+
         {
             "Name": "Convert to L*a*b*",
             "Func": "to_lab",
             "Description": "Converts to three-channel 8bit L*a*b* (CIELab) colorspace.",
+            "ColorspaceAfter": "L*a*b*",
             "Parameters": []
         },
+
         {
             "Name": "Rearrange channels",
             "Func": "rearrange_channels",
             "Description": "Rearranges channels of a three-channel image in the last selected colorspace.",
+            "ColorspaceAfter": "",
             "Parameters": [
                 {
                     "PName": "Channel 1",
@@ -61,10 +72,12 @@
                 }
             ]
         },
+
         {
             "Name": "Single image channel",
             "Func": "select_channel",
             "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b).",
+            "ColorspaceAfter": "Grayscale",
             "Parameters": [
                 {
                     "PName": "Channel number",
@@ -76,101 +89,12 @@
                 }
             ]
         },
-        {
-            "Name": "Highpass",
-            "Func": "highpass",
-            "Description": "Accentuates high frequency image content such as tracer particles.",
-            "Parameters": [
-                {
-                    "PName": "Sigma",
-                    "PType": "int",
-                    "PUpper": 153,
-                    "PStart": 21,
-                    "PLower": 3,
-                    "PStep": 2
-                }
-            ]
-        },
-        {
-            "Name": "Intensity capping",
-            "Func": "intensity_capping",
-            "Description": "Limits pixel values using global mean and variance. If tracer particles are darker than the water surface, apply negative filter before this one.",
-            "Parameters": [
-                {
-                    "PName": "Num. standard deviations (n)",
-                    "PType": "float",
-                    "PUpper": 5.0,
-                    "PStart": 0.0,
-                    "PLower": -5.0,
-                    "PStep": 0.1
-                },
-                {
-                    "PName": "Mode (1 = LoD, 2 = DoL)",
-                    "PType": "int",
-                    "PUpper": 2,
-                    "PStart": 1,
-                    "PLower": 1,
-                    "PStep": 1
-                }
-            ]
-        },
-        {
-            "Name": "Brightness/Contrast adj.",
-            "Func": "brightness_contrast",
-            "Description": "Adjusts overall brightness and contrast using linear transformation [Alpha*Y + Beta].",
-            "Parameters": [
-                {
-                    "PName": "Alpha",
-                    "PType": "float",
-                    "PUpper": 5.0,
-                    "PStart": 1.0,
-                    "PLower": 0.0,
-                    "PStep": 0.1
-                },
-                {
-                    "PName": "Beta",
-                    "PType": "int",
-                    "PUpper": 255,
-                    "PStart": 0,
-                    "PLower": -255,
-                    "PStep": 1
-                }
-            ]
-        },
-        {
-            "Name": "Gamma adjustment",
-            "Func": "gamma",
-            "Description": "Adjusts gamma exposure of the image using linear transformation [Gamma*Y].",
-            "Parameters": [
-                {
-                    "PName": "Gamma",
-                    "PType": "float",
-                    "PUpper": 3.0,
-                    "PStart": 1.0,
-                    "PLower": 0.0,
-                    "PStep": 0.1
-                }
-            ]
-        },
-        {
-            "Name": "Gaussian CDF lookup",
-            "Func": "gaussian_lookup",
-            "Description": "Adjusts exposure using Gaussian cumulative distribution function as a lookup table.",
-            "Parameters": [
-                {
-                    "PName": "Sigma",
-                    "PType": "int",
-                    "PUpper": 250,
-                    "PStart": 50,
-                    "PLower": 1,
-                    "PStep": 1
-                }
-            ]
-        },
+
         {
             "Name": "Normalization",
             "Func": "normalize_image",
             "Description": "Normalize (stretch) pixel intensities between a chosen lower and upper value, usually between 0 and 255.",
+            "ColorspaceAfter": "Grayscale",
             "Parameters": [
                 {
                     "PName": "Lower limit",
@@ -190,10 +114,154 @@
                 }
             ]
         },
+
+        {
+            "Name": "Highpass",
+            "Func": "highpass",
+            "Description": "Accentuates high frequency image content such as tracer particles.",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Sigma",
+                    "PType": "int",
+                    "PUpper": 153,
+                    "PStart": 21,
+                    "PLower": 3,
+                    "PStep": 2
+                }
+            ]
+        },
+
+        {
+            "Name": "Intensity capping",
+            "Func": "intensity_capping",
+            "Description": "Limits pixel values using global mean and variance. If tracer particles are darker than the water surface, apply negative filter before this one.",
+            "ColorspaceAfter": "Grayscale",
+            "Parameters": [
+                {
+                    "PName": "Num. standard deviations (n)",
+                    "PType": "float",
+                    "PUpper": 5.0,
+                    "PStart": 0.0,
+                    "PLower": -5.0,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "Mode (1 = LoD, 2 = DoL)",
+                    "PType": "int",
+                    "PUpper": 2,
+                    "PStart": 1,
+                    "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
+            "Name": "Adjust brightness/contrast",
+            "Func": "brightness_contrast",
+            "Description": "Adjusts overall brightness and contrast using linear transformation [Alpha*Y + Beta].",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Alpha",
+                    "PType": "float",
+                    "PUpper": 5.0,
+                    "PStart": 1.0,
+                    "PLower": 0.0,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "Beta",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
+            "Name": "Adjust channels",
+            "Func": "adjust_channels",
+            "Description": "Add values to pixels of individual image channels. Can be used for hue shifting in HSV colorspace.",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Channel 1 shift",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 2 shift",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 3 shift",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
+            "Name": "Gamma adjustment",
+            "Func": "gamma",
+            "Description": "Adjusts gamma exposure of the image using linear transformation [Gamma*Y].",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Gamma",
+                    "PType": "float",
+                    "PUpper": 3.0,
+                    "PStart": 1.0,
+                    "PLower": 0.0,
+                    "PStep": 0.1
+                }
+            ]
+        },
+
+        {
+            "Name": "Gaussian CDF lookup",
+            "Func": "gaussian_lookup",
+            "Description": "Adjusts exposure using Gaussian cumulative distribution function as a lookup table.",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Sigma",
+                    "PType": "int",
+                    "PUpper": 250,
+                    "PStart": 50,
+                    "PLower": 1,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Mean",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 127,
+                    "PLower": 0,
+                    "PStep": 1
+                }
+            ]
+        },
+
         {
             "Name": "Channel thresholding filter",
             "Func": "thresholding",
             "Description": "Filter image by thresholding individual image channels (returns a binarized [0, 1] image).",
+            "ColorspaceAfter": "Grayscale",
             "Parameters": [
                 {
                     "PName": "Channel 1 low",
@@ -245,10 +313,12 @@
                 }
             ]
         },
+
         {
             "Name": "Denoise",
             "Func": "denoise",
             "Description": "Removes salt-and-pepper type noise with a median filter.",
+            "ColorspaceAfter": "",
             "Parameters": [
                 {
                     "PName": "Kernel size",
@@ -260,10 +330,12 @@
                 }
             ]
         },
+
         {
             "Name": "Background removal",
             "Func": "remove_background",
             "Description": "Subtracts background (median of sequence) from individual images.",
+            "ColorspaceAfter": "",
             "Parameters": [
                 {
                     "PName": "Number of images for calculating",
@@ -275,16 +347,20 @@
                 }
             ]
         },
+
         {
             "Name": "Hist. equalization",
             "Func": "histeq",
             "Description": "Stretches the histogram of the image to improve dynamic range and accentuate details.",
+            "ColorspaceAfter": "Grayscale",
             "Parameters": []
         },
+
         {
             "Name": "CLAHE",
             "Func": "clahe",
             "Description": "Adaptive version of the histogram equalization with histogram clipping.",
+            "ColorspaceAfter": "Grayscale",
             "Parameters": [
                 {
                     "PName": "Clip limit",

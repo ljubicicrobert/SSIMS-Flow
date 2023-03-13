@@ -1,3 +1,20 @@
+SSIMS-Flow v0.3.3.0
+
+Major:
+- Added Crop-to-ROI option in Unpack videos form
+- Added Adjust Channels filter
+- Required vcruntime140.dll now shipped with DLLs
+
+Minor:
+- Added a post-filtering colorspace indicator to the Enhance frames form.
+Filter definitions now contain additional ColorspaceAfter parameter.
+- Added a MEAN parameter to Gaussian lookup filter (previously fixed at 127)
+- Apparently some changes were made to the way objects can be deleted in
+Matplotlib 3.7+, causing deletion of certain object to fail. Should now
+work correctly.
+
+===============================================================================
+
 SSIMS-Flow v0.3.2.1
 
 Minor:

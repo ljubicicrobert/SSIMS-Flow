@@ -140,7 +140,7 @@ def get_gcps_from_image(image_orig: np.ndarray, initial=[], verbose=False, ia=11
 	def remove_last_marker():
 		p = points.pop()
 		o = org.pop()
-		del ax.texts[-1]
+		ax.texts[-1].set_visible(False)
 		marker_text.pop()
 
 		image[p[1] - sw: p[1] + sw + 1, p[0] - sw: p[0] + sw + 1] = o

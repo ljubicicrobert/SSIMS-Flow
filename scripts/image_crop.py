@@ -24,6 +24,7 @@ try:
 	from class_console_printer import tag_print, unix_path
 
 	import matplotlib.pyplot as plt
+	import matplotlib.patches as patches
 
 except Exception as ex:
 	print()
@@ -33,7 +34,7 @@ except Exception as ex:
 	exit()
 
 
-def xy2str(points_list: list, distance: float) -> str:
+def xy2str(points_list: list) -> str:
 	"""
 	Formats a display of distance between two points.
 	"""
@@ -44,10 +45,9 @@ def xy2str(points_list: list, distance: float) -> str:
 		s += 'Point {}: x={}, y={}\n'.format(i, x, y)
 		i += 1
 
-	if distance > 0:
-		s += 'Distance = {:.1f} px'.format(distance)
-	if get_profile:
-		s += '\nPress ENTER/RETURN to accept profile'
+	s += 'Resulting W = {} px\n'.format(int(abs(points_list[0][0] - points_list[1][0])))
+	s += 'Resulting H = {} px'.format(int(abs(points_list[0][1] - points_list[1][1])))
+	s += '\nPress ENTER/RETURN to accept profile'
 
 	return s
 
@@ -59,9 +59,8 @@ def get_measurement(event):
 	global plt_image
 
 	if event.button == 3:
-		d = 0
 		p = [event.xdata, event.ydata]
-		points.append(np.round(p, 1))
+		points.append(np.round(p, 0).astype(int))
 
 		if len(points) == 1:
 			try:
@@ -70,47 +69,48 @@ def get_measurement(event):
 				pass
 
 			ax.plot(points[0][0], points[0][1],
-			        points[0][0], points[0][1], 'ro')
-
-			d = 0
+					points[0][0], points[0][1], 'ro')
 
 		elif len(points) == 2:
-			ax.lines[-1].set_visible(False)
 			xs = [row[0] for row in points]
 			ys = [row[1] for row in points]
-			ax.plot(xs, ys, 'ro-')
 
-			d = ((points[0][0] - points[1][0])**2 + (points[0][1] - points[1][1])**2)**0.5
+			img_shown = img_gray3
+			img_shown[min(ys): max(ys), min(xs): max(xs), :] = img_rgb[min(ys): max(ys), min(xs): max(xs), :]
+			plt_image.set_data(img_shown)
 
-			distance_box.set_text(xy2str(points, d))
-			distance_box.set_x((xs[0]+xs[1])/2)
-			distance_box.set_y((ys[0]+ys[1])/2)
+			ax.plot(points[1][0], points[1][1],
+					points[1][0], points[1][1], 'ro')
+			roi = patches.Rectangle((xs[0], ys[0]), xs[1] - xs[0], ys[1] - ys[0], linewidth=2, edgecolor='r', facecolor='none')
+			ax.add_patch(roi)
+
+			roi_box.set_text(xy2str(points))
 
 		elif len(points) > 2:
 			points = []
-			d = 0
+			plt_image.set_data(img_rgb)
 
 			try:
+				ax.patches[-1].set_visible(False)
 				ax.lines[-1].set_visible(False)
 				ax.lines[-2].set_visible(False)
 				ax.lines[-3].set_visible(False)
 			except IndexError:
 				pass
 
-			distance_box.set_text('')
+			roi_box.set_text('')
 
 	plt.draw()
 
 
-def select_profile(event):
+def select_roi(event):
 	global cfg
 
 	if event.key == 'enter':
 		if len(points) == 2:
-			section = 'Optical flow'
+			section = 'Frames'
 
-			cfg[section]['ChainStart'] = '{}, {}'.format(points[0][0], points[0][1])
-			cfg[section]['ChainEnd'] = '{}, {}'.format(points[1][0], points[1][1])
+			cfg[section]['Crop'] = '{}, {}, {}, {}'.format(int(points[0][0]), int(points[1][0]), int(points[0][1]), int(points[1][1]))
 
 			with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 				cfg.write(configfile)
@@ -125,13 +125,9 @@ if __name__ == '__main__':
 	try:
 		parser = ArgumentParser()
 		parser.add_argument('--cfg', type=str, help='Path to config file')
-		parser.add_argument('--img_path', type=str, help='Path to image file or folder with images')
-		parser.add_argument('--ext', type=str, help='Image extension', default='jpg')
-		parser.add_argument('--profile', type=int, help='Whether to save profile', default=0)
 		args = parser.parse_args()
 
 		points = []
-		d = 0
 
 		cfg = configparser.ConfigParser()
 		cfg.optionxform = str
@@ -144,44 +140,36 @@ if __name__ == '__main__':
 			input('\nPress ENTER/RETURN key to exit...')
 			exit()
 
-		img_path = unix_path(args.img_path)
-		ext = args.ext
-		get_profile = args.profile
+		section = 'Frames'
+			
+		video_path = unix_path(cfg.get(section, 'VideoPath'))
+		unpack_start = int(cfg.get(section, 'Start', fallback='0'))
 
-		try:
-			path.exists(img_path)
-		except Exception:
-			raise ValueError('The path argument [--img_path] does not seem to correspond to an image or folder with images, or could be missing!')
-
-		if path.isfile(img_path):
-			img = cv2.imread(img_path)
-		elif path.isdir(img_path):
-			images = glob('{}/*.{}'.format(img_path, ext))
-			img = cv2.imread(images[0])
-		else:
-			raise ValueError('The path argument [--img_path] does not seem to correspond to an image or folder with images, or could be missing!')
-
+		vidcap = cv2.VideoCapture(video_path)
+		vidcap.set(cv2.CAP_PROP_POS_FRAMES, unpack_start)
+		success, img = vidcap.read()
+		img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+		img_gray3 = cv2.merge([img_gray, img_gray, img_gray])
 		img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
 		fig, ax = plt.subplots()
 		plt_image = ax.imshow(img_rgb)
 		fig.canvas.mpl_connect('button_press_event', get_measurement)
-		if get_profile:
-			fig.canvas.mpl_connect('key_press_event', select_profile)
+		fig.canvas.mpl_connect('key_press_event', select_roi)
 
 		legend = 'Right click to select starting and end point.\n' \
-		         'Right click again to start over.\n' \
-		         'ENTER/RETURN = select profile' if get_profile else '' \
-		         'O = zoom to window\n' \
+				 'Right click again to start over.\n' \
+				 'ENTER/RETURN = select ROI\n' \
+				 'O = zoom to window\n' \
 				 'P = pan image'
 
-		distance_box = plt.text(0, 0, '',
-		                       horizontalalignment='right',
-		                       verticalalignment='bottom',
-		                       transform=ax.transData,
-		                       bbox=dict(facecolor='white', alpha=0.5),
-		                       fontsize=9,
-		                       )
+		roi_box = plt.text(0.01, 0.02, '',
+						   horizontalalignment='left',
+						   verticalalignment='bottom',
+						   transform=ax.transAxes,
+						   bbox=dict(facecolor='white', alpha=0.5),
+						   fontsize=9,
+						   )
 
 		plt.text(0.01, 0.98, legend,
 				 horizontalalignment='left',
@@ -194,7 +182,7 @@ if __name__ == '__main__':
 		try:
 			mng = plt.get_current_fig_manager()
 			mng.window.state('zoomed')
-			mng.set_window_title('Inspect frames')
+			mng.set_window_title('Select ROI for cropping')
 		except Exception:
 			pass
 

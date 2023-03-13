@@ -55,13 +55,21 @@ color_conv_codes = [
 ]
 
 
+def three_channel(img):
+	try:
+		a = img[:, :, 0]
+		return img
+	except IndexError:
+		return cv2.merge([img, img, img])
+
+
 def convert_img(img: str, from_cs: str, to_cs: str) -> np.ndarray:
 	global colorspace
 	"""
 	Convert image from one colorspace to another. Extends cv2.cvtColor() to
 	encompass all transformation possibilities between RGB, HSV, LAB, and grayscale.
 	"""
-	
+
 	colorspace = to_cs
 
 	from_cs_index = colorspaces_list.index(from_cs)
@@ -82,8 +90,8 @@ def convert_img(img: str, from_cs: str, to_cs: str) -> np.ndarray:
 	
 	for code in conv_codes:
 		img = cv2.cvtColor(img, code)
-	
-	return img
+
+	return three_channel(img)
 
 
 def is_grayscale(img: np.ndarray) -> bool:
@@ -107,7 +115,11 @@ def func(name, image, params):
 	Template function for all filtering functions.
 	"""
 	return name(image, *params)
-	
+
+
+def crop(img, xs, xe, ys, ye):
+	return img[xs: xe, ys: ye, :]
+
 	
 def negative(img):
 	return ~img
@@ -184,6 +196,16 @@ def brightness_contrast(img, alpha=1.0, beta=0.0):
 	return cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
 
 
+def adjust_channels(img, shift_c1=0, shift_c2=0, shift_c3=0):
+	c1, c2, c3 = cv2.split(img)
+
+	c1 = cv2.add(c1, shift_c1)
+	c2 = cv2.add(c1, shift_c2)
+	c3 = cv2.add(c1, shift_c3)
+
+	return cv2.merge([c1, c2, c3])
+
+
 def gamma(img, gamma=1.0):
 	invGamma = 1.0 / gamma
 	
@@ -193,9 +215,9 @@ def gamma(img, gamma=1.0):
 	return cv2.LUT(img, table)
 
 
-def gaussian_lookup(img, sigma=51):
+def gaussian_lookup(img, sigma=51, mean=127):
 	x = np.arange(0, 256)
-	pdf = stats.norm.pdf(x, 127, sigma)
+	pdf = stats.norm.pdf(x, mean, sigma)
 
 	cdf = np.cumsum(pdf)
 	cdf_norm = np.array([(x - np.min(cdf))/(np.max(cdf) - np.min(cdf)) * 255 for x in cdf]).astype('uint8')
@@ -204,8 +226,11 @@ def gaussian_lookup(img, sigma=51):
 	
 	
 def thresholding(img, c1l=0, c1u=255, c2l=0, c2u=255, c3l=0, c3u=255):
+	global colorspace
+	
 	mask = cv2.inRange(img, (int(c1l), int(c2l), int(c3l)), (int(c1u), int(c2u), int(c3u)))
-
+	
+	colorspace = 'grayscale'
 	return cv2.merge([mask, mask, mask])
 
 
