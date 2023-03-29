@@ -199,31 +199,6 @@
         },
 
         {
-            "Name": "Bilateral highpass",
-            "Func": "bilateral_highpass",
-            "Description": "Apply bilateral filtering and subtract filtered image from the original. Acts as a highpass filter.",
-            "ColorspaceAfter": "",
-            "Parameters": [
-                {
-                    "PName": "Diameter",
-                    "PType": "int",
-                    "PUpper": 51,
-                    "PStart": -1,
-                    "PLower": -1,
-                    "PStep": 2
-                },
-                {
-                    "PName": "Sigma",
-                    "PType": "int",
-                    "PUpper": 101,
-                    "PStart": 51,
-                    "PLower": 1,
-                    "PStep": 2
-                }
-            ]
-        },
-
-        {
             "Name": "Intensity capping",
             "Func": "intensity_capping",
             "Description": "Limits pixel values using global mean and variance. If tracer particles are darker than the water surface, apply negative filter before this one.",

@@ -14,7 +14,6 @@ should make it easier to reuse filter stacks across different projects, but
 also allows for easier sharing with other people.
 
 Minor:
-- Added bilateral highpass filter
 - Minor bugfixes
 
 ===============================================================================

@@ -162,13 +162,6 @@ def highpass(img, sigma=51):
 	img_highpass = ~cv2.subtract(cv2.add(blur, 127), img)
 
 	return three_channel(img_highpass)
-
-
-def bilateral_highpass(img, d=-1, sigma=51):
-	bilateral = cv2.bilateralFilter(img, d, sigma, sigma)
-	img_highpass = cv2.subtract(img, bilateral)
-
-	return three_channel(img_highpass)
 	
 	
 def normalize_image(img, lower=None, upper=None):
