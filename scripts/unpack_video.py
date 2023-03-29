@@ -73,7 +73,7 @@ def get_camera_parameters(path: str) -> tuple:
 
 def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 				  start=0, start_num=0, end=MAX_FRAMES_DEFAULT, qual=95, scale=None, step=1, interp=cv2.INTER_CUBIC,
-				  camera_matrix=None, dist=None, cp=None, pb=None, crop=None, verbose=False,) -> bool:
+				  camera_matrix=None, dist=None, cp=None, pb=None, crop='', verbose=False,) -> bool:
 	"""
 	Extracts all num_frames from a video to separate images. Optionally writes to a specified folder,
 	creates one if it does not exist. If no folder is specified, it writes to the parent folder.
@@ -249,35 +249,38 @@ if __name__ == '__main__':
 		try:
 			crop_labels = ['X_start', 'X_end', 'Y_start', 'Y_end']
 			crop_str = cfg.get(section, 'Crop', fallback='')
-			crop_limits = [int(c) for c in crop_str.replace(' ', '').split(',')]
-			skip_crop_prompt = False
+			crop_limits = ''
 
-			for i, c in enumerate(crop_limits):
-				if c < 0:
-					tag_print('error', 'Crop limit {} (={}) is lower than 0!'.format(crop_labels[i], crop_limits[i]))
+			if crop_str:
+				crop_limits = [int(c) for c in crop_str.replace(' ', '').split(',')]
+				skip_crop_prompt = False
+
+				for i, c in enumerate(crop_limits):
+					if c < 0:
+						tag_print('error', 'Crop limit {} (={}) is lower than 0!'.format(crop_labels[i], crop_limits[i]))
+						skip_crop_prompt = True
+				if crop_limits[0] >= crop_limits[1]:
+					tag_print('error', 'Crop limit X_start (={}) is larger than or equal to crop limit X_end (={})!'.format(crop_limits[0], crop_limits[1]))
 					skip_crop_prompt = True
-			if crop_limits[0] >= crop_limits[1]:
-				tag_print('error', 'Crop limit X_start (={}) is larger than or equal to crop limit X_end (={})!'.format(crop_limits[0], crop_limits[1]))
-				skip_crop_prompt = True
-			if crop_limits[2] >= crop_limits[3]:
-				tag_print('error', 'Crop limit Y_start (={}) is larger than or equal to crop limit Y_end (={})!'.format(crop_limits[2], crop_limits[3]))
-				skip_crop_prompt = True
-			if max(crop_limits[0], crop_limits[1]) > w:
-				tag_print('error', 'Crop limits X ([{}, {}]) out of image bounds: width = {}!'.format(crop_limits[0], crop_limits[1], w))
-				skip_crop_prompt = True
-			if max(crop_limits[2], crop_limits[3]) > h:
-				tag_print('error', 'Crop limits Y ([{}, {}]) out of image bounds: height = {}!'.format(crop_limits[2], crop_limits[3], h))
-				skip_crop_prompt = True
+				if crop_limits[2] >= crop_limits[3]:
+					tag_print('error', 'Crop limit Y_start (={}) is larger than or equal to crop limit Y_end (={})!'.format(crop_limits[2], crop_limits[3]))
+					skip_crop_prompt = True
+				if max(crop_limits[0], crop_limits[1]) > w:
+					tag_print('error', 'Crop limits X ([{}, {}]) out of image bounds: width = {}!'.format(crop_limits[0], crop_limits[1], w))
+					skip_crop_prompt = True
+				if max(crop_limits[2], crop_limits[3]) > h:
+					tag_print('error', 'Crop limits Y ([{}, {}]) out of image bounds: height = {}!'.format(crop_limits[2], crop_limits[3], h))
+					skip_crop_prompt = True
 
-			if skip_crop_prompt:
-				input = input('Do you wish to continue unpacking video without cropping? [y/n]').lower()
-				if input == 'y':
-					crop_limits = ''
-				else:
-					print()
-					tag_print('end', 'Terminated by user!')
-					input('\nPress ENTER/RETURN key to exit...')
-					exit()
+				if skip_crop_prompt:
+					input = input('Do you wish to continue unpacking video without cropping? [y/n]').lower()
+					if input == 'y':
+						crop_limits = ''
+					else:
+						print()
+						tag_print('end', 'Terminated by user!')
+						input('\nPress ENTER/RETURN key to exit...')
+						exit()
 		except Exception as ex:
 			pass
 

@@ -74,6 +74,72 @@
         },
 
         {
+            "Name": "Adjust channels",
+            "Func": "adjust_channels",
+            "Description": "Add values to pixels of individual image channels. Can be used for hue shifting in HSV colorspace.",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Channel 1 shift",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 2 shift",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel 3 shift",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": -255,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
+            "Name": "Channel ratios",
+            "Func": "channel_ratios",
+            "Description": "",
+            "ColorspaceAfter": "",
+            "Parameters": [
+                {
+                    "PName": "Channel main",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 1,
+                    "PLower": 1,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Channel secondary",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 2,
+                    "PLower": 1,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Limit",
+                    "PType": "float",
+                    "PUpper": 10.0,
+                    "PStart": 2.0,
+                    "PLower": 1.0,
+                    "PStep": 0.1
+                }
+            ]
+        },
+
+        {
             "Name": "Single image channel",
             "Func": "select_channel",
             "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b).",
@@ -173,39 +239,6 @@
                 },
                 {
                     "PName": "Beta",
-                    "PType": "int",
-                    "PUpper": 255,
-                    "PStart": 0,
-                    "PLower": -255,
-                    "PStep": 1
-                }
-            ]
-        },
-
-        {
-            "Name": "Adjust channels",
-            "Func": "adjust_channels",
-            "Description": "Add values to pixels of individual image channels. Can be used for hue shifting in HSV colorspace.",
-            "ColorspaceAfter": "",
-            "Parameters": [
-                {
-                    "PName": "Channel 1 shift",
-                    "PType": "int",
-                    "PUpper": 255,
-                    "PStart": 0,
-                    "PLower": -255,
-                    "PStep": 1
-                },
-                {
-                    "PName": "Channel 2 shift",
-                    "PType": "int",
-                    "PUpper": 255,
-                    "PStart": 0,
-                    "PLower": -255,
-                    "PStep": 1
-                },
-                {
-                    "PName": "Channel 3 shift",
                     "PType": "int",
                     "PUpper": 255,
                     "PStart": 0,

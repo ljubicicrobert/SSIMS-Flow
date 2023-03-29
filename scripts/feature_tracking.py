@@ -433,6 +433,8 @@ if __name__ == '__main__':
 
 		# Folder for result output
 		results_folder = '{}/transformation'.format(project_folder)
+		if not path.exists(results_folder):
+			fresh_folder(results_folder)
 
 		# Extension for image files
 		ext = cfg.get('Frames', 'Extension', fallback='jpg')
@@ -542,11 +544,9 @@ if __name__ == '__main__':
 			progress_bar = Progress_bar(total=num_frames, prefix=tag_string('info', 'Frame '))
 
 			kernels = []
-			img = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
-			img_ch, *_ = cv2.split(img)
 
 			for m in markers:
-				k = cv2.getRectSubPix(img_ch, (k_size, k_size), (m[0], m[1]))
+				k = cv2.getRectSubPix(img_gray, (k_size, k_size), (m[0], m[1]))
 				cv2.imwrite('{}/kernels/{}.{}'.format(results_folder, len(kernels), ext), k)
 				kernels.append(k)
 
@@ -560,16 +560,13 @@ if __name__ == '__main__':
 					print_and_log(progress_bar.get(n), printer, logger)
 
 					img_path = raw_frames_list[n]
-					img = cv2.imread(img_path)
-
-					img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
-					img_ch, *_ = cv2.split(img)
+					img_gray = cv2.imread(img_path, 0)
 
 					for j in range(len(markers)):
 						xx, yy = markers[j]
 
 						if xx != 0 and yy != 0:
-							search_space = cv2.getRectSubPix(img_ch, (search_size, search_size), (xx, yy))
+							search_space = cv2.getRectSubPix(img_gray, (search_size, search_size), (xx, yy))
 
 							rel_center, ssim_max = find_gcp(search_space, kernels[j])
 
@@ -581,7 +578,7 @@ if __name__ == '__main__':
 
 								is_expanded_search = True
 								search_size = exp_search_size
-								search_space = cv2.getRectSubPix(img_ch, (search_size, search_size), (xx, yy))
+								search_space = cv2.getRectSubPix(img_gray, (search_size, search_size), (xx, yy))
 
 								rel_center, ssim_max = find_gcp(search_space,
 															kernels[j],
@@ -598,10 +595,10 @@ if __name__ == '__main__':
 								search_size = init_search_size
 
 							if update_kernels:
-								kernels[j] = cv2.getRectSubPix(img_ch, (k_size, k_size), (real_x, real_y))
+								kernels[j] = cv2.getRectSubPix(img_gray, (k_size, k_size), (real_x, real_y))
 
 							try:
-								cv2.getRectSubPix(img_ch, (search_size, search_size), (real_x, real_y))
+								cv2.getRectSubPix(img_gray, (search_size, search_size), (real_x, real_y))
 							except SystemError:
 								# print_and_log(
 								# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger

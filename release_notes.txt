@@ -1,3 +1,23 @@
+SSIMS-Flow v0.4.0.0
+
+Major:
+- Reworked Image enhancement form, now opens in a new window with preview
+- Image enhancement preview now uses native .NET forms, instead of Matplotlib.
+This now allows for real-time preview of filter effects from the Enhance frames
+form, without the need to restart Matplotlib figure every time.
+- Optical flow now processes frames in pairs of (0, 0+OF_step), (1, 1+OF_step),
+etc., where OF_step is the optical flow step. Previous versions used logic of
+(0, OF_step), (OF_step, 2*OF_step), etc., which leads to fewer data points
+in the final results.
+- Added options to save filter stack to a file and load them from a file. This
+should make it easier to reuse filter stacks across different projects, but
+also allows for easier sharing with other people.
+
+Minor:
+- Minor bugfixes
+
+===============================================================================
+
 SSIMS-Flow v0.3.3.0
 
 Major:
