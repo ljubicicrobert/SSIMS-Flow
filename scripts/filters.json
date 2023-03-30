@@ -142,7 +142,7 @@
         {
             "Name": "Single image channel",
             "Func": "select_channel",
-            "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b).",
+            "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b*).",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
                 {
