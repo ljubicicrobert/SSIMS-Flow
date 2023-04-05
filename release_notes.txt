@@ -2,6 +2,7 @@ SSIMS-Flow v0.4.0.1
 
 Minor:
 - Bugfixes: colorspace conversions
+- HSV colorspace now uses full 0-255 range for Hue, instead of 0-179
 
 ===============================================================================
 

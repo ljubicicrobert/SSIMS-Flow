@@ -41,10 +41,10 @@ colorspaces_list = ['rgb', 'hsv', 'lab', 'grayscale']
 
 # V from / > to
 color_conv_codes = (
-	[[], 	[41], 		[45], 		[7]],
-	[[55], 	[], 		[55, 45], 	[55, 7]],
-	[[57], 	[57, 41], 	[], 		[57, 7]],
-	[[8], 	[8, 41], 	[8, 45], 	[]]
+	[[], 	[67], 		[45], 		[7]],
+	[[71], 	[], 		[71, 45], 	[71, 7]],
+	[[57], 	[57, 67], 	[], 		[57, 7]],
+	[[8], 	[8, 67], 	[8, 45], 	[]]
 )
 
 colorspace = 'rgb'
@@ -87,11 +87,11 @@ def convert_img(img: str, from_cs: str, to_cs: str) -> np.ndarray:
 
 	for code in conv_codes:
 		try:
-			img_new = cv2.cvtColor(single_channel(img), code)
+			img = cv2.cvtColor(three_channel(img), code)
 		except Exception as ex:
-			img_new = cv2.cvtColor(three_channel(img), code)
+			img = cv2.cvtColor(single_channel(img), code)
 
-	return three_channel(img_new)
+	return three_channel(img)
 
 
 def is_grayscale(img: np.ndarray) -> bool:
@@ -158,14 +158,11 @@ def select_channel(img, channel=1):
 	return three_channel(img_single)
 	
 	
-def highpass(img, sigma=51):
-	if sigma % 2 == 0:
-		sigma += 1
-
+def highpass(img, sigma=3.0):
 	if is_grayscale(img):
 		img = img[:, :, 0]
 	
-	blur = cv2.GaussianBlur(img, (0, 0), int(sigma))
+	blur = cv2.GaussianBlur(img, (0, 0), sigma)
 	img_highpass = ~cv2.subtract(cv2.add(blur, 127), img)
 
 	return three_channel(img_highpass)
@@ -255,20 +252,42 @@ def channel_ratios(img, c1=1, c2=2, limit=2.0):
 def histeq(img):
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	eq = cv2.equalizeHist(img_gray)
+	eq = convert_img(eq, 'grayscale', colorspace)
 	
-	return convert_img(eq, 'grayscale', colorspace)
+	return three_channel(eq)
 
 
 def clahe(img, clip=2.0, tile=8):
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	clahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=(int(tile), int(tile)))
 	img_clahe = clahe.apply(img_gray)
+	img_clahe = convert_img(img_clahe, 'grayscale', colorspace)
 	
-	return convert_img(img_clahe, 'grayscale', colorspace)
+	return three_channel(img_clahe)
 
 
-# Background removal filter has to remain in other scripts
-# because it needs more than one frame to work.
+def remove_background(img, num_frames_background, img_list, ext):
+	num_frames_background = int(num_frames_background)
+	h, w = img.shape[:2]
+
+	if len(img_list) < num_frames_background:
+		num_frames_background = len(img_list)
+
+	step = len(img_list) // num_frames_background
+	img_back_path = '{}/../median_{}.{}'.format(path.dirname(img_list[0]), num_frames_background, ext)
+
+	if path.exists(img_back_path):
+		back = cv2.imread(img_back_path)
+	else:
+		stack = np.ndarray([h, w, 3, num_frames_background], dtype='uint8')
+
+		for i in range(num_frames_background):
+			stack[:, :, :, i] = cv2.imread(img_list[i*step])
+
+		back = np.median(stack, axis=3)
+		cv2.imwrite(img_back_path, back)
+
+	return cv2.subtract(img.astype('uint8'), back.astype('uint8'))
 
 
 def params_to_list(params: str) -> list:
@@ -282,7 +301,7 @@ def params_to_list(params: str) -> list:
 		return [float(x) for x in params.split(',')]
 
 
-def apply_filters(img: np.ndarray, filters_data: np.ndarray) -> np.ndarray:
+def apply_filters(img: np.ndarray, filters_data: np.ndarray, img_list: list, ext: str) -> np.ndarray:
 	"""
 	Applies multiple filters consecutively using a template function.
 	"""
@@ -290,10 +309,17 @@ def apply_filters(img: np.ndarray, filters_data: np.ndarray) -> np.ndarray:
 	global colorspace
 	
 	for i in range(filters_data.shape[0]):
-		img = func(globals()[filters_data[i][0]], img, params_to_list(filters_data[i][1]))
+		func_name = filters_data[i][0]
+		func_pointer = globals()[func_name]
+		params = params_to_list(filters_data[i][1])
 
-		if filters_data[i][0].startswith('to_'):
-			colorspace = filters_data[i][0].split('_')[1]
+		if func_name == 'remove_background':
+			params = params + [img_list, ext]
+		
+		img = func(func_pointer, img, params)
+
+		if func_name.startswith('to_'):
+			colorspace = func_name.split('_')[1]
 
 	colorspace = 'rgb'
 	return img
