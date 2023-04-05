@@ -35,31 +35,6 @@ except Exception as ex:
 	exit()
 
 
-# Has to remain here
-def remove_background(img, num_frames_background=10):
-	num_frames_background = int(num_frames_background)
-	h, w = img.shape[:2]
-
-	if len(img_list) < num_frames_background:
-		num_frames_background = len(img_list)
-
-	step = len(img_list) // num_frames_background
-	img_back_path = '{}/../median_{}.{}'.format(path.dirname(img_list[0]), num_frames_background, ext)
-
-	if path.exists(img_back_path):
-		back = cv2.imread(img_back_path)
-	else:
-		stack = np.ndarray([h, w, 3, num_frames_background], dtype='uint8')
-
-		for i in range(num_frames_background):
-			stack[:, :, :, i] = cv2.imread(img_list[i*step])
-
-		back = np.median(stack, axis=3)
-		cv2.imwrite(img_back_path, back)
-
-	return cv2.subtract(back.astype('uint8'), img.astype('uint8'))
-
-
 if __name__ == '__main__':
 	try:
 		parser = ArgumentParser()
@@ -117,7 +92,7 @@ if __name__ == '__main__':
 			img = cv2.imread(img_path)
 			img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-			img = apply_filters(img, filters_data)
+			img = apply_filters(img, filters_data, img_list, ext)
 			img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
 			cv2.imwrite('{}/{}'.format(results_folder, path.basename(img_path)), img_bgr)
