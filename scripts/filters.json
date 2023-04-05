@@ -189,11 +189,11 @@
             "Parameters": [
                 {
                     "PName": "Sigma",
-                    "PType": "int",
-                    "PUpper": 153,
-                    "PStart": 21,
-                    "PLower": 3,
-                    "PStep": 2
+                    "PType": "float",
+                    "PUpper": 20.0,
+                    "PStart": 1.0,
+                    "PLower": 0.1,
+                    "PStep": 0.1
                 }
             ]
         },
