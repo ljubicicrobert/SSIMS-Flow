@@ -38,20 +38,30 @@ except Exception as ex:
 	exit()
 
 colorspaces_list = ['rgb', 'hsv', 'lab', 'grayscale']
-color_conv_codes = [
+
+# V from / > to
+color_conv_codes = (
 	[[], 	[41], 		[45], 		[7]],
 	[[55], 	[], 		[55, 45], 	[55, 7]],
 	[[57], 	[57, 41], 	[], 		[57, 7]],
 	[[8], 	[8, 41], 	[8, 45], 	[]]
-]
+)
 
 colorspace = 'rgb'
+
+
+def single_channel(img):
+	try:
+		a = img[:, :, 0]
+		return img[:, :, 0]
+	except IndexError:
+		return img
 
 
 def three_channel(img):
 	try:
 		a = img[:, :, 0]
-		return img
+		return img[:, :, :3]
 	except IndexError:
 		return cv2.merge([img, img, img])
 
@@ -72,19 +82,16 @@ def convert_img(img: str, from_cs: str, to_cs: str) -> np.ndarray:
 	if to_cs == from_cs:
 		return img
 
-	if from_cs == 'grayscale':
-		try:
-			img = img[:, :, 0]
-		except IndexError:
-			pass
-
 	if len(conv_codes) == 0:
 		return img
-	
-	for code in conv_codes:
-		img = cv2.cvtColor(img, code)
 
-	return three_channel(img)
+	for code in conv_codes:
+		try:
+			img_new = cv2.cvtColor(single_channel(img), code)
+		except Exception as ex:
+			img_new = cv2.cvtColor(three_channel(img), code)
+
+	return three_channel(img_new)
 
 
 def is_grayscale(img: np.ndarray) -> bool:
@@ -119,8 +126,8 @@ def negative(img):
 
 
 def to_grayscale(img):
-	img_gray = convert_img(img, colorspace, 'grayscale')
-	return cv2.merge([img_gray, img_gray, img_gray])
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
+	return three_channel(img_gray)
 
 
 def to_rgb(img):
@@ -148,7 +155,7 @@ def select_channel(img, channel=1):
 		return img
 
 	colorspace = 'grayscale'
-	return cv2.merge([img_single, img_single, img_single])
+	return three_channel(img_single)
 	
 	
 def highpass(img, sigma=51):
@@ -174,7 +181,7 @@ def normalize_image(img, lower=None, upper=None):
 
 	img_norm = ((img_gray - lower) / (upper - lower) * 255).astype('uint8')
 
-	return cv2.merge([img_norm, img_norm, img_norm])
+	return three_channel(img_norm)
 
 
 def intensity_capping(img, n_std=0.0, mode=1):
@@ -227,7 +234,7 @@ def thresholding(img, c1l=0, c1u=255, c2l=0, c2u=255, c3l=0, c3u=255):
 	mask = cv2.inRange(img, (int(c1l), int(c2l), int(c3l)), (int(c1u), int(c2u), int(c3u)))
 	
 	colorspace = 'grayscale'
-	return cv2.merge([mask, mask, mask])
+	return three_channel(mask)
 
 
 def denoise(img, ksize=3):
@@ -238,13 +245,11 @@ def channel_ratios(img, c1=1, c2=2, limit=2.0):
 	divisor = img[:, :, int(c2 - 1)]
 	divisor[divisor == 0] = 255
 
-	print(np.min(divisor))
-
 	ratio = img[:, :, int(c1 - 1)].astype('float') / divisor.astype('float')
 	ratio[ratio > limit] = limit
 	ratio = ((ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * 255).astype('uint8')
 
-	return cv2.merge([ratio, ratio, ratio])
+	return three_channel(ratio)
 
 
 def histeq(img):
@@ -286,7 +291,7 @@ def apply_filters(img: np.ndarray, filters_data: np.ndarray) -> np.ndarray:
 	
 	for i in range(filters_data.shape[0]):
 		img = func(globals()[filters_data[i][0]], img, params_to_list(filters_data[i][1]))
-		
+
 		if filters_data[i][0].startswith('to_'):
 			colorspace = filters_data[i][0].split('_')[1]
 

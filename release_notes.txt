@@ -1,3 +1,10 @@
+SSIMS-Flow v0.4.0.1
+
+Minor:
+- Bugfixes: colorspace conversions
+
+===============================================================================
+
 SSIMS-Flow v0.4.0.0
 
 Major:
