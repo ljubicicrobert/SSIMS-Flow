@@ -17,15 +17,15 @@ Created by Robert Ljubicic.
 """
 
 try:
-	from filters import *	# Yeah, yeah, I know this is a bad practice, but I don't care
-	from os import makedirs
-	from matplotlib.widgets import Slider
-	from class_console_printer import Console_printer, tag_string, unix_path
+	from __init__ import *
+	from os import makedirs, path
+	from class_console_printer import Console_printer, tag_string, unix_path, tag_print
 	from class_progress_bar import Progress_bar
 	from class_timing import Timer, time_hms
 	from glob import glob
 	from inspect import getfullargspec
 	from feature_tracking import fresh_folder
+	from filters import *
 
 except Exception as ex:
 	print()
@@ -58,33 +58,6 @@ def remove_background(img, num_frames_background=10):
 		cv2.imwrite(img_back_path, back)
 
 	return cv2.subtract(back.astype('uint8'), img.astype('uint8'))
-
-
-def params_to_list(params: str) -> list:
-	"""
-	Splits filter parameters into a list.
-	"""
-	
-	if params == '':
-		return []
-	else:
-		return [float(x) for x in params.split(',')]
-
-
-def apply_filters(img: np.ndarray, filters_data: np.ndarray) -> np.ndarray:
-	"""
-	Applies multiple filters consecutively using a template function.
-	"""
-
-	global colorspace
-	
-	for i in range(filters_data.shape[0]):
-		img = func(globals()[filters_data[i][0]], img, params_to_list(filters_data[i][1]))
-		
-		if filters_data[i][0].startswith('to_'):
-			colorspace = filters_data[i][0].split('_')[1]
-
-	return img
 
 
 if __name__ == '__main__':
@@ -128,7 +101,7 @@ if __name__ == '__main__':
 			arg_values = ['{}={}'.format(p, v) for p, v in zip(func_args, f[1].split(','))]
 			filter_text = '{}: {}'.format(f[0], ', '.join(arg_values if f[1] != '' else ''))
 			legend += '\n    ' + filter_text
-			print(' ' * 11 + filter_text)
+			print(' ' * 11, filter_text)
 		print()
 
 		fresh_folder(results_folder, ext='avi')
@@ -139,18 +112,13 @@ if __name__ == '__main__':
 			makedirs(results_folder)
 
 		for j in range(len(img_list)):
+			colorspace = 'rgb'
 			img_path = img_list[j]
 			img = cv2.imread(img_path)
 			img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-			for i in range(filters_data.shape[0]):
-				img = func(locals()[filters_data[i][0]], img, params_to_list(filters_data[i][1]))
-
-				if filters_data[i][0].startswith('to_'):
-					colorspace = filters_data[i][0].split('_')[1]
-
-			img_rgb = convert_img(img, colorspace, 'rgb')
-			img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+			img = apply_filters(img, filters_data)
+			img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
 			cv2.imwrite('{}/{}'.format(results_folder, path.basename(img_path)), img_bgr)
 

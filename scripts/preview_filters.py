@@ -17,8 +17,12 @@ Created by Robert Ljubicic.
 """
 
 try:
-    from filter_frames import *     # Chain importing filters.py
-    from os import remove
+    from __init__ import *
+    import filters
+    from os import path, remove
+    from class_console_printer import unix_path, tag_print
+    from glob import glob
+
     import shutil
 
 except Exception as ex:
@@ -65,7 +69,7 @@ if __name__ == '__main__':
         img_path = img_list[args.i]
         img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
 
-        img = apply_filters(img, filters_data)
+        img = filters.apply_filters(img, filters_data)
         img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         
         shutil.copyfile(img_path, save_path_original)

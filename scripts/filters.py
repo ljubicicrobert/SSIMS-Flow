@@ -185,7 +185,7 @@ def intensity_capping(img, n_std=0.0, mode=1):
 	cpp_intensity_capping(img_ravel, c_size_t(img_ravel.size), c_double(n_std))
 	img_cap = ~img_ravel.reshape(img_gray.shape) if mode == 1 else img_ravel.reshape(img_gray.shape)
 
-	return cv2.merge([img_cap, img_cap, img_cap])
+	return three_channel(img_cap)
 	
 	
 def brightness_contrast(img, alpha=1.0, beta=0.0):
@@ -261,5 +261,34 @@ def clahe(img, clip=2.0, tile=8):
 	
 	return convert_img(img_clahe, 'grayscale', colorspace)
 
+
 # Background removal filter has to remain in other scripts
 # because it needs more than one frame to work.
+
+
+def params_to_list(params: str) -> list:
+	"""
+	Splits filter parameters into a list.
+	"""
+	
+	if params == '':
+		return []
+	else:
+		return [float(x) for x in params.split(',')]
+
+
+def apply_filters(img: np.ndarray, filters_data: np.ndarray) -> np.ndarray:
+	"""
+	Applies multiple filters consecutively using a template function.
+	"""
+
+	global colorspace
+	
+	for i in range(filters_data.shape[0]):
+		img = func(globals()[filters_data[i][0]], img, params_to_list(filters_data[i][1]))
+		
+		if filters_data[i][0].startswith('to_'):
+			colorspace = filters_data[i][0].split('_')[1]
+
+	colorspace = 'rgb'
+	return img

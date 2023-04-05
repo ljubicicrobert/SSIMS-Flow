@@ -33,6 +33,7 @@ class Progress_bar:
         self.char_done = char_done
         self.char_remain = char_remain
         self.suffix_fmt = suffix_fmt
+        self.max_suffix_len = len(self.suffix_fmt.format(100))
         self.percent = 0
         self.num_digits = floor(log10(total)) + 1
         self.bar_length = width - len(prefix) - 2*self.num_digits - 8
@@ -55,18 +56,19 @@ class Progress_bar:
 
     def show(self, iteration: int):
         self.update_bar(iteration)
-        print('{}{} '.format(self.prefix, self.bar) + self.suffix_fmt.format(self.percent))
+        print('{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len))
 
     def get(self, iteration: int) -> str:
         self.update_bar(iteration)
-        return '{}{} '.format(self.prefix, self.bar) + self.suffix_fmt.format(self.percent)
+        return '{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len)
 
 
 if __name__ == '__main__':
     import time
 
-    pb = Progress_bar(total=100)
+    iters = 150
+    pb = Progress_bar(total=iters, width=80, char_done='#', char_remain=' ',)
 
-    for i in range(100):
-        time.sleep(0.01)
+    for i in range(iters):
+        time.sleep(0.001)
         pb.show(i)

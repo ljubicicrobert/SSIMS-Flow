@@ -23,12 +23,12 @@ type_dict = {
     'char*':    ctypes.c_char_p,
     'double*':  np.ctypeslib.ndpointer(dtype='float64', ndim=1, flags='CONTIGUOUS'),
     'float*':   np.ctypeslib.ndpointer(dtype='float32', ndim=1, flags='CONTIGUOUS'),
-    'int*':     np.ctypeslib.ndpointer(dtype='int32', ndim=1, flags='CONTIGUOUS'),
-    'short*':   np.ctypeslib.ndpointer(dtype='int16', ndim=1, flags='CONTIGUOUS'),
-    'int8*':    np.ctypeslib.ndpointer(dtype='int8', ndim=1, flags='CONTIGUOUS'),
-    'uint8*':   np.ctypeslib.ndpointer(dtype='uint8', ndim=1, flags='CONTIGUOUS'),
-    'byte*':    np.ctypeslib.ndpointer(dtype='uint8', ndim=1, flags='CONTIGUOUS'),
-    '2Dbyte*':  np.ctypeslib.ndpointer(dtype='uint8', ndim=2, flags='CONTIGUOUS'),
+    'int*':     np.ctypeslib.ndpointer(dtype='int32',   ndim=1, flags='CONTIGUOUS'),
+    'short*':   np.ctypeslib.ndpointer(dtype='int16',   ndim=1, flags='CONTIGUOUS'),
+    'int8*':    np.ctypeslib.ndpointer(dtype='int8',    ndim=1, flags='CONTIGUOUS'),
+    'uint8*':   np.ctypeslib.ndpointer(dtype='uint8',   ndim=1, flags='CONTIGUOUS'),
+    'byte*':    np.ctypeslib.ndpointer(dtype='uint8',   ndim=1, flags='CONTIGUOUS'),
+    '2Dbyte*':  np.ctypeslib.ndpointer(dtype='uint8',   ndim=2, flags='CONTIGUOUS'),
     }
 
 
