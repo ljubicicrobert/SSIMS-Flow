@@ -15,6 +15,7 @@ Step = 1
 Start = 0
 End = 999999
 Undistort = 0
+Crop = 
 
 [Feature tracking]
 InterrogationAreaSize = 11
@@ -45,6 +46,7 @@ Folder =
 Extension = jpg
 Method = 0
 Step = 1
+Pairing = 0
 Scale = 1.0
 Pooling = 16
 AngleMain = 0
@@ -57,3 +59,7 @@ ChainEnd =
 ChainCount = 100
 ProfileSource = 0
 Alpha = 0.85
+Xmin = 0
+Xmax = -1
+Ymin = 0
+Ymax = -1

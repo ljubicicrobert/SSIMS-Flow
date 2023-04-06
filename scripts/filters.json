@@ -375,7 +375,15 @@
                     "PType": "int",
                     "PUpper": 100,
                     "PStart": 10,
-                    "PLower": 2,
+                    "PLower": 1,
+                    "PStep": 1
+                },
+                {
+                    "PName": "Use grayscale",
+                    "PType": "int",
+                    "PUpper": 1,
+                    "PStart": 1,
+                    "PLower": 0,
                     "PStep": 1
                 }
             ]

@@ -102,39 +102,50 @@ if __name__ == '__main__':
 		results_folder = unix_path('{}/optical_flow'.format(cfg['Project settings']['Folder']))
 		ext = cfg[section]['Extension']
 		optical_flow_step = int(cfg[section]['Step'])
+		pairing = int(cfg[section]['Pairing'])		# 0 = stepwise, 1 = sliding by 1
 		scale = float(cfg[section]['Scale'])
 		pooling = int(cfg[section]['Pooling'])
 		angle_main = float(cfg[section]['AngleMain'])
 		angle_range = float(cfg[section]['AngleRange'])
 		average_only = int(cfg[section]['AverageOnly'])
 
-		if not path.exists(results_folder):
-			fresh_folder(results_folder)
 		fresh_folder(results_folder, exclude=['depth_profile.txt'])
 		fresh_folder(results_folder + '/magnitudes')
 		fresh_folder(results_folder + '/directions')
 		
-		frames_list = glob('{}/*.{}'.format(frames_folder, ext))
-		num_frames = len(frames_list)
+		paths_frames = glob('{}/*.{}'.format(frames_folder, ext))
+		num_frames = len(paths_frames)
 		num_digits = floor(log10(num_frames)) + 1
 		angle_func, angle_lower, angle_upper = get_angle_range(angle_main, angle_range)
+		
+		if pairing == 1:
+			paths_frame_A = paths_frames[:-optical_flow_step]
+			paths_frame_B = paths_frames[optical_flow_step:]
+		else:
+			paths_frame_A = paths_frames[0:-optical_flow_step:optical_flow_step]
+			paths_frame_B = paths_frames[optical_flow_step::optical_flow_step]
+		
+		indices_frame_A = [paths_frames.index(x) for x in paths_frame_A]
+		indices_frame_B = [paths_frames.index(x) for x in paths_frame_B]
 
-		# prev_frame_bgr = cv2.imread(frames_list[0])
-		prev_frame = cv2.imread(frames_list[0], 0)
-		h, w = prev_frame.shape
+		assert len(paths_frame_A) == len(paths_frame_B), f'Frames A list length = {len(paths_frame_A)} != Frames B list length = {len(paths_frame_B)}'
+		num_frame_pairs = len(paths_frame_A)
+
+		frame_A = cv2.imread(paths_frame_A[0], 0)
+		h, w = frame_A.shape
 
 		farneback_params = [0.5, 3, 15, 2, 7, 1.5, 0]
 
 		try:
 			mng = plt.get_current_fig_manager()
 			mng.window.state('zoomed')
-			mng.set_window_title('Filtering')
+			mng.set_window_title('Optical flow')
 		except Exception:
 			pass
 
 		if scale != 1.0:
-			prev_frame = cv2.resize(prev_frame, (int(w * scale), int(h * scale)))
-			h, w = prev_frame.shape
+			frame_A = cv2.resize(frame_A, (int(w * scale), int(h * scale)))
+			h, w = frame_A.shape
 
 		h_pooled = int(np.ceil(h/pooling))
 		w_pooled = int(np.ceil(w/pooling))
@@ -142,25 +153,26 @@ if __name__ == '__main__':
 		padd_w = w_pooled//10
 
 		flow_hsv = np.zeros([h_pooled, w_pooled, 2], dtype='uint8')
-		mag_stack = np.ndarray([h_pooled, w_pooled, int(np.ceil((num_frames - optical_flow_step)/optical_flow_step + 1))], dtype='float32')
+		mag_stack = np.ndarray([h_pooled, w_pooled, num_frame_pairs], dtype='float32')
 		mag_max = np.zeros(mag_stack.shape[:2])
 		angle_stack = np.ndarray(mag_stack.shape)
 
 		flow_shown = plt.imshow(flow_hsv[:, :, 0], cmap='jet', vmax=1, vmin=0)
 		cbar = plt.colorbar(flow_shown)
 		cbar.set_label('Velocity magnitude [px/frame]')
-		plt.title('Frame: 1/{}'.format(num_frames))
+		plt.title('Frames {}+{} of {} total'.format(indices_frame_A[0], indices_frame_B[0], num_frames))
 		plt.axis('off')
 		plt.tight_layout()
 
 		console_printer = Console_printer()
-		progress_bar = Progress_bar(total=(num_frames - num_frames % optical_flow_step), prefix=tag_string('info', 'Frame '))
-		timer = Timer(total_iter=num_frames//optical_flow_step)
+		progress_bar = Progress_bar(total=num_frame_pairs, prefix=tag_string('info', 'Frame pair '))
+		timer = Timer(total_iter=num_frame_pairs)
 
 		tag_print('start', 'Optical flow estimation using Farneback algorithm\n')
 		tag_print('info', 'Using frames from folder [{}]'.format(frames_folder))
 		tag_print('info', 'Frame extension = {}'.format(ext))
 		tag_print('info', 'Number of frames = {}'.format(num_frames))
+		tag_print('info', 'Number of frame pairs = {}'.format(num_frame_pairs))
 		tag_print('info', 'Optical flow step = {}'.format(optical_flow_step))
 		tag_print('info', 'Frame scaling = {:.1f}'.format(scale))
 		tag_print('info', 'Pooling = {} px'.format(pooling))
@@ -170,16 +182,15 @@ if __name__ == '__main__':
 
 		j = 0
 
-		for i in range(optical_flow_step, num_frames, optical_flow_step):
-			# next_frame_bgr = cv2.imread(frames_list[i])
-			next_frame = cv2.imread(frames_list[i], 0)
+		for i in range(num_frame_pairs):
+			frame_A = cv2.imread(paths_frame_A[i], 0)
+			next_frame = cv2.imread(paths_frame_B[i], 0)
 
 			if scale != 1.0:
-				# next_frame_bgr = cv2.resize(next_frame_bgr, (w, h))
+				frame_A = cv2.resize(frame_A, (w, h))
 				next_frame = cv2.resize(next_frame, (w, h))
 
-			flow = cv2.calcOpticalFlowFarneback(prev_frame, next_frame, None, *farneback_params)
-			# flow = cv2.optflow.calcOpticalFlowDenseRLOF(prev_frame_bgr, next_frame_bgr, None)
+			flow = cv2.calcOpticalFlowFarneback(frame_A, next_frame, None, *farneback_params)
 			magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
 
 			# Filter by vector angle
@@ -221,16 +232,18 @@ if __name__ == '__main__':
 			flow_shown.set_data(mag_max)
 			flow_shown.set_clim(vmax=np.max(mag_max[padd_h: -padd_h, padd_w: -padd_w]))
 			
-			plt.title('Frame: {}/{}'.format(i+1, num_frames))
+			plt.title('Frames {}+{} of {} total'.format(indices_frame_A[i], indices_frame_B[i], num_frames))
 			plt.pause(0.001)
 			plt.draw()
-
-			prev_frame = next_frame
-			# prev_frame_bgr = next_frame_bgr
 
 			timer.update()
 
 			console_printer.add_line(progress_bar.get(i))
+			console_printer.add_line(
+				tag_string('info', 'Frames {}+{} of {} total'
+	       			.format(indices_frame_A[i], indices_frame_B[i], num_frames)
+				)
+			)
 			console_printer.add_line(
 				tag_string('info', 'Frame processing time = {:.3f} sec'
 					.format(timer.interval())

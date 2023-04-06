@@ -1,3 +1,16 @@
+SSIMS-Flow v0.4.1.0
+
+Major:
+- Added an option to choose frame pairing method:
+    a) Sliding frames by step (0>>step, step>>2*step, ...) = faster, less data
+    b) Sliding frames by one (0>>step, 1>>step+1, ...) = slower, but more data
+
+Minor:
+- Improved background removal filter
+- Modified filter preview form
+
+===============================================================================
+
 SSIMS-Flow v0.4.0.1
 
 Minor:

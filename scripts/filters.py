@@ -266,7 +266,7 @@ def clahe(img, clip=2.0, tile=8):
 	return three_channel(img_clahe)
 
 
-def remove_background(img, num_frames_background, img_list, ext):
+def remove_background(img, num_frames_background, gray=1, img_list = list(), ext = 'jpg'):
 	num_frames_background = int(num_frames_background)
 	h, w = img.shape[:2]
 
@@ -278,14 +278,22 @@ def remove_background(img, num_frames_background, img_list, ext):
 
 	if path.exists(img_back_path):
 		back = cv2.imread(img_back_path)
+		if gray:
+			back = three_channel(cv2.cvtColor(back, cv2.COLOR_RGB2GRAY))
 	else:
 		stack = np.ndarray([h, w, 3, num_frames_background], dtype='uint8')
 
 		for i in range(num_frames_background):
-			stack[:, :, :, i] = cv2.imread(img_list[i*step])
+			back = cv2.imread(img_list[i*step])
+			if gray:
+				back = three_channel(cv2.cvtColor(back, cv2.COLOR_RGB2GRAY))
+			stack[:, :, :, i] = back
 
 		back = np.median(stack, axis=3)
 		cv2.imwrite(img_back_path, back)
+
+	if gray:
+		img = convert_img(img, colorspace, 'grayscale')
 
 	return cv2.subtract(img.astype('uint8'), back.astype('uint8'))
 
