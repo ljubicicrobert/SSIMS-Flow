@@ -136,6 +136,8 @@ if __name__ == '__main__':
 
 		farneback_params = [0.5, 3, 15, 2, 7, 1.5, 0]
 
+		fig, ax = plt.subplots()
+
 		try:
 			mng = plt.get_current_fig_manager()
 			mng.window.state('zoomed')
@@ -157,9 +159,13 @@ if __name__ == '__main__':
 		mag_max = np.zeros(mag_stack.shape[:2])
 		angle_stack = np.ndarray(mag_stack.shape)
 
-		flow_shown = plt.imshow(flow_hsv[:, :, 0], cmap='jet', vmax=1, vmin=0)
+		background = plt.imshow(frame_A, cmap='gray', extent=[-0.5, mag_max.shape[1], mag_max.shape[0], -0.5])
+		flow_shown = plt.imshow(flow_hsv[:, :, 0], cmap='jet', alpha=0.5)
+
 		cbar = plt.colorbar(flow_shown)
+		cbar.solids.set(alpha=1.0)
 		cbar.set_label('Velocity magnitude [px/frame]')
+		
 		plt.title('Frames {}+{} of {} total'.format(indices_frame_A[0], indices_frame_B[0], num_frames))
 		plt.axis('off')
 		plt.tight_layout()
@@ -184,13 +190,13 @@ if __name__ == '__main__':
 
 		for i in range(num_frame_pairs):
 			frame_A = cv2.imread(paths_frame_A[i], 0)
-			next_frame = cv2.imread(paths_frame_B[i], 0)
+			frame_B = cv2.imread(paths_frame_B[i], 0)
 
 			if scale != 1.0:
 				frame_A = cv2.resize(frame_A, (w, h))
-				next_frame = cv2.resize(next_frame, (w, h))
+				frame_B = cv2.resize(frame_B, (w, h))
 
-			flow = cv2.calcOpticalFlowFarneback(frame_A, next_frame, None, *farneback_params)
+			flow = cv2.calcOpticalFlowFarneback(frame_A, frame_B, None, *farneback_params)
 			magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
 
 			# Filter by vector angle
@@ -229,8 +235,13 @@ if __name__ == '__main__':
 				np.savetxt('{}/magnitudes/{}.txt'.format(results_folder, n), magnitude, fmt='%.2f')
 				np.savetxt('{}/directions/{}.txt'.format(results_folder, n), angle, fmt='%.1f')
 
+			max_cbar = np.max(mag_max[padd_h: -padd_h, padd_w: -padd_w])
+
+			background.set_data(frame_B)
 			flow_shown.set_data(mag_max)
-			flow_shown.set_clim(vmax=np.max(mag_max[padd_h: -padd_h, padd_w: -padd_w]))
+			flow_shown.set_clim(vmax=max_cbar, vmin=0)
+
+			cbar.solids.set(alpha=1.0)
 			
 			plt.title('Frames {}+{} of {} total'.format(indices_frame_A[i], indices_frame_B[i], num_frames))
 			plt.pause(0.001)
@@ -241,7 +252,7 @@ if __name__ == '__main__':
 			console_printer.add_line(progress_bar.get(i))
 			console_printer.add_line(
 				tag_string('info', 'Frames {}+{} of {} total'
-	       			.format(indices_frame_A[i], indices_frame_B[i], num_frames)
+		   			.format(indices_frame_A[i], indices_frame_B[i], num_frames)
 				)
 			)
 			console_printer.add_line(

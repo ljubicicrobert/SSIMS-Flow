@@ -18,6 +18,14 @@ Created by Robert Ljubicic.
 
 from math import log10, floor
 
+try:
+    import PyTaskbar
+    prog = PyTaskbar.Progress()
+    prog.init()
+    prog.setState('normal')
+    taskbar_available = True
+except ImportError:
+    taskbar_available = False
 
 class Progress_bar:
     """
@@ -54,12 +62,21 @@ class Progress_bar:
                                                                        self.char_done * len_done,
                                                                        self.char_remain * len_remain)
 
+    def update_taskbar(self):
+        try:
+            if taskbar_available:
+                prog.setProgress(int(self.percent))
+        except Exception:
+            pass
+
     def show(self, iteration: int):
         self.update_bar(iteration)
+        self.update_taskbar()
         print('{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len))
 
     def get(self, iteration: int) -> str:
         self.update_bar(iteration)
+        self.update_taskbar()
         return '{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len)
 
 
@@ -72,3 +89,7 @@ if __name__ == '__main__':
     for i in range(iters):
         time.sleep(0.001)
         pb.show(i)
+
+    if taskbar_available:
+        prog.setProgress(0)
+        prog.setState('done')

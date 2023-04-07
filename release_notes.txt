@@ -1,3 +1,16 @@
+SSIMS-Flow v0.4.1.1
+
+Minor:
+- Optical flow analysis will now show an overlay of the image used for
+velocity estimation and the flow magnitude field, so that the user can track
+what is being detected and tracked.
+- Added support for taskbar progress indicator using PyTaskbar.
+Requires comtypes (install with pip), and PyGetWindow (install with pip).
+Is not required if you don't want/need a taskbar progress indicator.
+Credits for PyTaskbar go to N3RDIUM (https://github.com/N3RDIUM/PyTaskbar).
+
+===============================================================================
+
 SSIMS-Flow v0.4.1.0
 
 Major:

@@ -29,7 +29,6 @@ except Exception as ex:
 	print()
 	tag_print('exception', 'Import failed! \n')
 	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
 	exit()
 
 
@@ -48,7 +47,6 @@ if __name__ == '__main__':
         except Exception:
             tag_print('error', 'There was a problem reading the configuration file!')
             tag_print('error', 'Check if project has valid configuration.')
-            input('\nPress ENTER/RETURN key to exit...')
             exit()
 
         section = 'Enhancement'
@@ -70,14 +68,12 @@ if __name__ == '__main__':
         img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
 
         img = filters.apply_filters(img, filters_data, img_list, ext)
-        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BG)
         
         shutil.copyfile(img_path, save_path_original)
         cv2.imwrite(save_path_filtered, img_bgr)
 
     except Exception as ex:
-        print()
-        tag_print('exception', 'Import failed! \n')
-        print('\n{}'.format(format_exc()))
-        input('\nPress ENTER/RETURN key to exit...')
-        exit()
+        print('[ERROR] An exception has occurred! See traceback bellow: \n\n')
+        print('{}'.format(format_exc()))
+        input()     # Pause for .WaitForExit() to timeout in GUI
