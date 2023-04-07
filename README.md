@@ -20,7 +20,7 @@ The package consists of a backend (written in Python 3 and C++) and frontend GUI
 
 The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
 
-**IMPORTANT**: Some parts of the code are written in C++ and are available through DLLs. These require [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) as they depend on MSVCR140.dll. If you get a message that DLL import has failed, please install the required MS Redistributable.
+> **IMPORTANT**: Some parts of the code are written in C++ and are available through DLLs. These require [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) as they depend on MSVCR140.dll. This DLL is now shipped with SSIMS-Flow. However, if you get a message that DLL import has failed, please install the required MS Redistributable manually.
 
 The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
 
@@ -28,20 +28,22 @@ So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6,
 
 Python library requirements (other than the standard library):
 ```python
-numpy >= 1.19                       # pip install numpy
-opencv-python >= 4.7                # pip install opencv-python
-opencv-contrib-python >= 4.7        # pip install opencv-contrib-python
-matplotlib >= 3.0                   # pip install matplotlib
-mplcursors >= 0.3                   # pip install mplcursors
-scipy >= 1.0                        # pip install scipy
-skimage (scikit-image) >= 0.16.1    # pip install scikit-image
+numpy >= 1.19                             # pip install numpy
+opencv-python >= 4.7                      # pip install opencv-python
+opencv-contrib-python >= 4.7              # pip install opencv-contrib-python
+matplotlib >= 3.0                         # pip install matplotlib
+mplcursors >= 0.3                         # pip install mplcursors
+scipy >= 1.0                              # pip install scipy
+skimage (scikit-image) >= 0.16.1          # pip install scikit-image
+comtypes (optional, for taskbar progress) # pip install comtypes
+PyGetWindow (optional, taskbar progress)  # pip install PyGetWindow
 ```
 
->**Note #1**: If you are using distributions of Python such as Anaconda or Winpython, you will likely have all the necessary libraries with the possible exception of `opencv-python` and `opencv-contrib-python`.
+>**Note**: If you are using distributions of Python such as Anaconda or WinPython, you will likely have all the necessary libraries with the possible exception of `opencv-python` and `opencv-contrib-python`.
 
->**Note #2**: The tool might also work fine with `opencv-python` version 3.6, but this is yet to be tested.
+>**Note**: The tool might also work fine with `opencv-python` version 3.6, but this is yet to be tested.
 
->**Note #3**: It has been noted that newer versions of `matplotlib` (apparently those which have been installed using PIP) are failing to be properly imported due to missing `ft2font` DLL. In this case you can try installing `matplotlib` version 3.2.1 which worked well during testing:
+>**Note**: It has been noted that newer versions of `matplotlib` (apparently those which have been installed using PIP) are failing to be properly imported due to missing `ft2font` DLL. In this case you can try installing `matplotlib` version 3.2.1 which worked well during testing:
 >```bash
 >pip install matplotlib==3.2.1
 >```
@@ -53,12 +55,12 @@ skimage (scikit-image) >= 0.16.1    # pip install scikit-image
 
 The tool will automatically check for latest releases of the tool on program start. If new release was found in the official repository a form will be displayed from where you can read the new release information, choose to view/download the new release on/from GitHub, or pause automatic checking for new versions for some period of time.
 
-> **Note #4**: You can also manually check for new releases through the _About_ tab.
+> **Note**: You can also manually check for new releases using the button in the _About_ tab.
 
 
 ## Usage
 
-**Unlike its predecessor, SSIMS-Flow is meant to be used ONLY through the graphical user interface (GUI)**. Usage through the terminal is possible but discouraged. Those interested in such approach can check the `ArgumentParser` objects in source files for more details.
+Unlike its predecessor, SSIMS-Flow is **meant to be used ONLY through the graphical user interface (GUI)**. Usage through the terminal is possible but discouraged. Those interested in such approach can check the `ArgumentParser` objects in source files for more details.
 
 
 ### Project settings
@@ -68,8 +70,10 @@ The tool will automatically check for latest releases of the tool on program sta
 Main information about the project will be shown in the **Project settings** panel once the GUI has started. These include project name, location on disk, description, data of creation, and interpreter used for backend. Interpreted choice will be memorized for each project.
 
 You can choose to either:
-1. **Create** a new project, or 
-2. **Open** an existing one.
+1. **Create** a new project,
+2. **Open** an existing one,
+3. **Load** a project from recent history dropdown (up to 10 recent projects), or
+4. **Save** modified project settings.
 
 Creating a new project involves a selection of a folder which will host all of the resulting files created by this tool. **Selected folder should be empty, or will it be emptied for the user after prompt**. Project folder **does not** have to contain the video itself - the video can be hosted anywhere on disk and will not be moved/copied/deleted.
 
@@ -77,7 +81,9 @@ All of the project metadata will be contained in the file `%PROJECT_FOLDER%\proj
 
 Loading an existing project requires that you select an appropriate `project.ssims` file, which will load all the project information to the GUI.
 
-> **Note #5**: Some sections of the GUI will be unavailable until you create a new project or load an existing one.
+Once a project is successfully loaded, it will appear in the Recent history dropdown.
+
+> **Note**: Some sections of the GUI will be unavailable until you create a new project or load an existing one.
 
 
 ### Project status
@@ -91,7 +97,7 @@ In the lower section of the **Project settings** panel a summary of the project 
 - **EN** = Image enhancement,
 - **OF** = Optical flow.
 
-Completed project stages, which have available results, will be indicated by the green icons in the footer, while uncompleted stages will be indicated by the gray icons.
+Completed project stages, which have available results, will be indicated by the green icons in the lower right of the GUI footer, while uncompleted stages will be indicated by the gray icons.
 
 
 ### Video unpacking
@@ -99,6 +105,8 @@ Completed project stages, which have available results, will be indicated by the
 <img align="right" width="500" src="screenshots/unpack_video.png">
 
 The workflow of the tool requires that the video is unpacked into individual frames. The source video can be selected in the **Unpack video** panel, after which the video metadata will be shown below. You can specify the resulting frames' file extension, image quality parameter (0-100), scaling factor, and frame stepping (to extract every Nth frame). Furthermore, you can choose to only unpack a section of the original video, defined by the starting and end time in the video.
+
+Alternatively, users can interactively select a region-of-interest (ROI) of the images that you want to extract from the video, by clicking the **Crop to ROI** button.
 
 The resulting frames will be unpacked to folder `%PROJECT_FOLDER%\frames`.
 
@@ -117,7 +125,7 @@ Last option requires that you provide a set of calibrating images using a cheque
 
 When option (3) is selected, the form will expand to reveal additional options and explanations on how to perform a calibration of a new camera. The calibration process involves detection of chequerboard patterns in a series of images, and minimizing the reprojection errors between the image- and object-space by modifying the camera parameters. At the end of the procedure, a report will show the RMS reprojection errors obtained using the new camera parameters.
 
-> **Note #6**: If certain images have a relatively high reprojection error value, it can be beneficial to remove them from the calibration folder and repeat the calibration procedure, as this might improve the calibration accuracy. For best results try to keep between 15 and 30 images with chequerboard (target) pattern. Also, generation and manual inspection of undistorted chequerboard images is highly advised.
+> **Note**: If certain images have a relatively high reprojection error value, it can be beneficial to remove them from the calibration folder and repeat the calibration procedure, as this might improve the calibration accuracy. For best results try to keep between 15 and 30 images with chequerboard (target) pattern. Also, generation and manual inspection of undistorted chequerboard images is highly advised.
 
 Camera parameters will be saved to `%PROJECT_FOLDER%\camera_parameters.cpf`, and can be viewed and modified using any text editor. Copying this file to the `%INSTALATION_FOLDER%\camera_profiles` folder of the SSIMS-Flow tool will make this camera profile available in the dropdown list of the Camera parameters form for all projects.
 
@@ -149,7 +157,7 @@ Use keys O and P to zoom and pan the image. Use keys LEFT and RIGHT to undo and 
 
 The results of the feature tracking will be stored in the `%PROJECT_FOLDER\transformation%` folder.
 
-> **Note #7**: Feature tracking will not immediately produce stabilized images. This will be done after the two following steps have been completed.
+> **Note**: Feature tracking will not immediately produce stabilized images. This will be done after the two following steps have been completed.
 
 
 #### Feature selection
@@ -158,7 +166,7 @@ The results of the feature tracking will be stored in the `%PROJECT_FOLDER\trans
 
 Not all of the tracked features have to be used for the transformation (stabilization) of frames. You can select features that will be used for the transformation using the **Select features for transformation** button. This will open a new form which display the positions and coordinates of tracked features. From the given list, you can choose which ones will be used to stabilize the original images.
 
-> **Note #8**: An average SSIM tracking score (higher is better, 1 is ideal) will be shown next to each feature coordinates on the right side of the form.
+> **Note**: An average SSIM tracking score (higher is better, 1 is ideal) will be shown next to each feature coordinates on the right side of the form.
 
 To further help you choose the best features, an additional analysis is available by clicking the **Plot SSIM** scores button in the top-left corner of the Select features for transformation window. This will run the ssim_scores.py script and will show a bar graph of SSIM tracking scores for all frames. In the bar graph, better features will have a higher SSIM score and lower variance, which can help you decide which ones to keep and which ones to remove from the transformation.
 
@@ -177,7 +185,7 @@ The most important parameter is the **transformation method** which can signific
 4. **Projective (strict)**, based on [cv2.getPerspectiveTransform](https://docs.opencv.org/3.4/da/d54/group__imgproc__transform.html#ga8c1ae0e3589a9d77fffc962c49b22043), which requires exactly 4 features, and
 5. **Projective (optimal)**, based on [cv2.findHomography](https://docs.opencv.org/3.4/d9/d0c/group__calib3d.html#ga4abc2ece9fab9398f2e560d53c8c9780), which requires at least 4 features. This is the default option and is usually the best starting point.
 
-> **Note #9:** RANSAC filtering option is only available for methods labeled as **(optimal)**.
+> **Note:** RANSAC filtering option is only available for methods labeled as **(optimal)**.
 
 
 #### Orthorectification
@@ -190,7 +198,7 @@ The tool also offers a simple orthorectification to be performed by estimating t
 
 By clicking **Apply** the GCP list will be saved and number of selected GCPs will be shown in the button label. IF orthorectification is configured, after clicking the **Image transformation** button you will be prompted to select in-image positions of these GCPs, which **CAN BE DIFFERENT** from those features tracked for the stabilization purposes.
 
-> **Note #10**: The number of GCPs defined in the table and those selected in the image after clicking **Image transformation** button MUST BE THE SAME! ArUco markers will also be detected in the first frame, and a prompt will appear to ask you if you want them preselected as GCPs.
+> **Note**: The number of GCPs defined in the table and those selected in the image after clicking **Image transformation** button MUST BE THE SAME! ArUco markers will also be detected in the first frame, and a prompt will appear to ask you if you want them preselected as GCPs.
 
 Clicking **Cancel** will turn the orthorectification step off for the project workflow, and only image stabilization will then be performed.
 
@@ -203,17 +211,20 @@ You should also set a ground sampling distance (GSD, in px/m) to rescale the ima
 
 Image filtering/enhancement is often a crucial part of the image velocimetry workflow. This tools offers a form in which such filtering can easily be performed. For those users unfamiliar with the image filtering/enhancement process, it is advisable to visit the [Image enhancement for UAV velocimetry](https://github.com/ljubicicrobert/Image-enhancement-for-UAV-velocimetry) repository. In that repository, a detailed overview of different aspects of image enhancement is provided through a series of Jupyter notebooks.
 
-Before filtering, it is highly advisable to inspect the different colorspace models of the frames. This can be done by clicking on the **Explore colorspaces** button at the bottom-left of the panel.
+By clicking the **Start filtering** button in the **Enhance images** tab, a new form will open. The form consists of:
+1. The sidebar, which allows users to create a **filtering stack**. Available filters are listed in the dropdown menu through which they can be added to the filtering stack. Filters will be added to the end of the stack by default, but can be reordered using the buttons on the righthand side. Filter parameters will also be shown in the brackets for each filter in the stack. By clicking on the filter, its parameters will be shown on the righthand side of the panel, which can be modified using either the trackbar or the corresponding boxes. Changes made through these will instantly be reflected in the filtering stack.
+2. The central preview window, which allows for immediate interactive preview of the results of the filtering. Users can drag the slider to change between the filtered and the original image, or click the **Toggle filtered/original** button to show one or the other.
+3. The frame searchbar in the lower section of the form, which can be used to seek frame to be used for preview.
 
-Users can perform filtering of images in a folder using the **Enhance images** panel. Available filters are listed in the dropdown menu through which they can be added to the **filtering stack**. Filters will be added to the end of the stack by default, but can be reordered using the buttons on the righthand side. Filter parameters will also be shown in the brackets for each filter in the stack. By clicking on the filter, its paramters will be shown on the righthand side of the panel, which can be modified using either the trackbar or the corresponding boxes. Changes made through these will instantly be reflected in the filtering stack.
+Before filtering, it is highly advisable to inspect the different colorspace models of the frames. This can be done by clicking on the **Explore colorspaces** button at the bottom-left of the panel.
 
 > **IMPORTANT**: Filters will be applied in the top-down order in the filtering stack.
 
-Some of the available filter are just colorspace model conversions (titled _Convert to..._). These will transform the image from the previous colorspace to the chosen one. **Default colorspace model**, which is active when the image is loaded for filtering, is **RGB**.
+Some of the available filter are just colorspace model conversions (titled _Convert to..._). These will transform the image from the previous colorspace to the chosen one. **Default colorspace model**, which is active when the image is loaded for filtering, is **RGB**. Once a filter has been selected, the resulting colorspace will be shown below the filtering stack.
 
 > SSIMS-Flow will keep track of the colorspace conversions during filtering. For example, if _Convert to L\*a\*b\*_ is in the stack, followed by the _Single image channel_, by choosing the channel in the **Filter parameters** form, the user will effectively be selecting a channel of the image from its L\*a\*b\* colorspace model. Some filters will implicitly convert the image to a single-channel grayscale colorspace.
 
-You can preview the results of the current stack (with the currently set parameters) by clicking the **Preview results** button. Once you are happy with the results, you can start creating filtered/enhanced images by clicking the **Filter frames** button in the lower right corner. This will apply the selected filters to all frames in the selected folder, and the resulting images will be stored in the `%PROJECT_FOLDER\enhancement%` folder.
+Once you are happy with the results, you can start creating filtered/enhanced images by clicking the **Filter frames** button in the lower right corner. This will apply the selected filters to all frames in the selected folder, and the resulting images will be stored in the `%PROJECT_FOLDER\enhancement%` folder.
 
 
 ### Optical flow (OF)
@@ -224,12 +235,14 @@ Estimation of surface velocity field is performed using the Gunnar Farnebäck me
 
 However, keeping information about per-pixel motion in high-resolution images requires significant amount of storage space (easily tens of MB per image). Additionally, if tracer particle seeding is sparse and/or periodic, only a smaller percentage of the image will experience motion between consecutive frames. Hence, an aggregation/pooling technique is applied to the raw results:
 
-1. Results are first converted from U and V components (velicities in X and Y direction) to **magnitude and flow direction** (angle) representation.
+1. Results are first converted from U and V components (velocities in X and Y direction) to **magnitude and flow direction** (angle) representation.
 2. The user should specify the **main direction** of the flow, either by entering the value in the box, or by pointing and clicking at the desired angle in the circle. Then, a flow direction tolerance (**angle range**) should be provided. Pixels whose flow angles do not fall into the range _main flow direction_ +/- _angle range_ will be masked out and their magnitudes will be replaced by 0.
 3. The idea further is to reduce the size of the resulting matrix by aggregating the results from PxP sized blocks, where P is the **pooling block size** in pixels. We can assume that the tracer particle seeding is sparse (which is often true) which means that only a handful of pixels in each block will be likely to represent actual tracer motion, while the rest of the pixels will have magnitudes close to zero. A fair strategy for isolating valid pixels and their magnitudes is to calculate the mean magnitude of the block, select pixels with magnitudes greater than said mean, and then adopt the mean of those selected pixels as the representative magnitude of that pooling block. The same procedure is performed for all blocks in the image.
 4. The resulting matrix will have P*P times fewer pixels, whilst still adequately representing the flow field.
 5. Angles are pooled in a similar manner, but just using the mean of the block values.
 6. Temporal aggregation is performed in a similar manner, by applying thresholded mean over several iterations.
+
+The users can also specify the distance between two frames used for velocity estimation - frame step. This is useful in cases where the displacement of tracer particles between consecutive frames is too low (especially when it's in subpixel range). Ideally, this displacement is around 4-8 pixels per frame, but higher values are usually better than lower. Users can also specify frame pairing mode: sliding window by step size (less data will be used but is faster), or sliding window by 1 frame (more data, slower).
 
 
 ### Post-OF analyses
