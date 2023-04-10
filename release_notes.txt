@@ -1,3 +1,10 @@
+SSIMS-Flow v0.4.1.2
+
+Minor:
+- Fixed error in Preview filters
+
+===============================================================================
+
 SSIMS-Flow v0.4.1.1
 
 Minor:

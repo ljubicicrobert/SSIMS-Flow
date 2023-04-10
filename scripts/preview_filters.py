@@ -68,7 +68,7 @@ if __name__ == '__main__':
         img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
 
         img = filters.apply_filters(img, filters_data, img_list, ext)
-        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BG)
+        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         
         shutil.copyfile(img_path, save_path_original)
         cv2.imwrite(save_path_filtered, img_bgr)
