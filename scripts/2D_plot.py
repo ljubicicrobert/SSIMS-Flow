@@ -51,8 +51,8 @@ __units__ = [
 
 
 def update_frame(val):
-    mags = np.loadtxt(mag_list[val]) * v_ratio
-    dirs = np.loadtxt(dir_list[val])
+    mags = try_load_file(mag_list[val]) * v_ratio
+    dirs = try_load_file(dir_list[val])
     us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
 
     data_new = [us, vs, mags, dirs]
@@ -96,6 +96,13 @@ def keypress(event):
             sl_ax_frame_num.set_val(sl_ax_frame_num.val - 10)
 
     update_frame(sl_ax_frame_num.val)
+
+
+def try_load_file(fname):
+    try:
+        return np.loadtxt(fname)
+    except Exception:
+        return None
 
 
 if __name__ == '__main__':
@@ -171,9 +178,9 @@ if __name__ == '__main__':
         if mode == 0:       # Time averaged
             legend_toggle.set_visible(False)
 
-            mags = np.loadtxt('{}/optical_flow/mag_mean.txt'.format(project_folder)) * v_ratio	# px/frame
-            dirs = np.loadtxt('{}/optical_flow/angle_mean.txt'.format(project_folder))
-            thrs = np.loadtxt('{}/optical_flow/threshold_ratios.txt'.format(project_folder))
+            mags = try_load_file('{}/optical_flow/mag_mean.txt'.format(project_folder)) * v_ratio	# px/frame
+            dirs = try_load_file('{}/optical_flow/angle_mean.txt'.format(project_folder))
+            thrs = try_load_file('{}/optical_flow/threshold_ratios.txt'.format(project_folder))
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
@@ -182,16 +189,16 @@ if __name__ == '__main__':
         elif mode == 1:     # Maximal
             legend_toggle.set_visible(False)
 
-            mags = np.loadtxt('{}/optical_flow/mag_max.txt'.format(project_folder)) * v_ratio	# px/frame
-            dirs = np.loadtxt('{}/optical_flow/angle_mean.txt'.format(project_folder))
+            mags = try_load_file('{}/optical_flow/mag_max.txt'.format(project_folder)) * v_ratio	# px/frame
+            dirs = try_load_file('{}/optical_flow/angle_mean.txt'.format(project_folder))
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
             data = [us, vs, mags, dirs]
             img = data[args.data]
         elif mode == 2:     # Instantaneous      
-            mags = np.loadtxt(mag_list[0]) * v_ratio
-            dirs = np.loadtxt(dir_list[0])
+            mags = try_load_file(mag_list[0]) * v_ratio
+            dirs = try_load_file(dir_list[0])
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
