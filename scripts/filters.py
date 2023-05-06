@@ -37,14 +37,15 @@ except Exception as ex:
 	input('\nPress ENTER/RETURN key to exit...')
 	exit()
 
-colorspaces_list = ['rgb', 'hsv', 'lab', 'grayscale']
+colorspaces_list = ['rgb', 'hsv', 'lab', 'grayscale', 'ycrcb']
 
 # V from / > to
 color_conv_codes = (
-	[[], 	[67], 		[45], 		[7]],
-	[[71], 	[], 		[71, 45], 	[71, 7]],
-	[[57], 	[57, 67], 	[], 		[57, 7]],
-	[[8], 	[8, 67], 	[8, 45], 	[]]
+	[[], 	[67], 		[45], 		[7], 		[37]],
+	[[71], 	[], 		[71, 45], 	[71, 7], 	[71, 37]],
+	[[57], 	[57, 67], 	[], 		[57, 7], 	[57, 37]],
+	[[8], 	[8, 67], 	[8, 45], 	[], 		[8, 37]],
+	[[39], 	[39, 67], 	[39, 45], 	[39, 7], 	[]]
 )
 
 colorspace = 'rgb'
@@ -140,6 +141,10 @@ def to_hsv(img):
 
 def to_lab(img):
 	return convert_img(img, colorspace, 'lab')
+
+
+def to_ycrcb(img):
+	return convert_img(img, colorspace, 'ycrcb')
 
 
 def rearrange_channels(img, c1=1, c2=2, c3=3):

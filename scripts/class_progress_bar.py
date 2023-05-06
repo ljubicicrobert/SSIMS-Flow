@@ -51,16 +51,26 @@ class Progress_bar:
         self.total = total
         self.num_digits = floor(log10(total)) + 1
 
-    def update_bar(self, iteration: int):
+    def update(self, iteration: int):
         self.percent = (iteration + 1)/self.total * 100
-        if self.percent > 100:
-            self.percent = 100
+        if self.percent >= 100:
+            self.done()
         len_done = int(self.percent / 100 * self.bar_length)
         len_remain = self.bar_length - len_done
         self.bar = '{}/{} [\033[32m{}\033[0m\033[31m{}\033[0m]'.format(str(iteration+1).rjust(self.num_digits, ' '),
                                                                        self.total,
                                                                        self.char_done * len_done,
                                                                        self.char_remain * len_remain)
+        self.update_taskbar()
+
+    def done(self):
+        self.percent = 100
+        try:
+            if taskbar_available:
+                prog.setProgress(0)
+                prog.setState('done')
+        except Exception:
+            pass
 
     def update_taskbar(self):
         try:
@@ -70,13 +80,11 @@ class Progress_bar:
             pass
 
     def show(self, iteration: int):
-        self.update_bar(iteration)
-        self.update_taskbar()
+        self.update(iteration)
         print('{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len))
 
     def get(self, iteration: int) -> str:
-        self.update_bar(iteration)
-        self.update_taskbar()
+        self.update(iteration)
         return '{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len)
 
 

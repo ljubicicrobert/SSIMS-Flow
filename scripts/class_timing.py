@@ -22,11 +22,13 @@ class Timer:
         self.time_list = deque(maxlen=dsize)
         self.current_iter = 0
 
-    def update(self):
+    def update(self, i=1):
         self.previous_time = self.current_time
         self.current_time = time()
         self.time_list.append(self.current_time - self.previous_time)
-        self.current_iter += 1
+        self.current_iter += i
+        if self.current_iter > self.total_iter:
+            self.current_iter = self.total_iter
 
     def mean_time(self) -> float:
         return np.mean(self.time_list)

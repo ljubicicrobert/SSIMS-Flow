@@ -29,6 +29,7 @@ try:
 	from class_timing import Timer, time_hms
 	from glob import glob
 	from CPP.dll_import import DLL_Loader
+	from utilities import cfg_get
 
 	import matplotlib.pyplot as plt
 	import ctypes
@@ -426,7 +427,7 @@ if __name__ == '__main__':
 			exit()
 
 		# Project root
-		project_folder = unix_path(cfg.get('Project settings', 'Folder'))
+		project_folder = unix_path(cfg['Project settings']['Folder'])
 
 		# Folder with raw frames
 		frames_folder = '{}/frames'.format(project_folder)
@@ -437,28 +438,28 @@ if __name__ == '__main__':
 			fresh_folder(results_folder)
 
 		# Extension for image files
-		ext = cfg.get('Frames', 'Extension', fallback='jpg')
+		ext = cfg_get(cfg, 'Frames', 'Extension', str, 'jpg')
 
 		section = 'Feature tracking'
 
 		# Search area size (high cost)
-		search_size = int(cfg.get(section, 'SearchAreaSize', fallback='21'))
+		search_size = cfg_get(cfg, section, 'SearchAreaSize', int, 21)
 
 		# Interrogation area size (low cost)
-		k_size = int(cfg.get(section, 'InterrogationAreaSize', fallback='11'))
+		k_size = cfg_get(cfg, section, 'InterrogationAreaSize', int, 11)
 		k_span = k_size // 2
 
 		# Expand the search area width/height if SSIM score is below :expand_ssim_thr:
-		expand_ssim_search = int(cfg.get(section, 'ExpandSA', fallback='0'))
+		expand_ssim_search = cfg_get(cfg, section, 'ExpandSA', int, 0)
 
 		# Search area expansion factor (high cost)
-		expand_coef = float(cfg.get(section, 'ExpandSACoef', fallback='2.0'))
+		expand_coef = cfg_get(cfg, section, 'ExpandSACoef', float, 2.0)
 
 		# SSIM score threshold for expanded search
-		expand_ssim_thr = float(cfg.get(section, 'ExpandSAThreshold', fallback='0.5'))
+		expand_ssim_thr = cfg_get(cfg, section, 'ExpandSAThreshold', float, 0.5)
 
 		# If significant image rotation is expected
-		update_kernels = int(cfg.get(section, 'UpdateKernels', fallback='0'))
+		update_kernels = cfg_get(cfg, section, 'UpdateKernels', int, 0)
 
 		# Do not change from this point on ------------------------------------------------------------
 		assert search_size > 13 and search_size % 2 == 1 and type(search_size) == int, \

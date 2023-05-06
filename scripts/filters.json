@@ -41,6 +41,14 @@
         },
 
         {
+            "Name": "Convert to YCrCb",
+            "Func": "to_lab",
+            "Description": "Converts to three-channel 8bit YCrCb colorspace.",
+            "ColorspaceAfter": "YCrCb",
+            "Parameters": []
+        },
+
+        {
             "Name": "Rearrange channels",
             "Func": "rearrange_channels",
             "Description": "Rearranges channels of a three-channel image in the last selected colorspace.",

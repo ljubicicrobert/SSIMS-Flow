@@ -23,6 +23,7 @@ try:
 	from class_console_printer import Console_printer, tag_string, tag_print, unix_path
 	from class_progress_bar import Progress_bar
 	from feature_tracking import fresh_folder
+	from utilities import cfg_get
 
 except Exception as ex:
 	print()
@@ -108,6 +109,8 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 	vidcap = cv2.VideoCapture(video)
 	num_frames_total = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
 	vidcap.set(cv2.CAP_PROP_POS_FRAMES, start)
+	fps = vidcap.get(cv2.CAP_PROP_FPS)
+
 	success, image = vidcap.read()
 
 	height, width = image.shape[:2]
@@ -122,14 +125,11 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		tag_print('info', 'Step: {}'.format(step))
 		if crop:
 			tag_print('info', 'Crop: X={}..{}, Y={}..{}'.format(*crop))
-		else:
-			tag_print('info', 'Crop: ')
 		print()
 
 	i = start
 	j = start_num
 	extracted_frames = 0
-	success = True
 	extracted_size = 0
 
 	if not end:
@@ -141,10 +141,9 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		pb.set_total(frame_range + 1)
 
 	num_len = int(log(end-start, 10)) + 1
-	fresh_folder(folder, ext=ext)
+	fresh_folder(folder)
 
 	while success and i < end:  # If new frame exists
-
 		if folder is None:
 			n = str(j).zfill(num_len)
 			save_str = '{}{}.{}'.format(frame_prefix, n, ext)
@@ -187,6 +186,8 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		extracted_size += path.getsize(save_str) / (1024 * 1024)
 
 		if step != 1:
+			# for s in range(step-1):
+				# vidcap.read()
 			vidcap.set(cv2.CAP_PROP_POS_FRAMES, i + step)
 
 		success, image = vidcap.read()
@@ -224,18 +225,18 @@ if __name__ == '__main__':
 			tag_print('error', 'There was a problem reading the configuration file!\nCheck if project has valid configuration.')
 			exit()
 
-		project_folder = unix_path(cfg.get('Project settings', 'Folder'))
+		project_folder = unix_path(cfg['Project settings']['Folder'])
 		frames_folder = '{}/frames'.format(project_folder)
 
 		section = 'Frames'
 
-		video_path = unix_path(cfg.get(section, 'VideoPath'))
-		remove_distortion = int(cfg.get(section, 'Undistort'))
-		frame_ext = cfg.get(section, 'Extension', fallback='jpg')
-		frame_qual = int(cfg.get(section, 'Quality', fallback='95'))
-		frame_scale = float(cfg.get(section, 'Scale', fallback='1.0'))
-		frame_step = int(cfg.get(section, 'Step', fallback='1'))
-		unpack_start = int(cfg.get(section, 'Start', fallback='0'))
+		video_path = unix_path(cfg[section]['VideoPath'])
+		remove_distortion = cfg_get(cfg, section, 'Undistort', int, 0)
+		frame_ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
+		frame_qual = cfg_get(cfg, section, 'Quality', int, 95)
+		frame_scale = cfg_get(cfg, section, 'Scale', float, 1.0)
+		frame_step = cfg_get(cfg, section, 'Step', int, 1)
+		unpack_start = cfg_get(cfg, section, 'Start', int, 0)
 
 		vidcap = cv2.VideoCapture(video_path)
 		w  = int(vidcap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -243,12 +244,12 @@ if __name__ == '__main__':
 		num_frames_total = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
 		vidcap.release()
 
-		unpack_end = int(cfg.get(section, 'End', fallback=str(num_frames_total)))
+		unpack_end = cfg_get(cfg, section, 'End', int, num_frames_total)
 		unpack_end = min(unpack_end, num_frames_total)
 
 		try:
 			crop_labels = ['X_start', 'X_end', 'Y_start', 'Y_end']
-			crop_str = cfg.get(section, 'Crop', fallback='')
+			crop_str = cfg_get(cfg, section, 'Crop', str, '')
 			crop_limits = ''
 
 			if crop_str:

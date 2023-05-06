@@ -22,6 +22,7 @@ try:
 	from os import path
 	from glob import glob
 	from class_console_printer import tag_print, unix_path
+	from utilities import cfg_get
 
 	import matplotlib.pyplot as plt
 	import matplotlib.patches as patches
@@ -142,8 +143,8 @@ if __name__ == '__main__':
 
 		section = 'Frames'
 			
-		video_path = unix_path(cfg.get(section, 'VideoPath'))
-		unpack_start = int(cfg.get(section, 'Start', fallback='0'))
+		video_path = unix_path(cfg[section]['VideoPath'])
+		unpack_start = cfg_get(cfg, section, 'Start', int, 0)
 
 		vidcap = cv2.VideoCapture(video_path)
 		vidcap.set(cv2.CAP_PROP_POS_FRAMES, unpack_start)

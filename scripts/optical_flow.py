@@ -30,7 +30,8 @@ try:
 	from skimage.measure import block_reduce
 	from ctypes import c_int, c_double, c_size_t
 	from warnings import catch_warnings, simplefilter
-	from vel_ratio import vel_ratio, LIM_2
+	from vel_ratio import vel_ratio, LIM_1
+	from utilities import cfg_get
 
 	import matplotlib.pyplot as plt
 
@@ -46,6 +47,9 @@ except Exception:
 	print('\n{}'.format(format_exc()))
 	input('\nPress ENTER/RETURN key to exit...')
 	exit()
+
+
+DISPLACEMENT_THRESHOLD = 0.75
 
 
 def get_angle_range(angle_main, angle_range):
@@ -101,17 +105,19 @@ if __name__ == '__main__':
 		frames_folder = unix_path(cfg[section]['Folder'])
 		results_folder = unix_path('{}/optical_flow'.format(cfg['Project settings']['Folder']))
 		ext = cfg[section]['Extension']
-		optical_flow_step = int(cfg[section]['Step'])
-		pairing = int(cfg[section]['Pairing'])		# 0 = stepwise, 1 = sliding by 1
-		scale = float(cfg[section]['Scale'])
-		pooling = int(cfg[section]['Pooling'])
-		angle_main = float(cfg[section]['AngleMain'])
-		angle_range = float(cfg[section]['AngleRange'])
-		average_only = int(cfg[section]['AverageOnly'])
+		optical_flow_step = cfg_get(cfg, section, 'Step', int, 1)
+		pairing = cfg_get(cfg, section, 'Pairing', int, 0)		# 0 = stepwise, 1 = sliding by 1
+		scale = cfg_get(cfg, section, 'Scale', float, 1.0)
+		pooling = cfg_get(cfg, section, 'Pooling', int)
+		angle_main = cfg_get(cfg, section, 'AngleMain', float)
+		angle_range = cfg_get(cfg, section, 'AngleRange', float)
+		average_only = cfg_get(cfg, section, 'AverageOnly', int, 0)
+		live_preview = cfg_get(cfg, section, 'LivePreview', int, 0)
 
 		fresh_folder(results_folder, exclude=['depth_profile.txt'])
 		fresh_folder(results_folder + '/magnitudes')
 		fresh_folder(results_folder + '/directions')
+		fresh_folder(results_folder + '/diagnostics')
 		
 		paths_frames = glob('{}/*.{}'.format(frames_folder, ext))
 		num_frames = len(paths_frames)
@@ -136,15 +142,6 @@ if __name__ == '__main__':
 
 		farneback_params = [0.5, 3, 15, 2, 7, 1.5, 0]
 
-		fig, ax = plt.subplots()
-
-		try:
-			mng = plt.get_current_fig_manager()
-			mng.window.state('zoomed')
-			mng.set_window_title('Optical flow')
-		except Exception:
-			pass
-
 		if scale != 1.0:
 			frame_A = cv2.resize(frame_A, (int(w * scale), int(h * scale)))
 			h, w = frame_A.shape
@@ -155,20 +152,35 @@ if __name__ == '__main__':
 		padd_w = w_pooled//10
 
 		flow_hsv = np.zeros([h_pooled, w_pooled, 2], dtype='uint8')
-		mag_stack = np.ndarray([h_pooled, w_pooled, num_frame_pairs], dtype='float32')
+		mag_stack = np.zeros([h_pooled, w_pooled, num_frame_pairs], dtype='float32')
 		mag_max = np.zeros(mag_stack.shape[:2])
-		angle_stack = np.ndarray(mag_stack.shape)
+		angle_stack = np.zeros(mag_stack.shape)
 
-		background = plt.imshow(frame_A, cmap='gray', extent=[-0.5, mag_max.shape[1], mag_max.shape[0], -0.5])
-		flow_shown = plt.imshow(flow_hsv[:, :, 0], cmap='jet', alpha=0.5)
+		coverage_list = np.zeros(num_frame_pairs, dtype='float32')
+		disp_mean_list = np.zeros(num_frame_pairs, dtype='float32')
+		disp_median_list = np.zeros(num_frame_pairs, dtype='float32')
+		disp_max_list = np.zeros(num_frame_pairs, dtype='float32')
 
-		cbar = plt.colorbar(flow_shown)
-		cbar.solids.set(alpha=1.0)
-		cbar.set_label('Velocity magnitude [px/frame]')
-		
-		plt.title('Frames {}+{} of {} total'.format(indices_frame_A[0], indices_frame_B[0], num_frames))
-		plt.axis('off')
-		plt.tight_layout()
+		if live_preview:
+			fig, ax = plt.subplots()
+
+			try:
+				mng = plt.get_current_fig_manager()
+				mng.window.state('zoomed')
+				mng.set_window_title('Optical flow')
+			except Exception:
+				pass
+
+			background = plt.imshow(frame_A, cmap='gray', extent=[-0.5, mag_max.shape[1], mag_max.shape[0], -0.5])
+			flow_shown = plt.imshow(flow_hsv[:, :, 0], cmap='jet', alpha=0.5)
+
+			cbar = plt.colorbar(flow_shown)
+			cbar.solids.set(alpha=1.0)
+			cbar.set_label('Velocity magnitude [px/frame]')
+			
+			plt.title('Frames {}+{} of {} total'.format(indices_frame_A[0], indices_frame_B[0], num_frames))
+			plt.axis('off')
+			plt.tight_layout()
 
 		console_printer = Console_printer()
 		progress_bar = Progress_bar(total=num_frame_pairs, prefix=tag_string('info', 'Frame pair '))
@@ -189,7 +201,11 @@ if __name__ == '__main__':
 		j = 0
 
 		for i in range(num_frame_pairs):
-			frame_A = cv2.imread(paths_frame_A[i], 0)
+			if i > 0 and paths_frame_A[i] == paths_frame_B[i-1]:
+				frame_A = frame_B
+			else:
+				frame_A = cv2.imread(paths_frame_A[i], 0)
+				
 			frame_B = cv2.imread(paths_frame_B[i], 0)
 
 			if scale != 1.0:
@@ -198,6 +214,7 @@ if __name__ == '__main__':
 
 			flow = cv2.calcOpticalFlowFarneback(frame_A, frame_B, None, *farneback_params)
 			magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
+			magnitude[magnitude < DISPLACEMENT_THRESHOLD] = 0
 
 			# Filter by vector angle
 			angle = np.where(angle_func((angle >= angle_lower), (angle <= angle_upper)), angle, np.NaN)
@@ -217,6 +234,17 @@ if __name__ == '__main__':
 			mag_stack[:, :, j] = magnitude
 			mag_max = np.maximum(mag_max, magnitude)
 
+			disp_nonzero = magnitude[magnitude>0]
+			disp_coverage = np.where(magnitude > 0, 1, 0).sum() / magnitude.size * 100
+			disp_mean = disp_nonzero.mean() if disp_nonzero.size > 0 else 0
+			disp_median = np.median(magnitude[magnitude>0]) if disp_nonzero.size > 0 else 0
+			disp_max = np.max(magnitude)
+
+			coverage_list[i] = disp_coverage
+			disp_mean_list[i] = disp_mean
+			disp_median_list[i] = disp_median
+			disp_max_list[i] = disp_max
+
 			nans, x = nan_locate(angle)
 			try:
 				if 315 <= angle_main <= 360 or \
@@ -230,22 +258,23 @@ if __name__ == '__main__':
 
 			angle_stack[:, :, j] = angle
 
-			if average_only == 0:
+			if average_only:
 				n = str(i).rjust(num_digits, '0')
 				np.savetxt('{}/magnitudes/{}.txt'.format(results_folder, n), magnitude, fmt='%.2f')
 				np.savetxt('{}/directions/{}.txt'.format(results_folder, n), angle, fmt='%.1f')
 
-			max_cbar = np.max(mag_max[padd_h: -padd_h, padd_w: -padd_w])
+			if live_preview:
+				max_cbar = np.max(mag_max[padd_h: -padd_h, padd_w: -padd_w])
 
-			background.set_data(frame_B)
-			flow_shown.set_data(mag_max)
-			flow_shown.set_clim(vmax=max_cbar, vmin=0)
+				background.set_data(frame_B)
+				flow_shown.set_data(mag_max)
+				flow_shown.set_clim(vmax=max_cbar, vmin=0)
 
-			cbar.solids.set(alpha=1.0)
-			
-			plt.title('Frames {}+{} of {} total'.format(indices_frame_A[i], indices_frame_B[i], num_frames))
-			plt.pause(0.001)
-			plt.draw()
+				cbar.solids.set(alpha=1.0)
+				
+				plt.title('Frames {}+{} of {} total'.format(indices_frame_A[i], indices_frame_B[i], num_frames))
+				plt.pause(0.001)
+				plt.draw()
 
 			timer.update()
 
@@ -255,6 +284,7 @@ if __name__ == '__main__':
 		   			.format(indices_frame_A[i], indices_frame_B[i], num_frames)
 				)
 			)
+			
 			console_printer.add_line(
 				tag_string('info', 'Frame processing time = {:.3f} sec'
 					.format(timer.interval())
@@ -270,6 +300,13 @@ if __name__ == '__main__':
 					.format(*time_hms(timer.remaining()))
 				)
 			)
+
+			console_printer.add_line(tag_string('info', 'Detection metrics:'))
+			console_printer.add_line(' '*11 + 'Coverage =             {:.2f} %'.format(disp_coverage))
+			console_printer.add_line(' '*11 + 'Mean displacement =    {:.3f} px'.format(disp_mean))
+			console_printer.add_line(' '*11 + 'Median displacement =  {:.3f} px'.format(disp_median))
+			console_printer.add_line(' '*11 + 'Maximal displacement = {:.3f} px'.format(disp_max))
+
 			console_printer.overwrite()
 			
 			j += 1
@@ -284,6 +321,10 @@ if __name__ == '__main__':
 		threshold_ratios = np.ndarray(mag_stack.shape[:2], dtype='float32')
 		mag_mean = np.ndarray(mag_stack.shape[:2], dtype='float32')
 
+		TM_1_array = np.zeros(mag_stack.shape[:2], dtype='float32')
+		TM_2_array = np.zeros(mag_stack.shape[:2], dtype='float32')
+		TM_3_array = np.zeros(mag_stack.shape[:2], dtype='float32')
+
 		for i in range(mag_stack.shape[0]):
 			for j in range(mag_stack.shape[1]):
 				mags_xy = mag_stack[i, j, :]
@@ -296,11 +337,15 @@ if __name__ == '__main__':
 				TM_2 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(TM_1), c_int(1))
 				TM_3 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(TM_2), c_int(1))
 
+				TM_1_array[i, j] = TM_1
+				TM_2_array[i, j] = TM_2
+				TM_3_array[i, j] = TM_3
+
 				# Final velocity:
 				# close to TM_1 if signal too noisy, likely not water surface,
 				# close to TM_2 for dense seeding,
 				# close to TM_3 if sparse seeding
-				threshold_ratios[i, j] = (TM_3 - TM_2)/(TM_2 - TM_1) if TM_2 != TM_1 else LIM_2
+				threshold_ratios[i, j] = (TM_3 - TM_2)/(TM_2 - TM_1) if TM_2 != TM_1 else LIM_1
 				mag_mean[i, j] = vel_ratio(TM_1, TM_2, TM_3)
 
 				console_printer.add_line(progress_bar.get(m))
@@ -311,6 +356,15 @@ if __name__ == '__main__':
 		if angle_func.__name__ == "bitwise_or":
 			angle_mean += angle_upper
 			angle_mean = np.where(angle_mean >= 360, angle_mean - 360, angle_mean)
+
+		np.savetxt('{}/diagnostics/TM_1.txt'.format(results_folder), TM_1_array, fmt='%.3f')
+		np.savetxt('{}/diagnostics/TM_2.txt'.format(results_folder), TM_2_array, fmt='%.3f')
+		np.savetxt('{}/diagnostics/TM_3.txt'.format(results_folder), TM_3_array, fmt='%.3f')
+
+		np.savetxt('{}/diagnostics/coverage.txt'.format(results_folder), coverage_list, fmt='%.3f')
+		np.savetxt('{}/diagnostics/disp_mean.txt'.format(results_folder), disp_mean_list, fmt='%.3f')
+		np.savetxt('{}/diagnostics/disp_median.txt'.format(results_folder), disp_median_list, fmt='%.3f')
+		np.savetxt('{}/diagnostics/disp_max.txt'.format(results_folder), disp_max_list, fmt='%.3f')
 
 		np.savetxt('{}/mag_mean.txt'.format(results_folder), mag_mean, fmt='%.3f')
 		np.savetxt('{}/mag_max.txt'.format(results_folder), mag_max, fmt='%.3f')

@@ -24,6 +24,7 @@ try:
 	from scipy.ndimage import map_coordinates
 	from scipy.signal import medfilt
 	from math import atan2
+	from utilities import cfg_get
 
 except Exception as ex:
 	print()
@@ -80,15 +81,15 @@ def main(cfg_path=None):
 
 		# Fallback for pre 0.3.x.x config versions
 		try:
-			frames_step = float(cfg['Frames']['Step'])
+			frames_step = cfg_get(cfg, 'Frames', 'Step', float)
 		except configparser.NoOptionError:
 			frames_step = 1.0
 		
-		optical_flow_step = float(cfg[section]['Step'])
-		scale = float(cfg[section]['Scale'])
-		fps = float(cfg[section]['Framerate'])		# frames/sec
-		gsd = float(cfg[section]['GSD'])           	# px/m
-		pooling = float(cfg[section]['Pooling'])   	# px
+		optical_flow_step = cfg_get(cfg, section, 'Step', float)
+		scale = cfg_get(cfg, section, 'Scale', float)
+		fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
+		gsd = cfg_get(cfg, section, 'GSD', float)           # px/m
+		pooling = cfg_get(cfg, section, 'Pooling', float)  	# px
 		gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
 		v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)

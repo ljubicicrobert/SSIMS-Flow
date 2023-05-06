@@ -22,6 +22,8 @@ try:
     from sys import exit
     from glob import glob
     from class_console_printer import tag_print, unix_path
+    from vel_ratio import LIM_1
+    from utilities import cfg_get
 
     import matplotlib.pyplot as plt
 
@@ -132,15 +134,15 @@ if __name__ == '__main__':
 
         section = 'Optical flow'
 
-        frames_step = float(cfg['Frames']['Step'])
-        optical_flow_step = float(cfg[section]['Step'])
-        scale = float(cfg[section]['Scale'])
-        fps = float(cfg[section]['Framerate'])		# frames/sec
+        frames_step = cfg_get(cfg, 'Frames', 'Step', float)
+        optical_flow_step = cfg_get(cfg, section, 'Step', float)
+        scale = cfg_get(cfg, section, 'Scale', float)
+        fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
         try:
-            gsd = float(cfg[section]['GSD'])        # px/m
+            gsd = cfg_get(cfg, section, 'GSD', float)        # px/m
         except Exception as ex:
-            gsd = float(cfg['Transformation']['GSD'])        # px/m
-        pooling = float(cfg[section]['Pooling'])   	# px
+            gsd = cfg_get(cfg, 'Transformation', 'GSD', float)        # px/m
+        pooling = cfg_get(cfg, section, 'Pooling', float)   	# px
         gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
         v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
@@ -186,6 +188,7 @@ if __name__ == '__main__':
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
             data = [us, vs, mags, dirs, thrs]
             img = data[args.data]
+
         elif mode == 1:     # Maximal
             legend_toggle.set_visible(False)
 
@@ -194,8 +197,9 @@ if __name__ == '__main__':
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data = [us, vs, mags, dirs]
+            data = [us, vs, mags]
             img = data[args.data]
+
         elif mode == 2:     # Instantaneous      
             mags = try_load_file(mag_list[0]) * v_ratio
             dirs = try_load_file(dir_list[0])
@@ -217,8 +221,13 @@ if __name__ == '__main__':
         padd_w = w//10
 
         img_shown = ax.imshow(img, cmap='jet', interpolation='hanning')
-        img_shown.set_clim(vmin=np.nanmin(img[padd_h: -padd_h, padd_w: -padd_w]),
-                           vmax=np.nanmax(img[padd_h: -padd_h, padd_w: -padd_w]))
+
+        if args.data == 4:
+            img_shown.set_clim(vmin=0, vmax=LIM_1)
+        else:
+            img_shown.set_clim(vmin=np.nanmin(img[padd_h: -padd_h, padd_w: -padd_w]),
+                               vmax=np.nanmax(img[padd_h: -padd_h, padd_w: -padd_w]))
+        
         cbar = plt.colorbar(img_shown, ax=ax)
         cbar.set_label('{} {}'.format(data_type, units))
 

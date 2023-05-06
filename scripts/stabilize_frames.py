@@ -29,6 +29,7 @@ try:
 	from class_progress_bar import Progress_bar
 	from class_logger import time_hms
 	from class_timing import Timer, time_hms
+	from utilities import cfg_get
 
 	import ctypes
 
@@ -187,7 +188,7 @@ if __name__ == '__main__':
 			exit()
 
 		# Project root
-		project_folder = unix_path(cfg.get('Project settings', 'Folder'))
+		project_folder = unix_path(cfg['Project settings']['Folder'])
 
 		# Folder in which the data is located
 		frames_folder = '{}/frames'.format(project_folder)
@@ -201,37 +202,37 @@ if __name__ == '__main__':
 			pass
 
 		# Extension for input frame files
-		ext_in = cfg.get('Frames', 'Extension', fallback='jpg')
+		ext_in = cfg_get(cfg, 'Frames', 'Extension', str, 'jpg')
 
 		section = 'Transformation'
 
 		# Extension for output frame files
-		ext_out = cfg.get(section, 'Extension', fallback='jpg')
+		ext_out = cfg_get(cfg, section, 'Extension', str, 'jpg')
 
 		# Output image quality [1-100]
-		qual = int(cfg.get(section, 'Quality', fallback='95'))
+		qual = cfg_get(cfg, section, 'Quality', int, 95)
 
 		# See available methods below in :methods:
-		stabilization_method = int(cfg.get(section, 'Method'))
+		stabilization_method = cfg_get(cfg, section, 'Method', int)
 
 		# Detection and filtering of outliers, if available for the chosen method
-		use_ransac_filtering = int(cfg.get(section, 'UseRANSAC', fallback='0'))
+		use_ransac_filtering = cfg_get(cfg, section, 'UseRANSAC', int, 0)
 
 		# Acceptable reprojection error for outlier detection
-		ransac_filtering_thr = float(cfg.get(section, 'RANSACThreshold', fallback='2.0'))
+		ransac_filtering_thr = cfg_get(cfg, section, 'RANSACThreshold', float, 2.0)
 
 		# Perform orthorectification
-		orthorectify = int(cfg.get(section, 'Orthorectify', fallback='0'))
+		orthorectify = cfg_get(cfg, section, 'Orthorectify', int, 0)
 
 		# px/meter
-		px_ratio = float(cfg.get(section, 'GSD'))
+		px_ratio = cfg_get(cfg, section, 'GSD', float)
 
 		# Select/discard GCPs
-		gcps_mask = cfg.get(section, 'FeatureMask')
+		gcps_mask = cfg[section]['FeatureMask']
 
 		# Image padding outside GCP area
-		pdx = cfg.get(section, 'PaddX')
-		pdy = cfg.get(section, 'PaddY')
+		pdx = cfg[section]['PaddX']
+		pdy = cfg[section]['PaddY']
 
 		padd_x = [int(float(x) * px_ratio) for x in pdx.split('-')]
 		padd_y = [int(float(y) * px_ratio) for y in pdy.split('-')]

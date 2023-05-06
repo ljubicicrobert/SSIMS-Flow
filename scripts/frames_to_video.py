@@ -23,6 +23,7 @@ try:
 	from os import path, listdir
 	from datetime import timedelta
 	from glob import glob
+	from utilities import cfg_get
 
 except Exception as ex:
 	print()
@@ -172,13 +173,13 @@ if __name__ == '__main__':
 						  1: cv2.INTER_CUBIC,
 						  2: cv2.INTER_LANCZOS4}
 
-		video_name = cfg.get(section, 'VideoName')
-		frames_folder = unix_path(cfg.get(section, 'Folder'))
-		frames_ext = cfg.get(section, 'Extension', fallback='jpg')
-		video_fps = float(cfg.get(section, 'Framerate'))
-		video_codec = cfg.get(section, 'Codec', fallback='MJPG')
-		video_scale = float(cfg.get(section, 'Scale', fallback='1.0'))
-		scale_interp = interp_methods[int(cfg.get(section, 'Interpolation', fallback='0'))]
+		video_name = cfg[section]['VideoName']
+		frames_folder = unix_path(cfg[section]['Folder'])
+		frames_ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
+		video_fps = cfg_get(cfg, section, 'Framerate', float)
+		video_codec = cfg_get(cfg, section, 'Codec', str, 'MJPG')
+		video_scale = cfg_get(cfg, section, 'Scale', float, 1.0)
+		scale_interp = interp_methods[cfg_get(cfg, section, 'Interpolation', int, 0)]
 
 		frames_list = glob('{}/*.{}'.format(frames_folder, frames_ext))
 		num_frames = min(len(frames_list), MAX_FRAMES_DEFAULT)
