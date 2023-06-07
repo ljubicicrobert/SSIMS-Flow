@@ -30,7 +30,7 @@ try:
 	from skimage.measure import block_reduce
 	from ctypes import c_int, c_double, c_size_t
 	from warnings import catch_warnings, simplefilter
-	from vel_ratio import vel_ratio, LIM_1
+	from vel_ratio import vel_ratio, L0
 	from utilities import cfg_get
 
 	import matplotlib.pyplot as plt
@@ -49,7 +49,7 @@ except Exception:
 	exit()
 
 
-DISPLACEMENT_THRESHOLD = 0.75
+DISPLACEMENT_THRESHOLD = 0.85
 
 
 def get_angle_range(angle_main, angle_range):
@@ -124,12 +124,15 @@ if __name__ == '__main__':
 		num_digits = floor(log10(num_frames)) + 1
 		angle_func, angle_lower, angle_upper = get_angle_range(angle_main, angle_range)
 		
-		if pairing == 1:
-			paths_frame_A = paths_frames[:-optical_flow_step]
-			paths_frame_B = paths_frames[optical_flow_step:]
-		else:
+		if pairing == 0:
 			paths_frame_A = paths_frames[0:-optical_flow_step:optical_flow_step]
 			paths_frame_B = paths_frames[optical_flow_step::optical_flow_step]
+		elif pairing == 1:
+			paths_frame_A = paths_frames[:-optical_flow_step]
+			paths_frame_B = paths_frames[optical_flow_step:]
+		elif pairing == 2:
+			paths_frame_B = paths_frames[optical_flow_step::optical_flow_step]
+			paths_frame_A = paths_frames[0] * len(paths_frame_B)
 		
 		indices_frame_A = [paths_frames.index(x) for x in paths_frame_A]
 		indices_frame_B = [paths_frames.index(x) for x in paths_frame_B]
@@ -140,8 +143,28 @@ if __name__ == '__main__':
 		frame_A = cv2.imread(paths_frame_A[0], 0)
 		h, w = frame_A.shape
 
-		farneback_params = [0.5, 3, 15, 2, 7, 1.5, 0]
+		# Xmin = cfg_get(cfg, section, 'Xmin', int, 0)
+		# Xmax = cfg_get(cfg, section, 'Xmax', int, w)
+		# Ymin = cfg_get(cfg, section, 'Ymin', int, 0)
+		# Ymax = cfg_get(cfg, section, 'Ymax', int, h)
 
+		# crop = 0 if (abs(Xmax - Xmin) == w and abs(Ymax - Ymin) == h) else 1
+
+		farneback_pyr_scale = 0.5
+		farneback_pyr_levels = 3
+		farneback_avg_win = 15
+		farneback_iters = 2
+		farneback_poly_win = 7
+		farneback_sigma = 1.5
+
+		farneback_params = [farneback_pyr_scale,
+		      				farneback_pyr_levels,
+							farneback_avg_win,
+							farneback_iters,
+							farneback_poly_win,
+							farneback_sigma,
+							0]
+	
 		if scale != 1.0:
 			frame_A = cv2.resize(frame_A, (int(w * scale), int(h * scale)))
 			h, w = frame_A.shape
@@ -212,9 +235,19 @@ if __name__ == '__main__':
 				frame_A = cv2.resize(frame_A, (w, h))
 				frame_B = cv2.resize(frame_B, (w, h))
 
+			# if crop:
+			# 	frame_A_crop = frame_A[int(Ymin*scale): int(Ymax*scale), int(Xmin*scale): int(Xmax*scale)]
+			# 	frame_B_crop = frame_B[int(Ymin*scale): int(Ymax*scale), int(Xmin*scale): int(Xmax*scale)]
+
+			# 	flow = np.zeros([h, w, 2], dtype='float32')
+			# 	flow_crop = cv2.calcOpticalFlowFarneback(frame_A_crop, frame_B_crop, None, *farneback_params)
+			# 	flow[int(Ymin*scale): int(Ymax*scale), int(Xmin*scale): int(Xmax*scale), :] = flow_crop
+			# else:
+			# 	flow = cv2.calcOpticalFlowFarneback(frame_A, frame_B, None, *farneback_params)
 			flow = cv2.calcOpticalFlowFarneback(frame_A, frame_B, None, *farneback_params)
+
 			magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
-			magnitude[magnitude < DISPLACEMENT_THRESHOLD] = 0
+			# magnitude[magnitude < DISPLACEMENT_THRESHOLD] = 0
 
 			# Filter by vector angle
 			angle = np.where(angle_func((angle >= angle_lower), (angle <= angle_upper)), angle, np.NaN)
@@ -234,10 +267,10 @@ if __name__ == '__main__':
 			mag_stack[:, :, j] = magnitude
 			mag_max = np.maximum(mag_max, magnitude)
 
-			disp_nonzero = magnitude[magnitude>0]
-			disp_coverage = np.where(magnitude > 0, 1, 0).sum() / magnitude.size * 100
+			disp_nonzero = magnitude[magnitude > DISPLACEMENT_THRESHOLD]
+			disp_coverage = np.where(magnitude > DISPLACEMENT_THRESHOLD, 1, 0).sum() / magnitude.size * 100
 			disp_mean = disp_nonzero.mean() if disp_nonzero.size > 0 else 0
-			disp_median = np.median(magnitude[magnitude>0]) if disp_nonzero.size > 0 else 0
+			disp_median = np.median(disp_nonzero) if disp_nonzero.size > 0 else 0
 			disp_max = np.max(magnitude)
 
 			coverage_list[i] = disp_coverage
@@ -258,7 +291,7 @@ if __name__ == '__main__':
 
 			angle_stack[:, :, j] = angle
 
-			if average_only:
+			if not average_only:
 				n = str(i).rjust(num_digits, '0')
 				np.savetxt('{}/magnitudes/{}.txt'.format(results_folder, n), magnitude, fmt='%.2f')
 				np.savetxt('{}/directions/{}.txt'.format(results_folder, n), angle, fmt='%.1f')
@@ -321,32 +354,32 @@ if __name__ == '__main__':
 		threshold_ratios = np.ndarray(mag_stack.shape[:2], dtype='float32')
 		mag_mean = np.ndarray(mag_stack.shape[:2], dtype='float32')
 
-		TM_1_array = np.zeros(mag_stack.shape[:2], dtype='float32')
-		TM_2_array = np.zeros(mag_stack.shape[:2], dtype='float32')
-		TM_3_array = np.zeros(mag_stack.shape[:2], dtype='float32')
+		T0_array = np.zeros(mag_stack.shape[:2], dtype='float32')
+		T1_array = np.zeros(mag_stack.shape[:2], dtype='float32')
+		T2_array = np.zeros(mag_stack.shape[:2], dtype='float32')
 
 		for i in range(mag_stack.shape[0]):
 			for j in range(mag_stack.shape[1]):
 				mags_xy = mag_stack[i, j, :]
 
 				# Threshold means
-				# TM_1 = threshold is the global mean, average the rest
-				# TM_2 = threshold is TM1, average the rest
-				# TM_3 = threshold is TM2, average the rest
-				TM_1 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(-1.0), c_int(1))
-				TM_2 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(TM_1), c_int(1))
-				TM_3 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(TM_2), c_int(1))
+				# T0 = threshold is the global mean, average the rest
+				# T1 = threshold is T0, average the rest
+				# T2 = threshold is T1, average the rest
+				T0 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(-1.0), c_int(1))
+				T1 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(T0), c_int(1))
+				T2 = mag_pool(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(T1), c_int(1))
 
-				TM_1_array[i, j] = TM_1
-				TM_2_array[i, j] = TM_2
-				TM_3_array[i, j] = TM_3
+				T0_array[i, j] = T0
+				T1_array[i, j] = T1
+				T2_array[i, j] = T2
 
 				# Final velocity:
-				# close to TM_1 if signal too noisy, likely not water surface,
-				# close to TM_2 for dense seeding,
-				# close to TM_3 if sparse seeding
-				threshold_ratios[i, j] = (TM_3 - TM_2)/(TM_2 - TM_1) if TM_2 != TM_1 else LIM_1
-				mag_mean[i, j] = vel_ratio(TM_1, TM_2, TM_3)
+				# close to T0 if signal too noisy, likely not water surface,
+				# close to T1 for dense seeding,
+				# close to T2 if sparse seeding
+				threshold_ratios[i, j] = (T2 - T1)/(T1 - T0) if T1 != T0 else L0
+				mag_mean[i, j] = vel_ratio(T0, T1, T2)
 
 				console_printer.add_line(progress_bar.get(m))
 				console_printer.overwrite()
@@ -357,9 +390,9 @@ if __name__ == '__main__':
 			angle_mean += angle_upper
 			angle_mean = np.where(angle_mean >= 360, angle_mean - 360, angle_mean)
 
-		np.savetxt('{}/diagnostics/TM_1.txt'.format(results_folder), TM_1_array, fmt='%.3f')
-		np.savetxt('{}/diagnostics/TM_2.txt'.format(results_folder), TM_2_array, fmt='%.3f')
-		np.savetxt('{}/diagnostics/TM_3.txt'.format(results_folder), TM_3_array, fmt='%.3f')
+		np.savetxt('{}/diagnostics/T0.txt'.format(results_folder), T0_array, fmt='%.3f')
+		np.savetxt('{}/diagnostics/T1.txt'.format(results_folder), T1_array, fmt='%.3f')
+		np.savetxt('{}/diagnostics/T2.txt'.format(results_folder), T2_array, fmt='%.3f')
 
 		np.savetxt('{}/diagnostics/coverage.txt'.format(results_folder), coverage_list, fmt='%.3f')
 		np.savetxt('{}/diagnostics/disp_mean.txt'.format(results_folder), disp_mean_list, fmt='%.3f')

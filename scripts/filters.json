@@ -393,6 +393,14 @@
                     "PStart": 1,
                     "PLower": 0,
                     "PStep": 1
+                },
+                {
+                    "PName": "Use mean instead of median",
+                    "PType": "int",
+                    "PUpper": 1,
+                    "PStart": 0,
+                    "PLower": 0,
+                    "PStep": 1
                 }
             ]
         },

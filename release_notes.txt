@@ -1,3 +1,20 @@
+SSIMS-Flow v0.5.0.0
+
+Major:
+- Added Reference frame pairing method.
+
+Minor:
+- Renamed "Unpack video" tab to "Frames"
+- Renamed "Enhance images" tab to "Enhance"
+- Added option to skip stabilization and only perform orthorectification for
+fixed cameras
+- Added measure tool to Frames tab, useful to obtain GSD
+- Added options to also generate profile data from T0 (SingleTMP), T1, and T2,
+along with Mean pooled (MultiTMP), and max pooled data
+- Minor changes to Optical flow form, now showing the framerate diagnostics
+
+===============================================================================
+
 SSIMS-Flow v0.4.2.0
 
 Minor:

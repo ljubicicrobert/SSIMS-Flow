@@ -70,21 +70,19 @@ def main(cfg_path=None):
 
 		input_folder = unix_path(project_folder) + '/optical_flow'
 
-		profile_source = int(cfg[section]['ProfileSource'])
+		sources = [
+			'{}/mag_mean.txt'.format(input_folder),
+			'{}/diagnostics/T0.txt'.format(input_folder),
+			'{}/diagnostics/T1.txt'.format(input_folder),
+			'{}/diagnostics/T2.txt'.format(input_folder),
+			'{}/mag_max.txt'.format(input_folder),
+	    ]
 
-		if profile_source == 0:
-			field_raw_mag = np.loadtxt('{}/mag_mean.txt'.format(input_folder))	# px/frame
-		elif profile_source == 1:
-			field_raw_mag = np.loadtxt('{}/mag_max.txt'.format(input_folder))	# px/frame
-
+		source_index = int(cfg[section]['ProfileSource'])
+		field_raw_mag = np.loadtxt(sources[source_index])
 		field_raw_angle = np.loadtxt('{}/angle_mean.txt'.format(input_folder))
 
-		# Fallback for pre 0.3.x.x config versions
-		try:
-			frames_step = cfg_get(cfg, 'Frames', 'Step', float)
-		except configparser.NoOptionError:
-			frames_step = 1.0
-		
+		frames_step = cfg_get(cfg, 'Frames', 'Step', float, 1.0)
 		optical_flow_step = cfg_get(cfg, section, 'Step', float)
 		scale = cfg_get(cfg, section, 'Scale', float)
 		fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec

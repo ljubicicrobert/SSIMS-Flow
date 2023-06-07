@@ -75,7 +75,11 @@ def coordTransform(image: np.ndarray,
 	assert len(points_old) == len(points_new), \
 		tag_string('error', 'Number of origin points must be equal to the number of destination points!')
 
-	if method in [cv2.estimateAffine2D, cv2.estimateAffinePartial2D]:
+	if method is None:
+		M_stable = np.identity(3, dtype='float64')
+		status = []
+
+	elif method in [cv2.estimateAffine2D, cv2.estimateAffinePartial2D]:
 		if use_ransac:
 			M_stable, status = method(points_old, points_new, method=cv2.RANSAC, ransacReprojThreshold=ransac_thr, confidence=confidence, refineIters=LM_iters)
 		else:
@@ -112,11 +116,11 @@ def coordTransform(image: np.ndarray,
 		M_final = M_stable
 
 	if method in [cv2.getPerspectiveTransform, cv2.findHomography]:
-		ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
+		stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
 	else:
-		ortho = cv2.warpAffine(image, M_final, (width, height))[::-1]
+		stab_ortho = cv2.warpAffine(image, M_final, (width, height))[::-1]
 
-	return ortho, M_stable, status
+	return stab_ortho, M_stable, status
 
 
 def imcrop(img: np.ndarray, bbox: list) -> np.ndarray:
@@ -223,6 +227,9 @@ if __name__ == '__main__':
 
 		# Perform orthorectification
 		orthorectify = cfg_get(cfg, section, 'Orthorectify', int, 0)
+
+		# Skip stabilization for fixed cameras
+		moving_camera = cfg_get(cfg, section, 'MovingCamera', int, 1)
 
 		# px/meter
 		px_ratio = cfg_get(cfg, section, 'GSD', float)
@@ -376,10 +383,10 @@ if __name__ == '__main__':
 				img = cv2.imread(img_path)
 
 				stabilized, M, status = coordTransform(img, features, anchors, width=w, height=h,
-													   method=methods[stabilization_method],
-													   M_ortho=M_ortho,
-													   use_ransac=use_ransac_filtering,
-													   ransac_thr=ransac_filtering_thr)
+														method=methods[stabilization_method] if moving_camera else None,
+														M_ortho=M_ortho,
+														use_ransac=use_ransac_filtering,
+														ransac_thr=ransac_filtering_thr)
 
 				if not orthorectify:
 					stabilized = stabilized[::-1]

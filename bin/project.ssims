@@ -4,6 +4,7 @@ Folder =
 Description = 
 Date = 
 PythonInterpreter = 
+VersionCreated = v0.5.0.0
 
 [Frames]
 VideoPath = 
@@ -18,6 +19,7 @@ Undistort = 0
 Crop = 
 
 [Feature tracking]
+MovingCamera = 1
 InterrogationAreaSize = 11
 SearchAreaSize = 21
 ExpandSA = 0
@@ -63,3 +65,4 @@ Xmin = 0
 Xmax = -1
 Ymin = 0
 Ymax = -1
+

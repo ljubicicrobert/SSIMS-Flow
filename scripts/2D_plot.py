@@ -22,7 +22,7 @@ try:
     from sys import exit
     from glob import glob
     from class_console_printer import tag_print, unix_path
-    from vel_ratio import LIM_1
+    from vel_ratio import L0
     from utilities import cfg_get
 
     import matplotlib.pyplot as plt
@@ -223,7 +223,7 @@ if __name__ == '__main__':
         img_shown = ax.imshow(img, cmap='jet', interpolation='hanning')
 
         if args.data == 4:
-            img_shown.set_clim(vmin=0, vmax=LIM_1)
+            img_shown.set_clim(vmin=0, vmax=L0)
         else:
             img_shown.set_clim(vmin=np.nanmin(img[padd_h: -padd_h, padd_w: -padd_w]),
                                vmax=np.nanmax(img[padd_h: -padd_h, padd_w: -padd_w]))

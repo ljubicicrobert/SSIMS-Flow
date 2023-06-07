@@ -16,6 +16,9 @@ https://www.gnu.org/licenses/gpl-3.0.en.html.
 Created by Robert Ljubicic.
 """
 
+import configparser
+
+
 def cfg_get(cfg, section, name, type, default=None):
     try:
         s = cfg[section][name]
