@@ -16,7 +16,7 @@ The tool replaces an older tool [SSIMS](https://github.com/ljubicicrobert/SSIMS)
 
 ## Requirements and installation
 
-The package consists of a backend (written in Python 3 and C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and compiled for x64 architecture only**. At request, I can compile for x86 version, but will likely not bother otherwise.
+The package consists of a backend (written in Python 3 and C/C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and compiled for x64 architecture only**. At request, I can compile for x86 version, but will likely not bother otherwise.
 
 The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
 
@@ -136,6 +136,8 @@ Camera parameters will be saved to `%PROJECT_FOLDER%\camera_parameters.cpf`, and
 
 #### Feature tracking
 
+**Moving camera** option is used when video footage contains undesirable motion which should be removed by the means of digital stabilization. This is most commonly observed with UAV footage, but can also be experienced with fixed cameras. If no camera motion is observed in the footage, users should select the **Fixed camera** option which disables the stabilization portion of the form. Orthorectification can be performed with either option.
+
 Despite the modern UAVs having sophisticated in-built camera/video stabilization, in most cases it is necessary to perform additional stabilization to ensure that the coordinate system of the video remains constant throughout the entire sequence of frames. SSIMS-Flow uses the same stabilization strategy as its precursor (SSIMS tool), which consists of the following steps:
 
 1. Selecting features for tracking, to estimate the camera motion,
@@ -235,14 +237,16 @@ Estimation of surface velocity field is performed using the Gunnar Farnebäck me
 
 However, keeping information about per-pixel motion in high-resolution images requires significant amount of storage space (easily tens of MB per image). Additionally, if tracer particle seeding is sparse and/or periodic, only a smaller percentage of the image will experience motion between consecutive frames. Hence, an aggregation/pooling technique is applied to the raw results:
 
-1. Results are first converted from U and V components (velocities in X and Y direction) to **magnitude and flow direction** (angle) representation.
-2. The user should specify the **main direction** of the flow, either by entering the value in the box, or by pointing and clicking at the desired angle in the circle. Then, a flow direction tolerance (**angle range**) should be provided. Pixels whose flow angles do not fall into the range _main flow direction_ +/- _angle range_ will be masked out and their magnitudes will be replaced by 0.
+1. Results are first converted from U and V components (velocities in X and Y direction) to **magnitude and flow direction** representation.
+2. The user should specify the **Main flow direction** of the flow, either by entering the value in the box, or by pointing and clicking at the desired direction in the circle. Then, a flow direction tolerance (**Dir. range**) should be provided. Pixels whose flow angles do not fall into the range _main flow direction_ +/- _dir range_ will be masked out and their magnitudes will be replaced by 0.
 3. The idea further is to reduce the size of the resulting matrix by aggregating the results from PxP sized blocks, where P is the **pooling block size** in pixels. We can assume that the tracer particle seeding is sparse (which is often true) which means that only a handful of pixels in each block will be likely to represent actual tracer motion, while the rest of the pixels will have magnitudes close to zero. A fair strategy for isolating valid pixels and their magnitudes is to calculate the mean magnitude of the block, select pixels with magnitudes greater than said mean, and then adopt the mean of those selected pixels as the representative magnitude of that pooling block. The same procedure is performed for all blocks in the image.
 4. The resulting matrix will have P*P times fewer pixels, whilst still adequately representing the flow field.
-5. Angles are pooled in a similar manner, but just using the mean of the block values.
+5. Flow directions are averaged with a specific weighted approach.
 6. Temporal aggregation is performed in a similar manner, by applying thresholded mean over several iterations.
 
 The users can also specify the distance between two frames used for velocity estimation - frame step. This is useful in cases where the displacement of tracer particles between consecutive frames is too low (especially when it's in subpixel range). Ideally, this displacement is around 4-8 pixels per frame, but higher values are usually better than lower. Users can also specify frame pairing mode: sliding window by step size (less data will be used but is faster), or sliding window by 1 frame (more data, slower).
+
+Finally, frame pairing method can be selected as stepwise, sliding, or reference.
 
 
 ### Post-OF analyses
@@ -287,7 +291,7 @@ I wish to express my gratitude to the following people (in no particular order):
 
 [Mrs. Sophie Pierce](https://www.worcester.ac.uk/about/profiles/sophie-pearce) - for motivating me to start the work in the first place;
 
-[Dr Budo Zindović](https://www.grf.bg.ac.rs/fakultet/pro/e?nid=153) - for helping me with many implementational details and extensive testing of the tool;
+[Dr Budo Zindović](https://www.grf.bg.ac.rs/fakultet/pro/e?nid=153) - for advising me with many implementational details and extensive testing of the tool;
 
 [Mrs. Dariia Strelnikova](https://www.fh-kaernten.at/en/en/faculty-and-staff-details?personId=4298793872) for supporting and reviewing the work related to the image enhancement;
 
