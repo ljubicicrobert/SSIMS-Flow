@@ -1,6 +1,6 @@
-# SSIMS-Flow: UAV image velocimetry workbench
+# SSIMS-Flow: Image velocimetry workbench
 
-This tool represents a feature-complete solution for the estimation of open-channel flow (discharge) from UAV videos using Farneback dense optical flow algorithm. The integrated workflow enables:
+This tool represents a feature-complete solution for the estimation of open-channel flow (discharge) from fixed camera or UAV videos using Farneback dense optical flow algorithm. The integrated workflow enables:
 
 1. Unpacking of video data into frames,
 2. Camera calibration and removal of camera distortions,
