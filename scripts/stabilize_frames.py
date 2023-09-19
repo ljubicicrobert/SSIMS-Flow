@@ -232,7 +232,7 @@ if __name__ == '__main__':
 		moving_camera = cfg_get(cfg, section, 'MovingCamera', int, 1)
 
 		# px/meter
-		px_ratio = cfg_get(cfg, section, 'GSD', float)
+		gsd = cfg_get(cfg, section, 'GSD', float)
 
 		# Select/discard GCPs
 		gcps_mask = cfg[section]['FeatureMask']
@@ -241,8 +241,8 @@ if __name__ == '__main__':
 		pdx = cfg[section]['PaddX']
 		pdy = cfg[section]['PaddY']
 
-		padd_x = [int(float(x) * px_ratio) for x in pdx.split('-')]
-		padd_y = [int(float(y) * px_ratio) for y in pdy.split('-')]
+		padd_x = [int(float(x) * gsd) for x in pdx.split('-')]
+		padd_y = [int(float(y) * gsd) for y in pdy.split('-')]
 
 		# Do not change from this point on ---------------------------------------------------------------------------------
 		methods = {0: cv2.estimateAffinePartial2D,
@@ -311,7 +311,7 @@ if __name__ == '__main__':
 		h, w = img.shape[:2]
 
 		if orthorectify:
-			gcps_real = np.multiply(np.loadtxt('{}/gcps_real.txt'.format(results_folder), dtype='float32', delimiter=' '), px_ratio)
+			gcps_real = np.multiply(np.loadtxt('{}/gcps_real.txt'.format(results_folder), dtype='float32', delimiter=' '), gsd)
 
 			initial_gcps = []
 

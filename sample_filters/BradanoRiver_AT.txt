@@ -1,0 +1,3 @@
+negative/
+intensity_capping/-1.5,1
+gaussian_lookup/5,127

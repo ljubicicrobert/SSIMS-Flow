@@ -161,9 +161,20 @@ def select_channel(img, channel=1):
 
 	colorspace = 'grayscale'
 	return three_channel(img_single)
+
+
+def channel_ratio(img, c1=1, c2=2, limit=2.0):
+	divisor = img[:, :, int(c2 - 1)]
+	divisor[divisor == 0] = 255
+
+	ratio = img[:, :, int(c1 - 1)].astype('float') / divisor.astype('float')
+	ratio[ratio > limit] = limit
+	ratio = ((ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * 255).astype('uint8')
+
+	return three_channel(ratio)
 	
 	
-def highpass(img, sigma=3.0):
+def highpass(img, sigma=1.0):
 	if is_grayscale(img):
 		img = img[:, :, 0]
 	
@@ -175,13 +186,15 @@ def highpass(img, sigma=3.0):
 	
 def normalize_image(img, lower=None, upper=None):
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
+	img_max = img_gray.max()
+	img_min = img_gray.min()
 	
 	if lower is None:
-		lower = 0
+		lower = img_min
 	if upper is None:
-		upper = 255
+		upper = img_max
 
-	img_norm = ((img_gray - lower) / (upper - lower) * 255).astype('uint8')
+	img_norm = ((img_gray - img_min) / (img_max - img_min) * (upper - lower) + lower).astype('uint8')
 
 	return three_channel(img_norm)
 
@@ -193,6 +206,17 @@ def intensity_capping(img, n_std=0.0, mode=1):
 	img_ravel = img_gray.ravel()
 	cpp_intensity_capping(img_ravel, c_size_t(img_ravel.size), c_double(n_std))
 	img_cap = ~img_ravel.reshape(img_gray.shape) if mode == 1 else img_ravel.reshape(img_gray.shape)
+
+	return three_channel(img_cap)
+
+
+def manual_capping(img, value=0.0):
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
+
+	img_cap = cv2.subtract(img_gray, value)
+	img_cap = cv2.add(img_cap, value)
+	img_cap[img_cap < value] = value
+	img_cap = ((img_cap - value) / (255 - value) * 255).astype('uint8')
 
 	return three_channel(img_cap)
 	
@@ -212,25 +236,36 @@ def adjust_channels(img, shift_c1=0, shift_c2=0, shift_c3=0):
 
 
 def gamma(img, gamma=1.0):
-	invGamma = 1.0 / gamma
+	global gamma_table
 	
-	table = np.array([((i / 255.0) ** invGamma) * 255
+	invGamma = 1.0 / gamma
+	gamma_table = np.array([((i / 255.0) ** invGamma) * 255
 		for i in np.arange(0, 256)]).astype("uint8")
 		
-	return cv2.LUT(img, table)
+	return cv2.LUT(img, gamma_table)
 
 
 def gaussian_lookup(img, sigma=51, mean=127):
+	global cdf_norm
+
 	x = np.arange(0, 256)
 	pdf = stats.norm.pdf(x, mean, sigma)
-
 	cdf = np.cumsum(pdf)
 	cdf_norm = np.array([(x - np.min(cdf))/(np.max(cdf) - np.min(cdf)) * 255 for x in cdf]).astype('uint8')
 
 	return cv2.LUT(img, cdf_norm)
+
+
+def global_thresholding(img, cl=0, cu=255):
+	global colorspace
 	
+	mask = cv2.inRange(img, (int(cl), int(cl), int(cl)), (int(cu), int(cu), int(cu)))
 	
-def thresholding(img, c1l=0, c1u=255, c2l=0, c2u=255, c3l=0, c3u=255):
+	colorspace = 'grayscale'
+	return three_channel(mask)
+
+
+def channel_thresholding(img, c1l=0, c1u=255, c2l=0, c2u=255, c3l=0, c3u=255):
 	global colorspace
 	
 	mask = cv2.inRange(img, (int(c1l), int(c2l), int(c3l)), (int(c1u), int(c2u), int(c3u)))
@@ -243,17 +278,6 @@ def denoise(img, ksize=3):
 	return cv2.medianBlur(img, int(ksize))
 
 
-def channel_ratios(img, c1=1, c2=2, limit=2.0):
-	divisor = img[:, :, int(c2 - 1)]
-	divisor[divisor == 0] = 255
-
-	ratio = img[:, :, int(c1 - 1)].astype('float') / divisor.astype('float')
-	ratio[ratio > limit] = limit
-	ratio = ((ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * 255).astype('uint8')
-
-	return three_channel(ratio)
-
-
 def histeq(img):
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	eq = cv2.equalizeHist(img_gray)
@@ -263,9 +287,13 @@ def histeq(img):
 
 
 def clahe(img, clip=2.0, tile=8):
+	global clahe_ptr
+
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
-	clahe = cv2.createCLAHE(clipLimit=clip, tileGridSize=(int(tile), int(tile)))
-	img_clahe = clahe.apply(img_gray)
+
+	clahe_ptr = cv2.createCLAHE(clipLimit=clip, tileGridSize=(int(tile), int(tile)))
+
+	img_clahe = clahe_ptr.apply(img_gray)
 	img_clahe = convert_img(img_clahe, 'grayscale', colorspace)
 	
 	return three_channel(img_clahe)

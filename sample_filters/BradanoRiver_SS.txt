@@ -1,0 +1,3 @@
+highpass/1
+clahe/1,32
+gaussian_lookup/15.0,157.0

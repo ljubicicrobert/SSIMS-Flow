@@ -22,7 +22,7 @@ try:
     from sys import exit
     from glob import glob
     from class_console_printer import tag_print, unix_path
-    from vel_ratio import L0
+    from vel_ratio import L1
     from utilities import cfg_get
 
     import matplotlib.pyplot as plt
@@ -60,9 +60,13 @@ def update_frame(val):
     data_new = [us, vs, mags, dirs]
     img_new = data_new[args.data]
 
+    if frames_available:
+        back_new = cv2.imread(frames_list[val], cv2.COLOR_BGR2RGB)[::-1]
+        back_shown.set_data(back_new)
+
     img_shown.set_data(img_new)
-    img_shown.set_clim(vmin=np.nanmin(img_new[padd_h: -padd_h, padd_w: -padd_w]),
-                       vmax=np.nanmax(img_new[padd_h: -padd_h, padd_w: -padd_w]))
+    img_shown.set_clim(vmin=np.nanmin(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
+                       vmax=np.nanmax(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
     ax.set_title('{}, frame #{}/{}'.format(data_type, sl_ax_frame_num.val, num_frames - 1))
     plt.draw()
 
@@ -139,15 +143,27 @@ if __name__ == '__main__':
         scale = cfg_get(cfg, section, 'Scale', float)
         fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
         try:
-            gsd = cfg_get(cfg, section, 'GSD', float)        # px/m
+            gsd = cfg_get(cfg, section, 'GSD', float)       # px/m
         except Exception as ex:
             gsd = cfg_get(cfg, 'Transformation', 'GSD', float)        # px/m
+
+        gsd_units = cfg_get(cfg, section, 'GSDUnits', str, 'px/m')           # px/m
+        if gsd_units != 'px/m':
+            gsd = 1/gsd
+            
         pooling = cfg_get(cfg, section, 'Pooling', float)   	# px
         gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
         v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
 
         average_only = int(cfg[section]['AverageOnly'])   	# px
+
+        frames_folder = cfg_get(cfg, section, 'Folder', str)
+        frames_ext = cfg_get(cfg, 'section', 'Extension', str, 'jpg')
+        frames_list = glob('{}/*.{}'.format(frames_folder, frames_ext))
+        frames_available = len(frames_list) > 0
+
+        alpha = 1.0 if not frames_available else 0.5
 
         if average_only == 0:
             mag_list = glob('{}/optical_flow/magnitudes/*.txt'.format(project_folder))
@@ -186,8 +202,8 @@ if __name__ == '__main__':
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data = [us, vs, mags, dirs, thrs]
-            img = data[args.data]
+            data_list = [us, vs, mags, dirs, thrs]
+            data = data_list[args.data]
 
         elif mode == 1:     # Maximal
             legend_toggle.set_visible(False)
@@ -197,8 +213,8 @@ if __name__ == '__main__':
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data = [us, vs, mags]
-            img = data[args.data]
+            data_list = [us, vs, mags]
+            data = data_list[args.data]
 
         elif mode == 2:     # Instantaneous      
             mags = try_load_file(mag_list[0]) * v_ratio
@@ -206,8 +222,8 @@ if __name__ == '__main__':
             h, w = mags.shape
 
             us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data = [us, vs, mags, dirs]
-            img = data[args.data]
+            data_list = [us, vs, mags, dirs]
+            data = data_list[args.data]
             
             axcolor = 'lightgoldenrodyellow'
             valfmt = "%d"
@@ -217,16 +233,22 @@ if __name__ == '__main__':
             sl_ax_frame_num = Slider(ax_frame_num, 'Frame #', 0, num_frames-1, valinit=0, valstep=1, valfmt=valfmt)
             sl_ax_frame_num.on_changed(update_frame)
 
-        padd_h = h//10
-        padd_w = w//10
+        cbar_cutoff_h = h//10
+        cbar_cutoff_w = w//10
 
-        img_shown = ax.imshow(img, cmap='jet', interpolation='hanning')
+        if frames_available:
+            back = cv2.imread(frames_list[0], cv2.COLOR_BGR2RGB)[::-1]
+            padd_x = back.shape[1] % pooling // 2
+            padd_y = back.shape[0] % pooling // 2
+            back_shown = ax.imshow(back, extent=(padd_x / pooling, (back.shape[1] - padd_x) / pooling, padd_y / pooling, (back.shape[0] - padd_y) / pooling))
+
+        img_shown = ax.imshow(data, cmap='jet', interpolation='hanning', alpha=alpha)
 
         if args.data == 4:
-            img_shown.set_clim(vmin=0, vmax=L0)
+            img_shown.set_clim(vmin=0, vmax=L1)
         else:
-            img_shown.set_clim(vmin=np.nanmin(img[padd_h: -padd_h, padd_w: -padd_w]),
-                               vmax=np.nanmax(img[padd_h: -padd_h, padd_w: -padd_w]))
+            img_shown.set_clim(vmin=np.nanmin(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
+                               vmax=np.nanmax(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
         
         cbar = plt.colorbar(img_shown, ax=ax)
         cbar.set_label('{} {}'.format(data_type, units))

@@ -115,8 +115,8 @@
         },
 
         {
-            "Name": "Channel ratios",
-            "Func": "channel_ratios",
+            "Name": "Channel ratio",
+            "Func": "channel_ratio",
             "Description": "",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -198,7 +198,7 @@
                 {
                     "PName": "Sigma",
                     "PType": "float",
-                    "PUpper": 20.0,
+                    "PUpper": 21,
                     "PStart": 1.0,
                     "PLower": 0.1,
                     "PStep": 0.1
@@ -226,6 +226,23 @@
                     "PUpper": 2,
                     "PStart": 1,
                     "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
+            "Name": "Manual capping",
+            "Func": "manual_capping",
+            "Description": "Similar to Intensity capping but uses a fixed capping value instead of a calculated one using mean and variance.",
+            "ColorspaceAfter": "Grayscale",
+            "Parameters": [
+                {
+                    "PName": "Capping value",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 127,
+                    "PLower": 0,
                     "PStep": 1
                 }
             ]
@@ -299,8 +316,33 @@
         },
 
         {
-            "Name": "Channel thresholding filter",
-            "Func": "thresholding",
+            "Name": "Global thresholding",
+            "Func": "global_thresholding",
+            "Description": "Filter image by global thresholding (returns a binarized [0, 1] image).",
+            "ColorspaceAfter": "Grayscale",
+            "Parameters": [
+                {
+                    "PName": "Low",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 0,
+                    "PLower": 0,
+                    "PStep": 1
+                },
+                {
+                    "PName": "High",
+                    "PType": "int",
+                    "PUpper": 255,
+                    "PStart": 255,
+                    "PLower": 0,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
+            "Name": "Channel thresholding",
+            "Func": "channel_thresholding",
             "Description": "Filter image by thresholding individual image channels (returns a binarized [0, 1] image).",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
@@ -406,7 +448,7 @@
         },
 
         {
-            "Name": "Hist. equalization",
+            "Name": "Histogram equalization",
             "Func": "histeq",
             "Description": "Stretches the histogram of the image to improve dynamic range and accentuate details.",
             "ColorspaceAfter": "Grayscale",

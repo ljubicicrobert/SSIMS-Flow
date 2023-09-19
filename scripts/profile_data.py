@@ -25,6 +25,8 @@ try:
 	from scipy.signal import medfilt
 	from math import atan2
 	from utilities import cfg_get
+	from glob import glob
+	from optical_flow import nan_locate
 
 except Exception as ex:
 	print()
@@ -32,15 +34,6 @@ except Exception as ex:
 	print('\n{}'.format(format_exc()))
 	input('\nPress ENTER/RETURN key to exit...')
 	exit()
-
-
-def values_along_line(img: np.ndarray, xs: list, ys: list, count: int, order=3):
-	length = ((xs[0] - xs[1])**2 + (ys[0] - ys[1])**2)**0.5
-	dl = length / count
-	coordinates = np.arange(0, length, dl)
-	x_range, y_range = np.linspace(xs[0], xs[1], count), np.linspace(ys[0], ys[1], count)
-
-	return coordinates, map_coordinates(img, np.vstack((y_range, x_range)), order=order)
 
 
 def main(cfg_path=None):
@@ -69,26 +62,56 @@ def main(cfg_path=None):
 		section = 'Optical flow'
 
 		input_folder = unix_path(project_folder) + '/optical_flow'
+		frames_folder = cfg_get(cfg, section, 'Folder', str)
+		frames_ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
+		frames_list = glob(f'{frames_folder}/*.{frames_ext}')
+
+		img = cv2.imread(frames_list[0], 0)
+		h, w = img.shape
 
 		sources = [
 			'{}/mag_mean.txt'.format(input_folder),
-			'{}/diagnostics/T0.txt'.format(input_folder),
 			'{}/diagnostics/T1.txt'.format(input_folder),
 			'{}/diagnostics/T2.txt'.format(input_folder),
+			'{}/diagnostics/T3.txt'.format(input_folder),
 			'{}/mag_max.txt'.format(input_folder),
 	    ]
 
-		source_index = int(cfg[section]['ProfileSource'])
+		version_created = int(cfg_get(cfg, 'Project settings', 'VersionCreated', str, '0').replace('v', '').replace('.', ''))
+		if 0 < version_created < 500:
+			sources[1] = '{}/diagnostics/T0.txt'.format(input_folder)
+			sources[2] = '{}/diagnostics/T1.txt'.format(input_folder)
+			sources[3] = '{}/diagnostics/T2.txt'.format(input_folder)
+
+		source_index = cfg_get(cfg, section, 'ProfileSource', int)
 		field_raw_mag = np.loadtxt(sources[source_index])
 		field_raw_angle = np.loadtxt('{}/angle_mean.txt'.format(input_folder))
+
+		angle_main = cfg_get(cfg, section, 'AngleMain', float)
+		nans, x = nan_locate(field_raw_angle)
+		try:
+			if 315 <= angle_main <= 360 or \
+				 0 <= angle_main <= 45 or \
+			   135 <= angle_main <= 225:
+				field_raw_angle[nans] = np.interp(x(nans), x(~nans), field_raw_angle[~nans], period=360)
+			else:
+				field_raw_angle[nans] = np.interp(x(nans.T), x(~nans.T), field_raw_angle[~nans].T, period=360).T
+		except ValueError:
+			pass
 
 		frames_step = cfg_get(cfg, 'Frames', 'Step', float, 1.0)
 		optical_flow_step = cfg_get(cfg, section, 'Step', float)
 		scale = cfg_get(cfg, section, 'Scale', float)
 		fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
 		gsd = cfg_get(cfg, section, 'GSD', float)           # px/m
+		gsd_units = cfg_get(cfg, section, 'GSDUnits', str, 'px/m')           # px/m
+		if gsd_units != 'px/m':
+			gsd = 1/gsd
 		pooling = cfg_get(cfg, section, 'Pooling', float)  	# px
 		gsd_pooled = gsd / pooling  				# blocks/m, 1/m
+
+		padd_x = w % pooling // 2
+		padd_y = h % pooling // 2
 
 		v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
 		field_raw_mag *= v_ratio					# px/frame * ((frame*m) / (s*px)) = m/s
@@ -99,8 +122,14 @@ def main(cfg_path=None):
 		field_raw_us, field_raw_vs = cv2.polarToCart(field_raw_mag, field_raw_angle, angleInDegrees=True)
 		field_median_us, field_median_vs = cv2.polarToCart(field_median_mag, field_median_angle, angleInDegrees=True)
 
-		x_start, y_start = [float(x)/pooling*scale for x in cfg[section]['ChainStart'].replace(' ', '').split(',')[:2]]
-		x_end, y_end = [float(x)/pooling*scale for x in cfg[section]['ChainEnd'].replace(' ', '').split(',')[:2]]
+		x_start, y_start = [float(x) for x in cfg[section]['ChainStart'].replace(' ', '').split(',')[:2]]
+		x_end, y_end = [float(x) for x in cfg[section]['ChainEnd'].replace(' ', '').split(',')[:2]]
+
+		x_start = (x_start - padd_x) / pooling * scale
+		x_end = (x_end - padd_x) / pooling * scale
+		y_start = (y_start - padd_y) / pooling * scale
+		y_end = (y_end - padd_y) / pooling * scale
+
 		count = int(cfg[section]['ChainCount'])
 		order = 3
 

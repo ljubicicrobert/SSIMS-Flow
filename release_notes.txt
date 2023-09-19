@@ -1,17 +1,34 @@
 SSIMS-Flow v0.5.0.0
 
 Major:
+- Spatial pooling is now completely written in C++ and no longer relies on
+block_reduce() from scipy. This also allows for around ~100 msec per-frame
+speedup.
+- Significant improvements to flow direction estimation accuracy, considering
+that flow direction data is now also spatially pooled, i.e., calculated only 
+based on the directions of magnitude-valid vectors within a pooling block.
 - Added Reference frame pairing method.
+- Added option to plot OF diagnostic data in Optical flow analyses form
+- Added option to replace or interpolate data in the Optical flow analyses
+table.
+- Flow direction estimation accuracy significantly improved.
 
 Minor:
-- Renamed "Unpack video" tab to "Frames"
-- Renamed "Enhance images" tab to "Enhance"
+- T0, T1, and T2 renamed to T1, T2, and T3. Projects created pre-v0.5.0.0
+release should still work as intended without needing changes to file names.
+- Renamed "Unpack video" tab to "Frames".
+- Renamed "Enhance images" tab to "Enhance".
 - Added option to skip stabilization and only perform orthorectification for
-fixed cameras
-- Added measure tool to Frames tab, useful to obtain GSD
-- Added options to also generate profile data from T0 (SingleTMP), T1, and T2,
-along with Mean pooled (MultiTMP), and max pooled data
-- Minor changes to Optical flow form, now showing the framerate diagnostics
+use with fixed cameras.
+- Added measure tool to Frames tab, useful for obtaining GSD.
+- Added options to also generate profile data from T1 (SingleTMP), T2, and T3,
+along with Mean pooled (MultiTMP), and max pooled data.
+- Now allowing GSD to be entered in either px/m or m/px.
+- Minor changes to Optical flow form, now showing framerate calculations.
+- Added Manual capping filter and fixed Normalize filter.
+- If frames have been added by manually copying them in the frames/ folder,
+a window asking for framerate will pop up before Analyze results form opens
+in the Optical flow tab.
 
 ===============================================================================
 

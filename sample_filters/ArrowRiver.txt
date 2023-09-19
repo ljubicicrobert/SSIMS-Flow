@@ -1,0 +1,3 @@
+select_channel/2
+highpass/1
+intensity_capping/1.5,1
