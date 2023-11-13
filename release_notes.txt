@@ -1,3 +1,15 @@
+SSIMS-Flow v0.5.1.0
+
+Minor:
+- Fixed FPS bug when starting optical flow analyses from the firt time,
+when FPS was not inherited from video data
+- Fixed frame crop bug where crop functionality would not work properly
+with unsaved video path
+- Added Canny edge detection as image enhancement filter
+- Added Sobel operator as image enhancement filter (X and Y direction)
+
+===============================================================================
+
 SSIMS-Flow v0.5.0.0
 
 Major:

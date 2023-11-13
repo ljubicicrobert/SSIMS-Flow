@@ -22,6 +22,7 @@ try:
 	from class_console_printer import tag_print
 	from CPP.dll_import import DLL_Loader
 	from ctypes import c_size_t, c_double
+	from scipy.ndimage import convolve
 
 	import scipy.stats as stats
 
@@ -276,6 +277,43 @@ def channel_thresholding(img, c1l=0, c1u=255, c2l=0, c2u=255, c3l=0, c3u=255):
 
 def denoise(img, ksize=3):
 	return cv2.medianBlur(img, int(ksize))
+
+
+def sobel_kernel(ksize=3, dir='x'):
+	assert ksize % 2 == 1
+
+	kernel = np.zeros((ksize, ksize))
+	pivot = ksize // 2
+
+	for i in range(ksize):
+		for j in range(ksize):
+			try:
+				dy = pivot - i
+				dx = pivot - j
+				kernel[i, j] = dy / (abs(dy) ** 2 + abs(dx) ** 2)
+			except ZeroDivisionError:
+				kernel[i, j] = 0
+
+	return kernel
+
+
+def sobel_filter(img, k_size=3, x_dir=1, y_dir=1):
+	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0].astype('float')
+
+	kernel = sobel_kernel(int(k_size))
+
+	sobel_x = convolve(img_gray, kernel.T, mode='nearest') if x_dir == 1 else np.zeros(img_gray.shape)
+	sobel_y = convolve(img_gray, kernel, mode='nearest') if y_dir == 1 else np.zeros(img_gray.shape)
+
+	mag = np.sqrt(sobel_x**2 + sobel_y**2)
+	mag *= 255.0 / np.max(mag)
+
+	return three_channel(mag.astype('uint8'))
+
+
+def canny_edge_detection(img, thr1, thr2):
+	edges = cv2.Canny(img, min(thr1, thr2), max(thr1, thr2))
+	return three_channel(edges)
 
 
 def histeq(img):
