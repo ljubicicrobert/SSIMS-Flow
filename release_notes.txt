@@ -1,3 +1,10 @@
+SSIMS-Flow v0.5.1.1
+
+Minor:
+- Added requirements.txt for one command installation of Python libraries
+
+===============================================================================
+
 SSIMS-Flow v0.5.1.0
 
 Minor:
