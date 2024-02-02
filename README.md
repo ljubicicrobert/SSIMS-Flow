@@ -24,7 +24,14 @@ The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [offici
 
 The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
 
-So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.5, 3.9.10, 3.10.7, 3.10.10]**. You can download latest Python from the [official site](https://www.python.org/downloads/). **Python 3.11 appears to lack scikit-image package, and will not work.**
+So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.5, 3.9.10, 3.10.7, 3.10.10]**. You can download latest Python from the [official site](https://www.python.org/downloads/).
+
+All the required Python libraries can be installed using the command:
+```
+pip install -r [path to requirements.txt]
+```
+The `requirements.txt` file is available in the root folder of the SSIMS-Flow package.
+>**Note**: You can specify the Python version during PIP installation as pip[version] install ... For example pip3.12 install ... will target Python version 3.12 if it is available in %PATH%.
 
 Python library requirements (other than the standard library):
 ```python
@@ -38,7 +45,6 @@ skimage (scikit-image) >= 0.16.1          # pip install scikit-image
 comtypes (optional, for taskbar progress) # pip install comtypes
 PyGetWindow (optional, taskbar progress)  # pip install PyGetWindow
 ```
->**Note**: You can specify the Python version during PIP installation as pip[version] install ... For example pip3.12 install ... will target Python version 3.12 if it is available in %PATH%.
 
 >**Note**: If you are using distributions of Python such as Anaconda or WinPython, you will likely have all the necessary libraries with the possible exception of `opencv-python` and `opencv-contrib-python`.
 
