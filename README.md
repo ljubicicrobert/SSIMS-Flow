@@ -33,7 +33,7 @@ pip install -r [path to requirements.txt]
 The `requirements.txt` file is available in the root folder of the SSIMS-Flow package.
 >**Note**: You can specify the Python version during PIP installation as pip[version] install ... For example pip3.12 install ... will target Python version 3.12 if it is available in %PATH%.
 
-Python library requirements (other than the standard library):
+If you want to install individual Python library requirements manually (other than the standard library), use the following:
 ```python
 numpy >= 1.19                             # pip install numpy
 opencv-python >= 4.7                      # pip install opencv-python
