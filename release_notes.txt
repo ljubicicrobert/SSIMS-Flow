@@ -1,3 +1,10 @@
+SSIMS-Flow v0.5.2.0
+
+Minor:
+- Fixed a bug when opening Orthorectification form would delete data from the table
+
+===============================================================================
+
 SSIMS-Flow v0.5.1.1
 
 Minor:
