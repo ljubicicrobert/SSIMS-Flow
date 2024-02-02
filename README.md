@@ -38,6 +38,7 @@ skimage (scikit-image) >= 0.16.1          # pip install scikit-image
 comtypes (optional, for taskbar progress) # pip install comtypes
 PyGetWindow (optional, taskbar progress)  # pip install PyGetWindow
 ```
+>**Note**: You can specify the Python version during PIP installation as pip[version] install ... For example pip3.12 install ... will target Python version 3.12 if it is available in %PATH%.
 
 >**Note**: If you are using distributions of Python such as Anaconda or WinPython, you will likely have all the necessary libraries with the possible exception of `opencv-python` and `opencv-contrib-python`.
 
