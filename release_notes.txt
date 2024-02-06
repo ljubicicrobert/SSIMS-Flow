@@ -3,6 +3,7 @@ SSIMS-Flow v0.5.2.1
 Minor:
 - Fixed repeating Python interpreters appearing in dropdown list when found
 in both user and global %PATH%
+- Fixed taskbar progress indicator not working as intended on Python 3.8+
 
 ===============================================================================
 
