@@ -1,3 +1,11 @@
+SSIMS-Flow v0.5.2.1
+
+Minor:
+- Fixed repeating Python interpreters appearing in dropdown list when found
+in both user and global %PATH%
+
+===============================================================================
+
 SSIMS-Flow v0.5.2.0
 
 Minor:
