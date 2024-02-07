@@ -1,8 +1,30 @@
+SSIMS-Flow v0.5.3.0
+
+Major:
+- Fixed a number of bugs when using fixed camera setup for orthorectification
+- Fixed camera option in the Stabilize form will not block the orthorectification
+- Allow previously image-selected orthorectification GCPs to be used instead of
+having to reselect them every time
+- Fixed mismatch issue between stabilization and orthorectification matrices.
+Now every combination of stabilization transform method will work with the
+orthorectification procedure
+- Added SSIM stabilization score comparison by marker over time - opens as
+a second plot when using "Plot SSIM scores" option in the "Select features to
+use for image transformation" form
+
+Minor:
+- Camera model button in the Unpack video form now indicating when a custom
+camera parameters are used
+- Orthorectification GCP table now supports data pasting using CTRL+V (just make
+sure that you're not editing the cell while pasting - stop cell edit with ESC)
+
+===============================================================================
+
 SSIMS-Flow v0.5.2.1
 
 Minor:
 - Fixed repeating Python interpreters appearing in dropdown list when found
-in both user and global %PATH%
+in both user (local) and global %PATH% variable 
 - Fixed taskbar progress indicator not working as intended on Python 3.8+
 
 ===============================================================================

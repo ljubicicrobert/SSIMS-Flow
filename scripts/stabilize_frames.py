@@ -110,17 +110,28 @@ def coordTransform(image: np.ndarray,
 		tag_print('error', 'Unknown transformation method for stabilization point set!')
 		input('\nPress ENTER/RETURN to exit...')
 
-	if M_ortho is not None:
-		M_final = np.matmul(M_ortho, M_stable)
-	else:
-		M_final = M_stable
+	M_stable = extend_matrix_to_3x3(M_stable)
+	M_ortho = extend_matrix_to_3x3(M_ortho)
 
-	if method in [cv2.getPerspectiveTransform, cv2.findHomography]:
-		stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
+	M_final = np.matmul(M_ortho, M_stable)
+
+	if method is not None:
+		if method in [cv2.getPerspectiveTransform, cv2.findHomography]:
+			stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
+		elif method in [cv2.estimateAffine2D, cv2.estimateAffinePartial2D, cv2.getAffineTransform]:
+			stab_ortho = cv2.warpAffine(image, M_final, (width, height))[::-1]
 	else:
-		stab_ortho = cv2.warpAffine(image, M_final, (width, height))[::-1]
+		stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
+		
 
 	return stab_ortho, M_stable, status
+
+
+def extend_matrix_to_3x3(m):
+	if m.shape[0] == 2:
+		m = np.vstack([m, [0, 0, 1]])
+	
+	return m
 
 
 def imcrop(img: np.ndarray, bbox: list) -> np.ndarray:
@@ -210,6 +221,9 @@ if __name__ == '__main__':
 
 		section = 'Transformation'
 
+		# Skip stabilization for fixed cameras
+		moving_camera = cfg_get(cfg, "Feature tracking", 'MovingCamera', int, 1)
+
 		# Extension for output frame files
 		ext_out = cfg_get(cfg, section, 'Extension', str, 'jpg')
 
@@ -227,9 +241,6 @@ if __name__ == '__main__':
 
 		# Perform orthorectification
 		orthorectify = cfg_get(cfg, section, 'Orthorectify', int, 0)
-
-		# Skip stabilization for fixed cameras
-		moving_camera = cfg_get(cfg, section, 'MovingCamera', int, 1)
 
 		# px/meter
 		gsd = cfg_get(cfg, section, 'GSD', float)
@@ -268,25 +279,8 @@ if __name__ == '__main__':
 		if path.exists(end_file):
 			remove(end_file)
 
-		raw_frames_list = glob('{}/*.{}'.format(frames_folder, ext_in))
-		features_coord = glob('{}/*.txt'.format(gcp_folder))
-		num_frames = len(raw_frames_list)
-		num_len = int(log(num_frames, 10)) + 1
-		total_features = np.loadtxt(features_coord[0], dtype='float32', delimiter=' ').shape[0]
-
 		tag_print('start', 'Starting image transformation for data in [{}]'.format(results_folder))
 		print()
-
-		anchors = np.loadtxt(features_coord[0], dtype='float32', delimiter=' ')
-
-		num_avail_gcps = anchors.shape[0]
-
-		if gcps_mask == '1':
-			gcps_mask = [1] * num_avail_gcps
-		else:
-			gcps_mask = [int(x) for x in gcps_mask]
-			num_avail_gcps = gcps_mask.count(True)
-			anchors = np.asarray(compress(anchors, gcps_mask))
 
 		folders_to_check = [stabilized_folder,
 							transform_folder]
@@ -294,6 +288,32 @@ if __name__ == '__main__':
 		for f in folders_to_check:
 			if not path.exists(f):
 				makedirs(f)
+
+		raw_frames_list = glob('{}/*.{}'.format(frames_folder, ext_in))
+		num_frames = len(raw_frames_list)
+		num_len = int(log(num_frames, 10)) + 1
+		
+		img = cv2.imread(raw_frames_list[0], cv2.COLOR_BGR2RGB)
+		img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+		
+		h, w = img.shape[:2]
+
+		if moving_camera:
+			features_coord = glob('{}/*.txt'.format(gcp_folder))
+			anchors = np.loadtxt(features_coord[0], dtype='float32', delimiter=' ')
+
+			if gcps_mask == '1':
+				num_features = gcps_mask.count(True)
+				gcps_mask = [1] * num_features
+			else:
+				gcps_mask = [int(x) for x in gcps_mask]
+				num_features = gcps_mask.count(True)
+				anchors = np.asarray(compress(anchors, gcps_mask))
+		else:
+			anchors = np.array([[0, 0], [h, 0], [h, w], [0, w]], dtype='float32')
+			features_coord = np.dstack(anchors * (num_frames - 1))
+		
+		num_avail_gcps = anchors.shape[0]
 
 		assert num_avail_gcps >= 2,\
 			tag_string('error', 'Number of available GCPs is not >= 2 in all frames!\n') + \
@@ -305,36 +325,45 @@ if __name__ == '__main__':
 			'        Consider switching to one of the available affine transformation methods or\n' \
 			'        repeat the feature tracking with features which are available in all frames.'
 
-		img = cv2.imread(raw_frames_list[0], cv2.COLOR_BGR2RGB)
-		img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-		h, w = img.shape[:2]
-
 		if orthorectify:
+			overwrite_GCPs = True
+
+			if path.exists('{}/gcps_image.txt'.format(results_folder)):
+				MessageBox = ctypes.windll.user32.MessageBoxW
+
+				response = MessageBox(None, f'Ground control point positions have already been set.\nDo you wish to overwrite them (YES) or use previously set positions (NO)?', 'Overwrite GCPs', 36)
+
+				if response != 6:
+					overwrite_GCPs = False
+					gcps_image = np.loadtxt('{}/gcps_image.txt'.format(results_folder), dtype='float32', delimiter=' ')
+
 			gcps_real = np.multiply(np.loadtxt('{}/gcps_real.txt'.format(results_folder), dtype='float32', delimiter=' '), gsd)
 
-			initial_gcps = []
+			if overwrite_GCPs:
+				initial_gcps = []
 
-			dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
-			parameters =  cv2.aruco.DetectorParameters()
-			detector = cv2.aruco.ArucoDetector(dictionary, parameters)
-			corners, ids, rejectedImgPoints = detector.detectMarkers(img_gray)
+				dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+				parameters =  cv2.aruco.DetectorParameters()
+				detector = cv2.aruco.ArucoDetector(dictionary, parameters)
+				corners, ids, rejectedImgPoints = detector.detectMarkers(img_gray)
 
-			try:
-				if len(ids) > 0:
-					ids_sorted = ids[:, 0].argsort()
-					corners = [corners[x] for x in ids_sorted]
-					MessageBox = ctypes.windll.user32.MessageBoxW
-					response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 4)
+				try:
+					if len(ids) > 0:
+						ids_sorted = ids[:, 0].argsort()
+						corners = [corners[x] for x in ids_sorted]
+						MessageBox = ctypes.windll.user32.MessageBoxW
+						response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 36)
 
-					if response == 6:
-						for i in range(len(ids)):
-							c = corners[i][0]
-							initial_gcps.append([c[:, 0].mean(), c[:, 1].mean()])
-			except Exception as ex:
-				pass
+						if response == 6:
+							for i in range(len(ids)):
+								c = corners[i][0]
+								initial_gcps.append([c[:, 0].mean(), c[:, 1].mean()])
 
-			gcps_image = np.asarray(get_gcps_from_image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), initial=initial_gcps, verbose=False, hide_sliders=True))
+				except Exception as ex:
+					pass
+
+				gcps_image = np.asarray(get_gcps_from_image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), initial=initial_gcps, verbose=False, hide_sliders=True))
+				np.savetxt('{}/gcps_image.txt'.format(results_folder), gcps_image, fmt='%.3f', delimiter=' ')
 
 			assert gcps_real.shape == gcps_image.shape,\
 				tag_string('error', 'Number of GCPs [{}] not equal to number of selected features [{}]'.format(gcps_real.shape[0], gcps_image.shape[0]))
@@ -350,8 +379,6 @@ if __name__ == '__main__':
 			max_y = int(np.max(gcps_real[:, 1]) + padd_y[1])
 
 			h, w = max_y, max_x
-
-			np.savetxt('{}/gcps_image.txt'.format(results_folder), gcps_image, fmt='%.3f', delimiter=' ')
 
 			if gcps_real.shape[0] >= 4:
 				if use_ransac_filtering:
@@ -378,7 +405,11 @@ if __name__ == '__main__':
 			try:
 				start_time = time()
 
-				features = np.asarray(compress(np.loadtxt(features_coord[i], dtype='float32', delimiter=' '), gcps_mask))
+				if moving_camera:
+					features = np.asarray(compress(np.loadtxt(features_coord[i], dtype='float32', delimiter=' '), gcps_mask))
+				else:
+					features = anchors
+
 				img_path = raw_frames_list[i]
 				img = cv2.imread(img_path)
 

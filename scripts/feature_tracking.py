@@ -497,7 +497,7 @@ if __name__ == '__main__':
 				corners = [corners[x] for x in ids_sorted]
 				MessageBox = ctypes.windll.user32.MessageBoxW
 				response = MessageBox(None, 'A total of {} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?'.format(ids.shape[0]),
-									  'ArUco markers detected', 4)
+									  'ArUco markers detected', 36)
 
 				if response == 6:
 					for i in range(len(ids)):

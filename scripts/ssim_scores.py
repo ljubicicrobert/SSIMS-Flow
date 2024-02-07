@@ -67,7 +67,27 @@ try:
 	try:
 		mng = plt.get_current_fig_manager()
 		mng.window.state('zoomed')
-		mng.set_window_title('SSIM score comparison')
+		mng.set_window_title('SSIM score comparison by GCP')
+	except Exception:
+		pass
+
+	plt.show()
+
+	fig, ax = plt.subplots()
+	fig.canvas.mpl_connect('key_press_event', keypress)
+
+	for i in range(num_markers):
+		plt.plot(data[:, i])
+
+	plt.legend(["Marker #" + str(x) for x in list(range(num_markers))])
+	plt.xlabel('Frame # [-]')
+	plt.ylabel('SSIM score [-]')
+	plt.title('Higher score is better, perfect score = 1')
+
+	try:
+		mng = plt.get_current_fig_manager()
+		mng.window.state('zoomed')
+		mng.set_window_title('SSIM score variation over time')
 	except Exception:
 		pass
 
