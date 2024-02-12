@@ -1,3 +1,10 @@
+SSIMS-Flow v0.5.3.1
+
+Minor:
+- Additional orthorectification bugfixes
+
+===============================================================================
+
 SSIMS-Flow v0.5.3.0
 
 Major:

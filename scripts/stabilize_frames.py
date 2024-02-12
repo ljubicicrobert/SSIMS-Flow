@@ -112,17 +112,17 @@ def coordTransform(image: np.ndarray,
 
 	M_stable = extend_matrix_to_3x3(M_stable)
 	M_ortho = extend_matrix_to_3x3(M_ortho)
-
 	M_final = np.matmul(M_ortho, M_stable)
 
-	if method is not None:
-		if method in [cv2.getPerspectiveTransform, cv2.findHomography]:
-			stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
-		elif method in [cv2.estimateAffine2D, cv2.estimateAffinePartial2D, cv2.getAffineTransform]:
-			stab_ortho = cv2.warpAffine(image, M_final, (width, height))[::-1]
-	else:
-		stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
-		
+	stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
+
+	# if method is not None:
+	# 	if method in [cv2.getPerspectiveTransform, cv2.findHomography]:
+	# 		stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
+	# 	elif method in [cv2.estimateAffine2D, cv2.estimateAffinePartial2D, cv2.getAffineTransform]:
+	# 		stab_ortho = cv2.warpAffine(image, M_final[:2, :], (width, height))[::-1]
+	# else:
+	# 	stab_ortho = cv2.warpPerspective(image, M_final, (width, height))[::-1]
 
 	return stab_ortho, M_stable, status
 
