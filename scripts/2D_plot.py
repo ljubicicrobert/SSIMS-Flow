@@ -133,8 +133,7 @@ if __name__ == '__main__':
         mode = args.mode
         data_type = __types__[args.data]
         units = __units__[args.data]
-
-        project_folder = cfg['Project settings']['Folder']
+        project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 
         section = 'Optical flow'
 
@@ -156,8 +155,7 @@ if __name__ == '__main__':
 
         v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
 
-        average_only = int(cfg[section]['AverageOnly'])   	# px
-
+        average_only = cfg_get(cfg, section, 'AverageOnly', int)    # px
         frames_folder = cfg_get(cfg, section, 'Folder', str)
         frames_ext = cfg_get(cfg, 'section', 'Extension', str, 'jpg')
         frames_list = glob('{}/*.{}'.format(frames_folder, frames_ext))

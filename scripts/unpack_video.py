@@ -225,12 +225,12 @@ if __name__ == '__main__':
 			tag_print('error', 'There was a problem reading the configuration file!\nCheck if project has valid configuration.')
 			exit()
 
-		project_folder = unix_path(cfg['Project settings']['Folder'])
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		frames_folder = '{}/frames'.format(project_folder)
 
 		section = 'Frames'
 
-		video_path = unix_path(cfg[section]['VideoPath'])
+		video_path = unix_path(cfg_get(cfg, section, 'VideoPath', str))
 		remove_distortion = cfg_get(cfg, section, 'Undistort', int, 0)
 		frame_ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
 		frame_qual = cfg_get(cfg, section, 'Quality', int, 95)

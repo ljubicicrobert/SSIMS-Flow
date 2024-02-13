@@ -26,6 +26,7 @@ try:
 	from inspect import getfullargspec
 	from feature_tracking import fresh_folder
 	from filters import *
+	from utilities import cfg_get
 
 except Exception as ex:
 	print()
@@ -54,9 +55,10 @@ if __name__ == '__main__':
 
 		section = 'Enhancement'
 
-		frames_folder = unix_path(cfg[section]['Folder'])
-		results_folder = unix_path('{}/enhancement'.format(cfg['Project settings']['Folder']))
-		ext = cfg[section]['Extension']
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
+		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
+		results_folder = unix_path('{}/enhancement'.format(project_folder))
+		ext = cfg_get(cfg, section, 'Extension', str)
 		
 		img_list = glob('{}/*.{}'.format(frames_folder, ext))
 		num_frames = len(img_list)

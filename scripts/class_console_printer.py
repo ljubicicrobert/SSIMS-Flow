@@ -32,6 +32,7 @@ ansi_color_codes = {
     'blue':    '\033[34m',
     'magenta': '\033[35m',
     'cyan':    '\033[36m',
+    'white':   '\033[37m',
 }
 
 
@@ -40,6 +41,7 @@ def color_text(string: str, color: str) -> str:
 
 
 tags = {
+    'none':      color_text('',            'white'),
     'info':      color_text('[INFO]',      'cyan'),
     'log':       color_text('[LOG]',       'cyan'),
     'success':   color_text('[SUCCESS]',   'green'),

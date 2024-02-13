@@ -203,7 +203,7 @@ if __name__ == '__main__':
 			exit()
 
 		# Project root
-		project_folder = unix_path(cfg['Project settings']['Folder'])
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 
 		# Folder in which the data is located
 		frames_folder = '{}/frames'.format(project_folder)
@@ -246,11 +246,11 @@ if __name__ == '__main__':
 		gsd = cfg_get(cfg, section, 'GSD', float)
 
 		# Select/discard GCPs
-		gcps_mask = cfg[section]['FeatureMask']
+		gcps_mask = cfg_get(cfg, section, 'FeatureMask', str)
 
 		# Image padding outside GCP area
-		pdx = cfg[section]['PaddX']
-		pdy = cfg[section]['PaddY']
+		pdx = cfg_get(cfg, section, 'PaddX', str)
+		pdy = cfg_get(cfg, section, 'PaddX', str)
 
 		padd_x = [int(float(x) * gsd) for x in pdx.split('-')]
 		padd_y = [int(float(y) * gsd) for y in pdy.split('-')]

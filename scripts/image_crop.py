@@ -121,7 +121,6 @@ def select_roi(event):
 	return
 
 
-
 if __name__ == '__main__':
 	try:
 		parser = ArgumentParser()
@@ -143,7 +142,7 @@ if __name__ == '__main__':
 
 		section = 'Frames'
 			
-		video_path = unix_path(cfg[section]['VideoPath'])
+		video_path = unix_path(cfg_get(cfg, section, 'VideoPath', str))
 		unpack_start = cfg_get(cfg, section, 'Start', int, 0)
 
 		vidcap = cv2.VideoCapture(video_path)

@@ -79,7 +79,7 @@ try:
 	for i in range(num_markers):
 		plt.plot(data[:, i])
 
-	plt.legend(["Marker #" + str(x) for x in list(range(num_markers))])
+	plt.legend(["Marker #" + str(x+1) for x in list(range(num_markers))])
 	plt.xlabel('Frame # [-]')
 	plt.ylabel('SSIM score [-]')
 	plt.title('Higher score is better, perfect score = 1')

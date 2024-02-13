@@ -18,11 +18,8 @@ Created by Robert Ljubicic.
 
 try:
     from __init__ import *
-    from matplotlib.widgets import Slider
     from sys import exit
-    from glob import glob
     from class_console_printer import tag_print, unix_path
-    from vel_ratio import L1
     from utilities import cfg_get
 
     import matplotlib.pyplot as plt
@@ -84,7 +81,7 @@ if __name__ == '__main__':
             input('\nPress ENTER/RETURN key to exit...')
             exit()
 
-        project_folder = cfg['Project settings']['Folder']
+        project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
         diagnostics_folder = '{}/optical_flow/diagnostics'.format(project_folder)
 
         data_type = __types__[args.data]

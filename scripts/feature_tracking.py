@@ -54,7 +54,7 @@ legend_toggle = False
 
 def to_odd(x, side=0) -> int:
 	"""
-	Returns the closest odd ingeter of :x:, if :x: not already odd.
+	Returns the closest odd integer of :x:, if :x: not already odd.
 
 	:param side:	If 0 then returns next larger odd integer, else next smaller.
 	:return:		Odd integer.
@@ -398,15 +398,6 @@ def fresh_folder(folder_path, ext='*', exclude=list()):
 				remove(f)
 
 
-def print_markers(marker_list):
-	s = ''
-	for i, marker in enumerate(marker_list):
-		x, y = marker
-		s += '{}=({:.2f}, {:.2f}), '.format(i, x, y)
-	
-	return s[:-2]
-
-
 def print_and_log(string, printer_obj: Console_printer, logger_obj: Logger):
 	logger_obj.log(printer_obj.add_line(string))
 
@@ -427,8 +418,7 @@ if __name__ == '__main__':
 			exit()
 
 		# Project root
-		project_folder = unix_path(cfg['Project settings']['Folder'])
-
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		# Folder with raw frames
 		frames_folder = '{}/frames'.format(project_folder)
 
@@ -559,6 +549,7 @@ if __name__ == '__main__':
 			for n in range(num_frames):
 				try:
 					print_and_log(progress_bar.get(n), printer, logger)
+					print_and_log('', printer, logger)
 
 					img_path = raw_frames_list[n]
 					img_gray = cv2.imread(img_path, 0)
@@ -624,12 +615,6 @@ if __name__ == '__main__':
 				timer.update()
 
 				np.savetxt('{}/gcps_csv/{}.txt'.format(results_folder, str(n).rjust(numbering_len, '0')), markers, fmt='%.3f', delimiter=' ')
-				np.savetxt('{}/ssim_scores.txt'.format(results_folder), ssim_scores, fmt='%.3f', delimiter=' ')
-				np.savetxt('{}/ssim_score_averages.txt'.format(results_folder), np.average(ssim_scores, axis=0), fmt='%.3f', delimiter=' ')
-
-				# print_and_log(
-				# 	tag_string('info', 'Markers: {}'.format(print_markers(markers))), printer, logger
-				# )
 
 				print_and_log(
 					tag_string('info', 'Frame processing time = {:.3f} sec'.format(timer.interval())), printer, logger
@@ -643,6 +628,21 @@ if __name__ == '__main__':
 					tag_string('info', 'Remaining time ~ {} hr {} min {} sec'.format(*time_hms(timer.remaining()))), printer, logger
 				)
 
+				print_and_log('', printer, logger)
+
+				for i in range(len(markers)):
+					num_blocks = int(np.ceil(ssim_scores[n, i] * 10))
+					if num_blocks == 10:
+						color = '\033[32m'
+					elif num_blocks == 9:
+						color = '\033[33m'
+					else:
+						color = '\033[31m'
+
+					bar = '[' + color + '#'*num_blocks + ' '*(10 - num_blocks) + '\033[0m]'
+
+					printer.add_line(tag_string('info', 'Marker #{} SSIM = {:.3f} {}'.format(i+1, ssim_scores[n, i], bar)))
+
 				printer.overwrite()
 
 		except IOError:
@@ -652,6 +652,8 @@ if __name__ == '__main__':
 			logger.close()
 
 		np.savetxt('{}/markers_mask.txt'.format(results_folder), markers_mask, fmt='%d', delimiter=' ')
+		np.savetxt('{}/ssim_scores.txt'.format(results_folder), ssim_scores, fmt='%.3f', delimiter=' ')
+		np.savetxt('{}/ssim_score_averages.txt'.format(results_folder), np.average(ssim_scores, axis=0), fmt='%.3f', delimiter=' ')
 
 		print()
 		tag_print('end', 'Feature tracking complete!')

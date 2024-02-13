@@ -22,6 +22,7 @@ try:
     from os import path, remove
     from class_console_printer import unix_path, tag_print
     from glob import glob
+    from utilities import cfg_get
 
     import shutil
 
@@ -51,12 +52,13 @@ if __name__ == '__main__':
 
         section = 'Enhancement'
 
-        frames_folder = unix_path(cfg[section]['Folder'])
-        results_folder = unix_path('{}/enhancement'.format(cfg['Project settings']['Folder']))
-        ext = cfg[section]['Extension']
+        project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
+        frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
+        results_folder = '{}/enhancement'.format(project_folder)
+        ext = cfg_get(cfg, section, 'Extension', str)
         
-        save_path_original = unix_path(r'{}/original.{}'.format(cfg['Project settings']['Folder'], ext))
-        save_path_filtered = unix_path(r'{}/preview.{}'.format(cfg['Project settings']['Folder'], ext))
+        save_path_original = r'{}/original.{}'.format(project_folder, ext)
+        save_path_filtered = r'{}/preview.{}'.format(project_folder, ext)
         if path.exists(save_path_filtered):
             remove(save_path_filtered)
         

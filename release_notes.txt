@@ -1,3 +1,11 @@
+SSIMS-Flow v0.5.3.2
+
+Minor:
+- Minor changes to command line print during feature tracking
+- Added overwrite warning message before frame transformation
+
+===============================================================================
+
 SSIMS-Flow v0.5.3.1
 
 Minor:

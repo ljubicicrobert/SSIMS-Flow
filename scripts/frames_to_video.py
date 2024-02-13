@@ -173,8 +173,8 @@ if __name__ == '__main__':
 						  1: cv2.INTER_CUBIC,
 						  2: cv2.INTER_LANCZOS4}
 
-		video_name = cfg[section]['VideoName']
-		frames_folder = unix_path(cfg[section]['Folder'])
+		video_name = cfg_get(cfg, section, 'VideoName', str)
+		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
 		frames_ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
 		video_fps = cfg_get(cfg, section, 'Framerate', float)
 		video_codec = cfg_get(cfg, section, 'Codec', str, 'MJPG')

@@ -95,10 +95,10 @@ if __name__ == '__main__':
 		
 		section = 'Optical flow'
 
-		project_folder = unix_path(cfg['Project settings']['Folder'])
-		frames_folder = unix_path(cfg[section]['Folder'])
-		results_folder = unix_path('{}/optical_flow'.format(cfg['Project settings']['Folder']))
-		ext = cfg[section]['Extension']
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
+		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
+		results_folder = unix_path('{}/optical_flow'.format(project_folder))
+		ext = cfg_get(cfg, section, 'Extension', str)
 		optical_flow_step = cfg_get(cfg, section, 'Step', int, 1)
 		pairing = cfg_get(cfg, section, 'Pairing', int, 0)		# 0 = stepwise, 1 = sliding by 1
 		scale = cfg_get(cfg, section, 'Scale', float, 1.0)

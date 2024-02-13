@@ -56,7 +56,7 @@ def main(cfg_path=None):
 			input('\nPress ENTER/RETURN key to exit...')
 			exit()
 
-		project_folder = cfg['Project settings']['Folder']
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		tag_print('start', 'Getting profile data for project in [{}]'.format(project_folder))
 
 		section = 'Optical flow'
@@ -122,15 +122,18 @@ def main(cfg_path=None):
 		field_raw_us, field_raw_vs = cv2.polarToCart(field_raw_mag, field_raw_angle, angleInDegrees=True)
 		field_median_us, field_median_vs = cv2.polarToCart(field_median_mag, field_median_angle, angleInDegrees=True)
 
-		x_start, y_start = [float(x) for x in cfg[section]['ChainStart'].replace(' ', '').split(',')[:2]]
-		x_end, y_end = [float(x) for x in cfg[section]['ChainEnd'].replace(' ', '').split(',')[:2]]
+		chain_start = cfg_get(cfg, section, 'ChainStart', str)
+		chain_end = cfg_get(cfg, section, 'ChainEnd', str)
+
+		x_start, y_start = [float(x) for x in chain_start.replace(' ', '').split(',')[:2]]
+		x_end, y_end = [float(x) for x in chain_end.replace(' ', '').split(',')[:2]]
 
 		x_start = (x_start - padd_x) / pooling * scale
 		x_end = (x_end - padd_x) / pooling * scale
 		y_start = (y_start - padd_y) / pooling * scale
 		y_end = (y_end - padd_y) / pooling * scale
 
-		count = int(cfg[section]['ChainCount'])
+		count = cfg_get(cfg, section, 'ChainCount', int)
 		order = 3
 
 		dx = x_end - x_start
