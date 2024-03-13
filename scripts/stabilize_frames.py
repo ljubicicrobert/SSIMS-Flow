@@ -110,6 +110,9 @@ def coordTransform(image: np.ndarray,
 		tag_print('error', 'Unknown transformation method for stabilization point set!')
 		input('\nPress ENTER/RETURN to exit...')
 
+	if M_ortho is None:
+		M_ortho = np.identity(3)
+
 	M_stable = extend_matrix_to_3x3(M_stable)
 	M_ortho = extend_matrix_to_3x3(M_ortho)
 	M_final = np.matmul(M_ortho, M_stable)
@@ -331,7 +334,10 @@ if __name__ == '__main__':
 			if path.exists('{}/gcps_image.txt'.format(results_folder)):
 				MessageBox = ctypes.windll.user32.MessageBoxW
 
-				response = MessageBox(None, f'Ground control point positions have already been set.\nDo you wish to overwrite them (YES) or use previously set positions (NO)?', 'Overwrite GCPs', 36)
+				response = MessageBox(None, f'Ground control point positions have already been set.\n' +
+						  				     'Do you wish to overwrite them?\n' + 
+											 'YES = select new GCP positions\n' +
+											 'NO = use previously selected GCP positions', 'Overwrite GCPs', 36)
 
 				if response != 6:
 					overwrite_GCPs = False

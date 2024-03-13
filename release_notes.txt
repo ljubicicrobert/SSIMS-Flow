@@ -1,3 +1,10 @@
+SSIMS-Flow v0.5.3.3
+
+Minor:
+- Fixed missing M_ortho matrix problem during stabilization
+
+===============================================================================
+
 SSIMS-Flow v0.5.3.2
 
 Minor:

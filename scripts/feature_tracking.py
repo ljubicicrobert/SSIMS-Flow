@@ -641,7 +641,7 @@ if __name__ == '__main__':
 
 					bar = '[' + color + '#'*num_blocks + ' '*(10 - num_blocks) + '\033[0m]'
 
-					printer.add_line(tag_string('info', 'Marker #{} SSIM = {:.3f} {}'.format(i+1, ssim_scores[n, i], bar)))
+					printer.add_line(tag_string('info', 'Feature #{} SSIM = {:.3f} {}'.format(i+1, ssim_scores[n, i], bar)))
 
 				printer.overwrite()
 
