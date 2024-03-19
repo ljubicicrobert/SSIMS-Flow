@@ -1,3 +1,14 @@
+SSIMS-Flow v0.5.4.0
+
+Minor:
+- Migrated to .NET Framework 4.7.2
+- Fixed issue with saving the results to Excel file when project name is not set
+- Added a warning when video metadata read fails, such as when a video is on a cloud
+drive (e.g., OneDrive).
+- 
+
+===============================================================================
+
 SSIMS-Flow v0.5.3.3
 
 Minor:
