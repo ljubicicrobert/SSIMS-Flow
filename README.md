@@ -321,7 +321,7 @@ Farnebäck, G. (2003) *Two-frame motion estimation based on polynomial expansion
 
 
 ## How to cite
-Ljubicic, R. (2022) *SSIMS-Flow: Preprocessing tool for UAV image velocimetry*, [https://github.com/ljubicicrobert/SSIMS-Flow](https://github.com/ljubicicrobert/SSIMS-Flow)
+Ljubicic, R. (2022) *SSIMS-Flow: Image velocimetry workbench*, [https://github.com/ljubicicrobert/SSIMS-Flow](https://github.com/ljubicicrobert/SSIMS-Flow)
 
 &nbsp;&nbsp;&nbsp;&nbsp;or (for image stabilization/orthorectification only)
 
