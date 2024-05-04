@@ -22,7 +22,11 @@ The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [offici
 
 > **IMPORTANT**: Some parts of the code are written in C++ and are available through DLLs. These require [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) as they depend on MSVCR140.dll. This DLL is now shipped with SSIMS-Flow. However, if you get a message that DLL import has failed, please install the required MS Redistributable manually.
 
-The backend requires that Python 3+ exists in the **`%PATH%` environmental variable** in Windows. Please make sure that this is the case before running! The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
+The backend requires that Python 3+ interpreter exists on the computer:
+1. either as a path listing in the **`%PATH%` environmental variable** in Windows. The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
+2. manually selected using the + button next to the Python interpreters dropdown list in the Mein form. Alternatively, Python interpreter path can be manually added as a new line entry to the file `python_interpreters.txt` in the `scripts` folder.
+
+Please keep in mind that the software will test the version of the Python interpreter to make sure that the correct version (3.x+) is selected.
 
 So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.5, 3.9.10, 3.10.7, 3.10.10]**. You can download latest Python from the [official site](https://www.python.org/downloads/).
 
