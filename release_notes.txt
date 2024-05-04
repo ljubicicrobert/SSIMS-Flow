@@ -1,3 +1,18 @@
+SSIMS-Flow v0.5.5.0
+
+Major:
+- Added option to manually add Python interpreter path to the list instead
+of adding it to the %PATH% variable. Huge thanks to Choi YoungDon for this
+suggestion.
+
+Minor:
+- Added a slider to control the colorbar scale in 2D plots
+- Fixed background removal filter bug when changing between gray and color mode
+- Fixed a problem where filter preview would fail the first time and then work
+all following when a fresh project is created.
+
+===============================================================================
+
 SSIMS-Flow v0.5.4.0
 
 Minor:
@@ -5,7 +20,6 @@ Minor:
 - Fixed issue with saving the results to Excel file when project name is not set
 - Added a warning when video metadata read fails, such as when a video is on a cloud
 drive (e.g., OneDrive).
-- 
 
 ===============================================================================
 

@@ -52,7 +52,12 @@ __units__ = [
 ]
 
 
-def update_frame(val):
+def update_vmax(val):
+    img_shown.set_clim(vmax=sl_ax_vmax.val)
+    plt.draw()
+
+
+def update_slider(val):
     mags = try_load_file(mag_list[val]) * v_ratio
     dirs = try_load_file(dir_list[val])
     us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
@@ -67,7 +72,7 @@ def update_frame(val):
     img_shown.set_data(img_new)
     img_shown.set_clim(vmin=np.nanmin(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
                        vmax=np.nanmax(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
-    ax.set_title('{}, frame #{}/{}'.format(data_type, sl_ax_frame_num.val, num_frames - 1))
+    ax.set_title('{}, frame #{}/{}'.format(data_type, sl_ax_vmax.val, num_frames - 1))
     plt.draw()
 
     return
@@ -78,30 +83,30 @@ def keypress(event):
         exit()
 
     elif event.key == 'down':
-        if sl_ax_frame_num.val == 0:
-            sl_ax_frame_num.set_val(num_frames - 1)
+        if sl_ax_vmax.val == 0:
+            sl_ax_vmax.set_val(num_frames - 1)
         else:
-            sl_ax_frame_num.set_val(sl_ax_frame_num.val - 1)
+            sl_ax_vmax.set_val(sl_ax_vmax.val - 1)
 
     elif event.key == 'up':
-        if sl_ax_frame_num.val == num_frames - 1:
-            sl_ax_frame_num.set_val(0)
+        if sl_ax_vmax.val == num_frames - 1:
+            sl_ax_vmax.set_val(0)
         else:
-            sl_ax_frame_num.set_val(sl_ax_frame_num.val + 1)
+            sl_ax_vmax.set_val(sl_ax_vmax.val + 1)
 
     elif event.key == 'pageup':
-        if sl_ax_frame_num.val >= num_frames - 10:
-            sl_ax_frame_num.set_val(0)
+        if sl_ax_vmax.val >= num_frames - 10:
+            sl_ax_vmax.set_val(0)
         else:
-            sl_ax_frame_num.set_val(sl_ax_frame_num.val + 10)
+            sl_ax_vmax.set_val(sl_ax_vmax.val + 10)
 
     elif event.key == 'pagedown':
-        if sl_ax_frame_num.val <= 9:
-            sl_ax_frame_num.set_val(num_frames - 1)
+        if sl_ax_vmax.val <= 9:
+            sl_ax_vmax.set_val(num_frames - 1)
         else:
-            sl_ax_frame_num.set_val(sl_ax_frame_num.val - 10)
+            sl_ax_vmax.set_val(sl_ax_vmax.val - 10)
 
-    update_frame(sl_ax_frame_num.val)
+    update_slider(sl_ax_vmax.val)
 
 
 def try_load_file(fname):
@@ -227,12 +232,24 @@ if __name__ == '__main__':
             valfmt = "%d"
 
             fig.canvas.mpl_connect('key_press_event', keypress)
-            ax_frame_num = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
-            sl_ax_frame_num = Slider(ax_frame_num, 'Frame #', 0, num_frames-1, valinit=0, valstep=1, valfmt=valfmt)
-            sl_ax_frame_num.on_changed(update_frame)
+            ax_vmax = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
+            sl_ax_vmax = Slider(ax_vmax, 'Frame #', 0, num_frames-1, valinit=0, valstep=1, valfmt=valfmt)
+            sl_ax_vmax.on_changed(update_slider)
 
-        cbar_cutoff_h = h//10
-        cbar_cutoff_w = w//10
+        cbar_cutoff_h = h//5
+        cbar_cutoff_w = w//5
+
+        if mode in [0, 1]:
+            axcolor = 'lightgoldenrodyellow'
+            valfmt = "%.3f"
+
+            ax_vmax = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
+
+            real_max = np.nanmax(data)
+            cut_max = np.nanmax(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w])
+
+            sl_ax_vmax = Slider(ax_vmax, 'Max. value', np.nanmin(data), np.nanmax(data), valinit=cut_max, valstep=real_max/100, valfmt=valfmt)
+            sl_ax_vmax.on_changed(update_vmax)
 
         if frames_available:
             back = cv2.imread(frames_list[0], cv2.COLOR_BGR2RGB)[::-1]

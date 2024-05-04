@@ -57,6 +57,7 @@ if __name__ == '__main__':
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
+		frames_folder = frames_folder if frames_folder != '' else project_folder + '/frames'
 		results_folder = unix_path('{}/enhancement'.format(project_folder))
 		ext = cfg_get(cfg, section, 'Extension', str)
 		

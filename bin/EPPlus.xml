@@ -107,6 +107,12 @@
             in the Value property of each cell.
             </summary>
         </member>
+        <member name="P:OfficeOpenXml.Attributes.EpplusTableAttribute.NumberFormatProviderType">
+            <summary>
+            If set, this <see cref="T:System.Type"/> must be implementing the <see cref="T:OfficeOpenXml.LoadFunctions.IExcelNumberFormatProvider"/> interface. If not an Exception will be thrown.
+            Note that the implementing type must have an empty constructor.
+            </summary>
+        </member>
         <member name="T:OfficeOpenXml.Attributes.EpplusTableColumnAttribute">
             <summary>
             Use this attribute on a Method, Property or a Field to set parameters for how an object should be represented when imported to a range.
@@ -130,6 +136,12 @@
         <member name="P:OfficeOpenXml.Attributes.EpplusTableColumnAttributeBase.NumberFormat">
             <summary>
             Excel format string for the column
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Attributes.EpplusTableColumnAttributeBase.NumberFormatId">
+            <summary>
+            A number to be used in a NumberFormatProvider.
+            Default value is int.MinValue, which means it will be ignored.
             </summary>
         </member>
         <member name="P:OfficeOpenXml.Attributes.EpplusTableColumnAttributeBase.Hidden">
@@ -897,6 +909,12 @@
             Adds a <see cref="T:OfficeOpenXml.ConditionalFormatting.Contracts.IExcelConditionalFormattingDataBarGroup"/> to the range
             </summary>
             <param name="color"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.ConditionalFormatting.IRangeConditionalFormatting.GetConditionalFormattings">
+            <summary>
+            Get dict of all CFs and their addresses in range
+            </summary>
             <returns></returns>
         </member>
         <member name="T:OfficeOpenXml.ConditionalFormatting.ExcelConditionalFormattingAsType">
@@ -3328,6 +3346,47 @@
             <param name="Color">The color of the databar</param>
             <returns></returns>
         </member>
+        <member name="M:OfficeOpenXml.ConditionalFormatting.Rules.CachingCF.#ctor(OfficeOpenXml.ConditionalFormatting.eExcelConditionalFormattingRuleType,OfficeOpenXml.ExcelAddress,System.Int32,OfficeOpenXml.ExcelWorksheet)">
+            <summary>
+            
+            </summary>
+            <param name="address"></param>
+            <param name="priority"></param>
+            <param name="worksheet"></param>
+            <param name="cfType"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ConditionalFormatting.Rules.CachingCF.#ctor(OfficeOpenXml.ConditionalFormatting.eExcelConditionalFormattingRuleType,OfficeOpenXml.ExcelAddress,OfficeOpenXml.ExcelWorksheet,System.Xml.XmlReader)">
+            <summary>
+            
+            </summary>
+            <param name="address"></param>
+            <param name="ws"></param>
+            <param name="xr"></param>
+            <param name="cfType"></param>
+        </member>
+        <member name="M:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingExpression.#ctor(OfficeOpenXml.ExcelAddress,OfficeOpenXml.ExcelWorksheet,System.Xml.XmlReader)">
+            <summary>
+            
+            </summary>
+            <param name="address"></param>
+            <param name="worksheet"></param>
+            <param name="xr"></param>
+        </member>
+        <member name="P:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingFiveIconSet.Icon4">
+            <summary>
+            Icon 4 value
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingFiveIconSet.Icon5">
+            <summary>
+            Icon 4 value
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingFourIconSet.Icon4">
+            <summary>
+            Icon 4 value
+            </summary>
+        </member>
         <member name="M:OfficeOpenXml.ConditionalFormatting.ExcelConditionalFormattingBeginsWith.#ctor(OfficeOpenXml.ExcelAddress,System.Int32,OfficeOpenXml.ExcelWorksheet)">
             <summary>
             
@@ -3476,29 +3535,6 @@
             <param name="address"></param>
             <param name="ws"></param>
             <param name="xr"></param>
-        </member>
-        <member name="M:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingExpression.#ctor(OfficeOpenXml.ExcelAddress,OfficeOpenXml.ExcelWorksheet,System.Xml.XmlReader)">
-            <summary>
-            
-            </summary>
-            <param name="address"></param>
-            <param name="worksheet"></param>
-            <param name="xr"></param>
-        </member>
-        <member name="P:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingFiveIconSet.Icon4">
-            <summary>
-            Icon 4 value
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingFiveIconSet.Icon5">
-            <summary>
-            Icon 4 value
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.ConditionalFormatting.Rules.ExcelConditionalFormattingFourIconSet.Icon4">
-            <summary>
-            Icon 4 value
-            </summary>
         </member>
         <member name="M:OfficeOpenXml.ConditionalFormatting.ExcelConditionalFormattingGreaterThan.#ctor(OfficeOpenXml.ExcelAddress,System.Int32,OfficeOpenXml.ExcelWorksheet)">
             <summary>
@@ -3728,7 +3764,7 @@
         <member name="P:OfficeOpenXml.ConditionalFormatting.ExcelConditionalFormattingRule.Priority">
             <summary>
             The priority of the rule. 
-            A lower values are higher priority than higher values, where 1 is the highest priority.
+            1 is highest priority. 2 second highest etc.
             </summary>
         </member>
         <member name="P:OfficeOpenXml.ConditionalFormatting.ExcelConditionalFormattingRule.StopIfTrue">
@@ -4991,6 +5027,7 @@
             </summary>
             <param name="dv"></param>
             <param name="address"></param>
+            <param name="added"></param>
         </member>
         <member name="M:OfficeOpenXml.DataValidation.ExcelDataValidationCollection.AddAnyValidation(System.String)">
             <summary>
@@ -5680,11 +5717,6 @@
             Initiaize a new <see cref="T:OfficeOpenXml.DataValidation.Exceptions.DataValidationFormulaTooLongException"/>
             </summary>
             <param name="message">The exception message</param>
-        </member>
-        <member name="T:OfficeOpenXml.DataValidation.Exceptions.DataValidationStaleException">
-            <summary>
-            This exception is thrown by an instance of <see cref="T:OfficeOpenXml.DataValidation.ExcelDataValidation"/> if it is stale and should not allow setting of properties.
-            </summary>
         </member>
         <member name="T:OfficeOpenXml.DataValidation.Formulas.Contracts.IExcelDataValidationFormula">
             <summary>
@@ -33360,6 +33392,33 @@
             Value of the role attribute on the thead.tr.td element. Default value: columnheader
             </summary>
         </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.CssCollections.CssRule.Order">
+            <summary>
+            Order is reversed so that int.Max values are written first. 
+            And the lowest value is written last.
+            This as Priority for conditional formattings is reversed so that 1 is the highest priority.
+            This would otherwise conflict with css where the Last written css style has highest priority.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.CssCollections.CssRule.AddDeclaration(System.String,System.String[])">
+            <summary>
+            Shorthand for ".Declarations.Add(new Declaration(name, values))"
+            </summary>
+            <param name="name"></param>
+            <param name="values"></param>
+        </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.CssCollections.CssRuleCollection.Item(System.Int32)">
+            <summary>
+            Index operator, returns by 0-based index
+            </summary>
+            <param name="index"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.CssCollections.Declaration">
+            <summary>
+            A css Declaration is the combo of a property and its values.
+            </summary>
+        </member>
         <member name="T:OfficeOpenXml.Export.HtmlExport.eBorderExclude">
             <summary>
             Exclude border properties in the css
@@ -33514,56 +33573,6 @@
             <summary>
             Position is Relative in the CSS
             </summary>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssRangeExporterAsync.GetCssStringAsync">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssRangeExporterAsync.RenderCssAsync(System.IO.Stream)">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to html and writes it to a stream
-            </summary>
-            <param name="stream">The stream to write to</param>
-            <returns></returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssRangeExporterSync.GetCssString">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssRangeExporterSync.RenderCss(System.IO.Stream)">
-            <summary>
-            Exports the css part of the html export.
-            </summary>
-            <param name="stream">The stream to write the css to.</param>
-            <exception cref="T:System.IO.IOException"></exception>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssTableExporterAsync.GetCssStringAsync">
-            <summary>
-            Exports the css part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssTableExporterAsync.RenderCssAsync(System.IO.Stream)">
-            <summary>
-            Exports the css part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssTableExporterSync.GetCssString">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssTableExporterSync.RenderCss(System.IO.Stream)">
-            <summary>
-            Exports the css part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
         </member>
         <member name="T:OfficeOpenXml.Export.HtmlExport.Exporters.ExcelHtmlExporterBase">
             <summary>
@@ -33932,6 +33941,144 @@
             </summary>
             <returns>A html table</returns>
         </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.CssRangeExporterSync.GetCssString">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.CssRangeExporterSync.RenderCss(System.IO.Stream)">
+            <summary>
+            Exports the css part of the html export.
+            </summary>
+            <param name="stream">The stream to write the css to.</param>
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.CssTableExporterSync.GetCssString">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.CssTableExporterSync.RenderCss(System.IO.Stream)">
+            <summary>
+            Exports the css part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlExporterBaseInternal.AddHyperlink(OfficeOpenXml.Export.HtmlExport.HtmlCollections.HTMLElement,OfficeOpenXml.ExcelRangeBase,OfficeOpenXml.Export.HtmlExport.HtmlExportSettings)">
+            <summary>
+            Renders a hyperlink
+            </summary>
+            <param name="element"></param>
+            <param name="cell"></param>
+            <param name="settings"></param>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.GetHtmlString">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.GetHtmlString(System.Int32)">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.GetHtmlString(System.Int32,OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings)">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <param name="rangeIndex">Index of the range to export</param>
+            <param name="settings">Override some of the settings for this html exclusively</param>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.GetHtmlString(System.Int32,System.Action{OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings})">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <param name="rangeIndex">Index of the range to export</param>
+            <param name="config">Override some of the settings for this html exclusively</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.RenderHtml(System.IO.Stream)">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <param name="stream">The stream to write to</param>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.RenderHtml(System.IO.Stream,System.Int32,OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings)">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <param name="stream">The stream to write to</param>
+            <param name="rangeIndex">The index of the range to output.</param>
+            <param name="overrideSettings">Settings for this specific range index</param>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.RenderHtml(System.IO.Stream,System.Int32,System.Action{OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings})">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <param name="stream">The stream to write to</param>
+            <param name="rangeIndex">Index of the range to export</param>
+            <param name="config">Override some of the settings for this html exclusively</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlRangeExporterSync.GetSinglePage(System.String)">
+            <summary>
+            Renders both the Html and the Css to a single page. 
+            </summary>
+            <param name="htmlDocument">The html string where to insert the html and the css. The Html will be inserted in string parameter {0} and the Css will be inserted in parameter {1}.</param>
+            <returns>The html document</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlTableExporterSync.GetHtmlString">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlTableExporterSync.RenderHtml(System.IO.Stream)">
+            <summary>
+            Exports the html part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string.
+            </summary>
+            <param name="stream">The stream to write to.</param>
+            <exception cref="T:System.IO.IOException"></exception>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.Internal.HtmlTableExporterSync.GetSinglePage(System.String)">
+            <summary>
+            Renders both the Css and the Html to a single page. 
+            </summary>
+            <param name="htmlDocument">The html string where to insert the html and the css. The Html will be inserted in string parameter {0} and the Css will be inserted in parameter {1}.</param>
+            <returns>The html document</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssRangeExporterAsync.GetCssStringAsync">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssRangeExporterAsync.RenderCssAsync(System.IO.Stream)">
+            <summary>
+            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to html and writes it to a stream
+            </summary>
+            <param name="stream">The stream to write to</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssTableExporterAsync.GetCssStringAsync">
+            <summary>
+            Exports the css part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.CssTableExporterAsync.RenderCssAsync(System.IO.Stream)">
+            <summary>
+            Exports the css part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
+            </summary>
+            <returns>A html table</returns>
+        </member>
         <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterAsync.GetHtmlStringAsync">
             <summary>
             Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
@@ -33986,79 +34133,6 @@
             <param name="htmlDocument">The html string where to insert the html and the css. The Html will be inserted in string parameter {0} and the Css will be inserted in parameter {1}.</param>
             <returns>The html document</returns>
         </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.GetHtmlString">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.GetHtmlString(System.Int32)">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.GetHtmlString(System.Int32,OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings)">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <param name="rangeIndex">Index of the range to export</param>
-            <param name="settings">Override some of the settings for this html exclusively</param>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.GetHtmlString(System.Int32,System.Action{OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings})">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <param name="rangeIndex">Index of the range to export</param>
-            <param name="config">Override some of the settings for this html exclusively</param>
-            <returns></returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.RenderHtml(System.IO.Stream)">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <param name="stream">The stream to write to</param>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.RenderHtml(System.IO.Stream,System.Int32,OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings)">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <param name="stream">The stream to write to</param>
-            <param name="rangeIndex">The index of the range to output.</param>
-            <param name="overrideSettings">Settings for this specific range index</param>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.RenderHtml(System.IO.Stream,System.Int32,System.Action{OfficeOpenXml.Export.HtmlExport.ExcelHtmlOverrideExportSettings})">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <param name="stream">The stream to write to</param>
-            <param name="rangeIndex">Index of the range to export</param>
-            <param name="config">Override some of the settings for this html exclusively</param>
-            <returns></returns>
-        </member>
-        <member name="P:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.Ranges">
-            <summary>
-            The ranges used in the export.
-            </summary>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSync.GetSinglePage(System.String)">
-            <summary>
-            Renders both the Html and the Css to a single page. 
-            </summary>
-            <param name="htmlDocument">The html string where to insert the html and the css. The Html will be inserted in string parameter {0} and the Css will be inserted in parameter {1}.</param>
-            <returns>The html document</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlRangeExporterSyncBase.RenderHyperlink(OfficeOpenXml.Export.HtmlExport.EpplusHtmlWriter,OfficeOpenXml.ExcelRangeBase,OfficeOpenXml.Export.HtmlExport.HtmlExportSettings)">
-            <summary>
-            Renders a hyperlink
-            </summary>
-            <param name="writer"></param>
-            <param name="cell"></param>
-            <param name="settings"></param>
-        </member>
         <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlTableExporterAsync.GetHtmlStringAsync">
             <summary>
             Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
@@ -34074,26 +34148,6 @@
         <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlTableExporterAsync.GetSinglePageAsync(System.String)">
             <summary>
             Renders the Html and the Css to a single page. 
-            </summary>
-            <param name="htmlDocument">The html string where to insert the html and the css. The Html will be inserted in string parameter {0} and the Css will be inserted in parameter {1}.</param>
-            <returns>The html document</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlTableExporterSync.GetHtmlString">
-            <summary>
-            Exports an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string
-            </summary>
-            <returns>A html table</returns>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlTableExporterSync.RenderHtml(System.IO.Stream)">
-            <summary>
-            Exports the html part of an <see cref="T:OfficeOpenXml.Table.ExcelTable"/> to a html string.
-            </summary>
-            <param name="stream">The stream to write to.</param>
-            <exception cref="T:System.IO.IOException"></exception>
-        </member>
-        <member name="M:OfficeOpenXml.Export.HtmlExport.Exporters.HtmlTableExporterSync.GetSinglePage(System.String)">
-            <summary>
-            Renders both the Css and the Html to a single page. 
             </summary>
             <param name="htmlDocument">The html string where to insert the html and the css. The Html will be inserted in string parameter {0} and the Css will be inserted in parameter {1}.</param>
             <returns>The html document</returns>
@@ -34416,6 +34470,11 @@
             If true the normal font will be included in the css. Default is true
             </summary>
         </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.CssExportSettings.IncludeCssReset">
+            <summary>
+            Ensure margin and padding consistent between browsers
+            </summary>
+        </member>
         <member name="P:OfficeOpenXml.Export.HtmlExport.CssExportSettings.AdditionalCssElements">
             <summary>
             Css elements added to the table.
@@ -34633,6 +34692,12 @@
             The name will be prefixed with the <see cref="P:OfficeOpenXml.Export.HtmlExport.HtmlExportSettings.StyleClassPrefix"/> and suffixed with the cell style index.
             </summary>
         </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.HtmlExportSettings.DxfStyleClassName">
+            <summary>
+            The name of the classes used for cell styles. 
+            The name will be prefixed with the <see cref="P:OfficeOpenXml.Export.HtmlExport.HtmlExportSettings.StyleClassPrefix"/> and suffixed with the cell style index.
+            </summary>
+        </member>
         <member name="P:OfficeOpenXml.Export.HtmlExport.HtmlExportSettings.Pictures">
             <summary>
             If picture drawings will be included. Default is true.
@@ -34663,6 +34728,11 @@
         <member name="P:OfficeOpenXml.Export.HtmlExport.HtmlExportSettings.RenderDataTypes">
             <summary>
             If true, data types are renedered on the header objects.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.HtmlExportSettings.RenderConditionalFormattings">
+            <summary>
+            If true conditionalFormattings will be rendered
             </summary>
         </member>
         <member name="T:OfficeOpenXml.Export.HtmlExport.HtmlPictureSettings">
@@ -34780,6 +34850,72 @@
             Copy the values from another settings object.
             </summary>
             <param name="copy">The object to copy.</param>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.StyleCollectors.FillXml.GetColor(OfficeOpenXml.Style.XmlAccess.ExcelColorXml,OfficeOpenXml.Drawing.Theme.ExcelTheme)">
+            <summary>
+            Gets hexcode color for html as a string 
+            </summary>
+            <param name="c"></param>
+            <param name="theme"></param>
+            <returns></returns>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IBorder">
+            <summary>
+            For internal use
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IBorderItem">
+            <summary>
+            For internal use
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IFill">
+            <summary>
+            For internal use
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IFill.PatternType">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IFont">
+            <summary>
+            For internal use
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IStyleColor">
+            <summary>
+            For internal use
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IStyleExport">
+            <summary>
+            For internal use
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IStyleExport.Fill">
+            <summary>
+            Fill
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IStyleExport.Font">
+            <summary>
+            Font
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Export.HtmlExport.StyleCollectors.StyleContracts.IStyleExport.Border">
+            <summary>
+            Border
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Export.HtmlExport.Translators.TranslatorBase.GetColor(OfficeOpenXml.Style.XmlAccess.ExcelColorXml,OfficeOpenXml.Drawing.Theme.ExcelTheme)">
+            <summary>
+            Gets hexcode color for html as a string 
+            </summary>
+            <param name="c"></param>
+            <param name="theme"></param>
+            <returns></returns>
         </member>
         <member name="T:OfficeOpenXml.Export.ToCollection.ToCollectionRow">
             <summary>
@@ -38696,6 +38832,15 @@
             Contains information about filters on a workbook's worksheets.
             </summary>
         </member>
+        <member name="M:OfficeOpenXml.FormulaParsing.FormulaParser.Parse(System.String,System.String,System.Boolean)">
+            <summary>
+            Parse with option to not write result to cell but only return it
+            </summary>
+            <param name="formula"></param>
+            <param name="address"></param>
+            <param name="writeToCell">True if write result to cell false if not</param>
+            <returns></returns>
+        </member>
         <member name="M:OfficeOpenXml.FormulaParsing.FormulaParser.Parse(System.String,System.String,OfficeOpenXml.FormulaParsing.ExcelCalculationOption)">
             <summary>
             Parses a formula at a specific address
@@ -38787,12 +38932,13 @@
             <param name="formula">The formula to parse</param>
             <returns>The result of the parsed formula</returns>
         </member>
-        <member name="M:OfficeOpenXml.FormulaParsing.FormulaParserManager.Parse(System.String,System.String)">
+        <member name="M:OfficeOpenXml.FormulaParsing.FormulaParserManager.Parse(System.String,System.String,System.Boolean)">
             <summary>
             Parses the supplied <paramref name="formula"/> and returns the result.
             </summary>
             <param name="formula">The formula to parse</param>
             <param name="address">The full address in the workbook where the <paramref name="formula"/> should be parsed. Example: you might want to parse the formula of a conditional format, then this should be the address of the cell where the conditional format resides.</param>
+            <param name="writeToCell">If writing result to adress or not, true by default</param>
             <returns>The result of the parsed formula</returns>
         </member>
         <member name="M:OfficeOpenXml.FormulaParsing.FormulaParserManager.AttachLogger(OfficeOpenXml.FormulaParsing.Logging.IFormulaParserLogger)">
@@ -39014,6 +39160,11 @@
         <member name="P:OfficeOpenXml.FormulaParsing.LexicalAnalysis.SourceCodeTokenizer.R1C1">
             <summary>
             The tokenizer used for r1c1 format. This tokenizer will keep whitespaces and add them as tokens.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.FormulaParsing.LexicalAnalysis.SourceCodeTokenizer.Default_KeepWhiteSpaces">
+            <summary>
+            The default tokenizer. This tokenizer will remove and ignore whitespaces.
             </summary>
         </member>
         <member name="M:OfficeOpenXml.FormulaParsing.LexicalAnalysis.SourceCodeTokenizer.#ctor(OfficeOpenXml.FormulaParsing.Excel.Functions.IFunctionNameProvider,OfficeOpenXml.FormulaParsing.INameValueProvider,System.Boolean,System.Boolean)">
@@ -40506,6 +40657,20 @@
             An exception thrown when the license context of EPPlus hasn't been set.
             </summary>
         </member>
+        <member name="T:OfficeOpenXml.LoadFunctions.IExcelNumberFormatProvider">
+            <summary>
+            This interface is used to provide number formats for ranges
+            in runtime. The number formats are mapped to a number that can be used
+            to refer to a specific format.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.LoadFunctions.IExcelNumberFormatProvider.GetFormat(System.Int32)">
+            <summary>
+            Returns a number format by its <paramref name="numberFormatId"/>
+            </summary>
+            <param name="numberFormatId"></param>
+            <returns>A number format that can be used on <see cref="T:OfficeOpenXml.ExcelRangeBase">ranges</see></returns>
+        </member>
         <member name="T:OfficeOpenXml.LoadFunctions.LoadFunctionBase">
             <summary>
             Base class for ExcelRangeBase.LoadFrom[...] functions
@@ -40610,6 +40775,13 @@
             </summary>
             <param name="keys">The keys to register</param>
         </member>
+        <member name="M:OfficeOpenXml.LoadFunctions.Params.LoadFromCollectionParams.SetNumberFormatProvider(OfficeOpenXml.LoadFunctions.IExcelNumberFormatProvider)">
+            <summary>
+            Sets an <see cref="T:OfficeOpenXml.LoadFunctions.IExcelNumberFormatProvider"/> that will be used for setting NumberFormats in the range
+            </summary>
+            <param name="numberFormatProvider">The <see cref="T:OfficeOpenXml.LoadFunctions.IExcelNumberFormatProvider"/> to use</param>
+            <seealso cref="P:OfficeOpenXml.Attributes.EpplusTableColumnAttributeBase.NumberFormatId"/>
+        </member>
         <member name="T:OfficeOpenXml.LoadFunctions.Params.LoadFromDataTableParams">
             <summary>
             Parameters from the <see cref="M:OfficeOpenXml.ExcelRangeBase.LoadFromDataTable(System.Data.DataTable,System.Action{OfficeOpenXml.LoadFunctions.Params.LoadFromDataTableParams})"/>
@@ -40703,6 +40875,12 @@
             <summary>
             If true, EPPlus will add the built in (default) styles for hyperlinks and apply them on any member
             that is of the <see cref="T:System.Uri"/> or <see cref="T:OfficeOpenXml.ExcelHyperLink"/> types. Default value is true.
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.LoadFunctions.ReflectionHelpers.MemberPathScanner">
+            <summary>
+            Scans a type for properties decorated with the <see cref="T:OfficeOpenXml.Attributes.EpplusNestedTableColumnAttribute"/>
+            and returns a list with all types reflected by these properties including the outer type.
             </summary>
         </member>
         <member name="T:OfficeOpenXml.OfficeProperties">
@@ -58937,6 +59115,13 @@
             <param name="helper">The xml helper</param>
             <param name="path">The X Path</param>
         </member>
+        <member name="M:OfficeOpenXml.Style.Dxf.ExcelDxfColor.LookupColor">
+            <summary>
+            Return the RGB value as a string for the color object that uses the Indexed or Tint property
+            </summary>
+            <param name="theColor">The color object</param>
+            <returns>The RGB color starting with a #FF (alpha)</returns>
+        </member>
         <member name="T:OfficeOpenXml.Style.Dxf.ExcelDxfFill">
             <summary>
             A fill in a differential formatting record
@@ -60861,225 +61046,6 @@
             If the numeric format is a build-in from.
             </summary>
         </member>
-        <member name="T:OfficeOpenXml.Style.ExcelParagraph">
-            <summary>
-            Handels paragraph text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelParagraph.Text">
-            <summary>
-            Text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelParagraph.IsFirstInParagraph">
-            <summary>
-            If the paragraph is the first in the collection
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelParagraph.IsLastInParagraph">
-            <summary>
-            If the paragraph is the last in the collection
-            </summary>
-        </member>
-        <member name="T:OfficeOpenXml.Style.ExcelParagraphCollection">
-            <summary>
-            A collection of Paragraph objects
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelParagraphCollection.Item(System.Int32)">
-            <summary>
-            The indexer for this collection
-            </summary>
-            <param name="Index">The index</param>
-            <returns></returns>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelParagraphCollection.Count">
-            <summary>
-            Number of items in the collection
-            </summary>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.Add(System.String,System.Boolean)">
-            <summary>
-            Add a rich text string
-            </summary>
-            <param name="Text">The text to add</param>
-            <param name="NewParagraph">This will be a new line. Is ignored for first item added to the collection</param>
-            <returns></returns>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.Clear">
-            <summary>
-            Removes all items in the collection
-            </summary>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.RemoveAt(System.Int32)">
-            <summary>
-            Remove the item at the specified index
-            </summary>
-            <param name="Index">The index</param>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.Remove(OfficeOpenXml.Style.ExcelRichText)">
-            <summary>
-            Remove the specified item
-            </summary>
-            <param name="Item">The item</param>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelParagraphCollection.Text">
-            <summary>
-            The full text 
-            </summary>
-        </member>
-        <member name="T:OfficeOpenXml.Style.ExcelRichText">
-            <summary>
-            A richtext part
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.Text">
-            <summary>
-            The text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.HtmlText">
-            <summary>
-            Returns the rich text item as a html string.
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.PreserveSpace">
-            <summary>
-            Preserves whitespace. Default true
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.Bold">
-            <summary>
-            Bold text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.Italic">
-            <summary>
-            Italic text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.Strike">
-            <summary>
-            Strike-out text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.UnderLine">
-            <summary>
-            Underlined text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.VerticalAlign">
-            <summary>
-            Vertical Alignment
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.Size">
-            <summary>
-            Font size
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.FontName">
-            <summary>
-            Name of the font
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.Color">
-            <summary>
-            Text color.
-            Also see <seealso cref="P:OfficeOpenXml.Style.ExcelRichText.ColorSettings"/>
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText.ColorSettings">
-            <summary>
-            Color settings.
-            <seealso cref="P:OfficeOpenXml.Style.ExcelRichText.Color"/>
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichText._collection">
-            <summary>
-            A referens to the richtext collection
-            </summary>
-        </member>
-        <member name="T:OfficeOpenXml.Style.ExcelRichTextCollection">
-            <summary>
-            Collection of Richtext objects
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.Item(System.Int32)">
-            <summary>
-            Collection containing the richtext objects
-            </summary>
-            <param name="Index"></param>
-            <returns></returns>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.Count">
-            <summary>
-            Items in the list
-            </summary>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Add(System.String,System.Boolean)">
-            <summary>
-            Add a rich text string
-            </summary>
-            <param name="Text">The text to add</param>
-            <param name="NewParagraph">Adds a new paragraph before text. This will add a new line break.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Insert(System.Int32,System.String)">
-            <summary>
-            Insert a rich text string at the specified index.
-            </summary>
-            <param name="index">The zero-based index at which rich text should be inserted.</param>
-            <param name="text">The text to insert.</param>
-            <returns></returns>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Clear">
-            <summary>
-            Clear the collection
-            </summary>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.RemoveAt(System.Int32)">
-            <summary>
-            Removes an item at the specific index
-            </summary>
-            <param name="Index"></param>
-        </member>
-        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Remove(OfficeOpenXml.Style.ExcelRichText)">
-            <summary>
-            Removes an item
-            </summary>
-            <param name="Item"></param>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.Text">
-            <summary>
-            The text
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.HtmlText">
-            <summary>
-            Returns the rich text as a html string.
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Color">
-            <summary>
-            Gets the rgb color depending in <see cref="P:OfficeOpenXml.Style.ExcelRichTextColor.Rgb"/>, <see cref="P:OfficeOpenXml.Style.ExcelRichTextColor.Theme"/> and <see cref="P:OfficeOpenXml.Style.ExcelRichTextColor.Tint"/>
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Rgb">
-            <summary>
-            The rgb color value set in the file.
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Theme">
-            <summary>
-            The color theme.
-            </summary>
-        </member>
-        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Tint">
-            <summary>
-            The tint value for the color.
-            </summary>
-        </member>
         <member name="T:OfficeOpenXml.Style.ExcelStyle">
             <summary>
             Toplevel class for cell styling
@@ -61257,6 +61223,282 @@
             <param name="italic"></param>
             <param name="underline"></param>
             <param name="strikeout"></param>
+        </member>
+        <member name="T:OfficeOpenXml.Style.ExcelParagraph">
+            <summary>
+            Handels paragraph text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelParagraph.Text">
+            <summary>
+            Text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelParagraph.IsFirstInParagraph">
+            <summary>
+            If the paragraph is the first in the collection
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelParagraph.IsLastInParagraph">
+            <summary>
+            If the paragraph is the last in the collection
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Style.ExcelParagraphCollection">
+            <summary>
+            A collection of Paragraph objects
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelParagraphCollection.Item(System.Int32)">
+            <summary>
+            The indexer for this collection
+            </summary>
+            <param name="Index">The index</param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelParagraphCollection.Count">
+            <summary>
+            Number of items in the collection
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.Add(System.String,System.Boolean)">
+            <summary>
+            Add a rich text string
+            </summary>
+            <param name="Text">The text to add</param>
+            <param name="NewParagraph">This will be a new line. Is ignored for first item added to the collection</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.Clear">
+            <summary>
+            Removes all items in the collection
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.RemoveAt(System.Int32)">
+            <summary>
+            Remove the item at the specified index
+            </summary>
+            <param name="Index">The index</param>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelParagraphCollection.Remove(OfficeOpenXml.Style.ExcelParagraph)">
+            <summary>
+            Remove the specified item
+            </summary>
+            <param name="Item">The item</param>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelParagraphCollection.Text">
+            <summary>
+            The full text 
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Style.ExcelRichText">
+            <summary>
+            A richtext part
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText._collection">
+            <summary>
+            A referens to the richtext collection
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.PreserveSpace">
+            <summary>
+            Preserves whitespace. Default true
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Bold">
+            <summary>
+            Bold text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Italic">
+            <summary>
+            Italic text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Strike">
+            <summary>
+            Strike-out text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.UnderLine">
+            <summary>
+            Underlined text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.VerticalAlign">
+            <summary>
+            Vertical Alignment
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Size">
+            <summary>
+            Font size
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.FontName">
+            <summary>
+            Name of the font
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Color">
+            <summary>
+            Text color.
+            Also see <seealso cref="P:OfficeOpenXml.Style.ExcelRichText.ColorSettings"/>
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.ColorSettings">
+            <summary>
+            Color settings.
+            <seealso cref="P:OfficeOpenXml.Style.ExcelRichText.Color"/>
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Charset">
+            <summary>
+            Characterset to use
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Family">
+            <summary>
+            Font family
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.UnderLineType">
+            <summary>
+            Underline type of text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.Text">
+            <summary>
+            The text
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichText.GetUnderlineType(System.String)">
+            <summary>
+            Get the underline typ for rich text
+            </summary>
+            <param name="v"></param>
+            <returns>returns excelunderline type</returns>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichText.GetUVerticalAlignmentFont(System.String)">
+            <summary>
+            Get the underline typ for rich text
+            </summary>
+            <param name="v"></param>
+            <returns>returns excelunderline type</returns>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichText.HtmlText">
+            <summary>
+            Returns the rich text item as a html string.
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichText.ReadrPr(System.Xml.XmlReader)">
+            <summary>
+            Read RichText attributes from xml.
+            </summary>
+            <param name="xr"></param>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichText.WriteRichTextAttributes(System.Text.StringBuilder)">
+            <summary>
+            Write RichTextAttributes
+            </summary>
+            <param name="sb"></param>
+        </member>
+        <member name="T:OfficeOpenXml.Style.ExcelRichTextCollection">
+            <summary>
+            Collection of Richtext objects
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.Item(System.Int32)">
+            <summary>
+            Collection containing the richtext objects
+            </summary>
+            <param name="Index"></param>
+            <returns></returns>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.Count">
+            <summary>
+            Items in the list
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Add(System.String,System.Boolean)">
+            <summary>
+            Add a rich text string
+            </summary>
+            <param name="Text">The text to add</param>
+            <param name="NewParagraph">Adds a new paragraph before text. This will add a new line break.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Insert(System.Int32,System.String)">
+            <summary>
+            Insert a rich text string at the specified index.
+            </summary>
+            <param name="index">The zero-based index at which rich text should be inserted.</param>
+            <param name="text">The text to insert.</param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Clear">
+            <summary>
+            Clear the collection
+            </summary>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.RemoveAt(System.Int32)">
+            <summary>
+            Removes an item at the specific index
+            </summary>
+            <param name="Index"></param>
+        </member>
+        <member name="M:OfficeOpenXml.Style.ExcelRichTextCollection.Remove(OfficeOpenXml.Style.ExcelRichText)">
+            <summary>
+            Removes an item
+            </summary>
+            <param name="Item"></param>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.Text">
+            <summary>
+            The text
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextCollection.HtmlText">
+            <summary>
+            Returns the rich text as a html string.
+            </summary>
+        </member>
+        <member name="T:OfficeOpenXml.Style.ExcelRichTextColor">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.HasAttributes">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Rgb">
+            <summary>
+            The rgb color value set in the file.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Theme">
+            <summary>
+            The color theme.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Tint">
+            <summary>
+            The tint value for the color.
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Auto">
+            <summary>
+            Auto color
+            </summary>
+        </member>
+        <member name="P:OfficeOpenXml.Style.ExcelRichTextColor.Indexed">
+            <summary>
+            The indexed color number.
+            A negative value means not set.
+            </summary>
         </member>
         <member name="T:OfficeOpenXml.Style.StyleBase">
             <summary>
@@ -67171,7 +67413,7 @@
             Memmory settings for RecyclableMemoryStream handling
             </summary>
         </member>
-        <member name="P:OfficeOpenXml.Utils.MemorySettings.MemoryManger">
+        <member name="P:OfficeOpenXml.Utils.MemorySettings.MemoryManager">
             <summary>
             The memory manager used, if RecyclableMemoryStream are used.
             <seealso cref="P:OfficeOpenXml.Utils.MemorySettings.UseRecyclableMemory"/>
@@ -67313,13 +67555,14 @@
             <param name="startPos"></param>
             <returns></returns>
         </member>
-        <member name="M:OfficeOpenXml.Utils.XmlReaderHelper.ReadUntil(System.Xml.XmlReader,System.String[])">
+        <member name="M:OfficeOpenXml.Utils.XmlReaderHelper.ReadUntil(System.Xml.XmlReader,System.Xml.XmlNodeType,System.String[])">
             <summary>
             Read file until a tag in tagName is found or EOF.
             This requires more careful consideration than when specifing depth.
             As it will exit on endnodes and continue directly to end of file if nothing is found.
             </summary>
             <param name="xr">Handle to xml to read data from</param>
+            <param name="nodeType">The node</param>
             <param name="tagName">Array of tags to stop at in the order they should appear in the xml</param>
             <returns>false if EOF or found end tag. True if found tag of element type</returns>
         </member>
@@ -68106,6 +68349,21 @@
             <param name="parentNode">Parent node</param>
             <param name="beforeNodes">comma separated list containing nodes to insert after. Left to right order</param>
             <param name="newNode">The new node to be inserterd</param>
+        </member>
+        <member name="M:OfficeOpenXml.XmlHelper.GetRichTextPropertyBool(System.Xml.XmlNode)">
+            <summary>
+            
+            </summary>
+            <param name="n"></param>
+            <returns></returns>
+        </member>
+        <member name="M:OfficeOpenXml.XmlHelper.GetRichTextPropertyUnderlineType(System.Xml.XmlNode,System.Boolean@)">
+            <summary>
+            
+            </summary>
+            <param name="n"></param>
+            <param name="val"></param>
+            <returns></returns>
         </member>
         <member name="F:RichValueDataType.Decimal">
             <summary>

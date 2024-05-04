@@ -53,9 +53,9 @@ if __name__ == '__main__':
         section = 'Enhancement'
 
         project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
-        frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
+        frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str, '{}/frames'.format(project_folder)))
         results_folder = '{}/enhancement'.format(project_folder)
-        ext = cfg_get(cfg, section, 'Extension', str)
+        ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
         
         save_path_original = r'{}/original.{}'.format(project_folder, ext)
         save_path_filtered = r'{}/preview.{}'.format(project_folder, ext)

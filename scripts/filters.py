@@ -345,7 +345,11 @@ def remove_background(img, num_frames_background, gray=1, use_mean=0, img_list =
 		num_frames_background = len(img_list)
 
 	step = len(img_list) // num_frames_background
-	img_back_path = '{}/../median_{}.{}'.format(path.dirname(img_list[0]), num_frames_background, ext)
+	
+	prefix = 'median' if not use_mean else 'mean'
+	suffix = 'gray' if gray else 'color'
+
+	img_back_path = '{}/../{}_{}_{}.{}'.format(path.dirname(img_list[0]), prefix, num_frames_background, suffix, ext)
 
 	if path.exists(img_back_path):
 		back = cv2.imread(img_back_path)
