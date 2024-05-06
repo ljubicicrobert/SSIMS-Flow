@@ -1,3 +1,11 @@
+SSIMS-Flow v0.5.5.1
+
+Minor:
+- Fixed a bug where Python interpreter set would raise an IndexOutOfRangeException
+while manually setting the interpreter path.
+
+===============================================================================
+
 SSIMS-Flow v0.5.5.0
 
 Major:
