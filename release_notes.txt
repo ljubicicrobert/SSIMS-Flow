@@ -1,3 +1,20 @@
+SSIMS-Flow v0.5.6.0
+
+Major:
+- Added 2D quiver plot (vectors) for time-averaged and maximal data.
+
+Minor:
+- Added option to the optical_flow.py and profile_data.py which suppresses the
+cmd confirmation message at the end, which then enables batch processing via
+scripting. Check the corresponding scripts for the details on how to enable
+this "quiet mode".
+- Fixed an issue where Estimate velocities button in the Optical flow form would
+be disabled even when there are images available in the `frames` (and all other
+folders are empty).
+- Minor UI behavior changes.
+
+===============================================================================
+
 SSIMS-Flow v0.5.5.1
 
 Minor:

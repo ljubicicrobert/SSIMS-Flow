@@ -80,6 +80,7 @@ if __name__ == '__main__':
 	try:
 		parser = ArgumentParser()
 		parser.add_argument('--cfg', type=str, help='Path to configuration file')
+		parser.add_argument('--quiet', type=int, help='Quiet mode for batch processing, no RETURN confirmation on success', default=0)
 		args = parser.parse_args()
 
 		cfg = configparser.ConfigParser()
@@ -406,7 +407,9 @@ if __name__ == '__main__':
 		tag_print('end', 'Optical flow estimation complete!')
 		tag_print('end', 'Results available in [{}]!'.format(results_folder))
 		print('\a')
-		input('\nPress ENTER/RETURN key to exit...')
+
+		if args.quiet == 0:
+			input('\nPress ENTER/RETURN key to exit...')
 
 	except Exception as ex:
 		print()

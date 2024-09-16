@@ -42,6 +42,7 @@ def main(cfg_path=None):
 			if cfg_path is None:
 				parser = ArgumentParser()
 				parser.add_argument('--cfg', type=str, help='Path to project configuration file')
+				parser.add_argument('--quiet', type=int, help='Quiet mode for batch processing, no RETURN confirmation on success', default=0)
 				args = parser.parse_args()
 
 				cfg = configparser.ConfigParser()
@@ -229,7 +230,9 @@ def main(cfg_path=None):
 		np.savetxt('{}/profile_data.txt'.format(input_folder), table_data, fmt=table_data_fmt_str, header=table_data_header_str, delimiter=',', comments='')
 
 		tag_print('end', 'Chainage data saved to [{}/profile_data.txt]'.format(input_folder))
-		input('\nPress ENTER/RETURN key to exit...')
+
+		if args.quiet == 0:
+			input('\nPress ENTER/RETURN key to exit...')
 
 	except Exception as ex:
 		print()
