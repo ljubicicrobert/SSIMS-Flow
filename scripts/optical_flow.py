@@ -254,7 +254,7 @@ if __name__ == '__main__':
 				magnitude[magnitude > max_magnitude] = 0
 
 			# Filter by vector angle
-			angle = np.where(angle_func((angle >= angle_lower), (angle <= angle_upper)), angle, np.NaN)
+			angle = np.where(angle_func((angle >= angle_lower), (angle <= angle_upper)), angle, np.nan)
 			mask_magnitude = np.where(angle >= 0, 1, 0)
 			magnitude *= mask_magnitude
 
@@ -268,7 +268,7 @@ if __name__ == '__main__':
 					pooled_mag = np.zeros([h_pooled * w_pooled], dtype='float32')
 					pooled_dir = np.zeros([h_pooled * w_pooled], dtype='float32')
 					spatial_pooling(magnitude.ravel(), angle.ravel(), pooled_mag, pooled_dir, c_int(h), c_int(w), c_int(pooling))
-					pooled_dir[pooled_mag < DIRECTION_FILTER_THRESHOLD] = np.NaN
+					pooled_dir[pooled_mag < DIRECTION_FILTER_THRESHOLD] = np.nan
 					pooled_mag = np.reshape(pooled_mag, [h_pooled, w_pooled])
 					pooled_dir = np.reshape(pooled_dir, [h_pooled, w_pooled])
 			else:

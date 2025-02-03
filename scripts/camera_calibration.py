@@ -139,7 +139,7 @@ if __name__ == '__main__':
 				mean_img_errors.append(s)
 				j += 1
 			else:
-				mean_img_errors.append(np.NaN)
+				mean_img_errors.append(np.nan)
 
 		mean_error = np.nanmean(mean_img_errors)
 		stdev_error = np.nanstd(mean_img_errors)
