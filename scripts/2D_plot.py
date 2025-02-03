@@ -17,274 +17,267 @@ Created by Robert Ljubicic.
 """
 
 try:
-    from __init__ import *
-    from matplotlib.widgets import Slider
-    from sys import exit
-    from glob import glob
-    from class_console_printer import tag_print, unix_path
-    from vel_ratio import L1
-    from utilities import cfg_get
+	from __init__ import *
+	from matplotlib.widgets import Slider
+	from sys import exit
+	from glob import glob
+	from class_console_printer import tag_print, unix_path
+	from vel_ratio import L1
+	from utilities import cfg_get, exit_message, present_exception_and_exit
 
-    import matplotlib.pyplot as plt
+	import matplotlib.pyplot as plt
 
 except Exception as ex:
-    print()
-    tag_print('exception', 'Import failed! \n')
-    print('\n{}'.format(format_exc()))
-    input('\nPress ENTER/RETURN key to exit...')
-    exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 __types__ = [
-    'U(x,y)',
-    'V(x,y)',
-    'Magnitudes',
-    'Flow direction',
-    'Threshold ratio',
+	'U(x,y)',
+	'V(x,y)',
+	'Magnitudes',
+	'Flow direction',
+	'Threshold ratio',
 ]
 
 __units__ = [
-    '[m/s]',
-    '[m/s]',
-    '[m/s]',
-    '[deg]',
-    '[-]',
+	'[m/s]',
+	'[m/s]',
+	'[m/s]',
+	'[deg]',
+	'[-]',
 ]
 
 
 def update_vmax(val):
-    img_shown.set_clim(vmax=sl_ax_vmax.val)
-    plt.draw()
+	img_shown.set_clim(vmax=sl_ax_vmax.val)
+	plt.draw()
 
 
 def update_slider(val):
-    mags = try_load_file(mag_list[val]) * v_ratio
-    dirs = try_load_file(dir_list[val])
-    us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
+	mags = try_load_file(mag_list[val]) * v_ratio
+	dirs = try_load_file(dir_list[val])
+	us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
 
-    data_new = [us, vs, mags, dirs]
-    img_new = data_new[plot_type]
+	data_new = [us, vs, mags, dirs]
+	img_new = data_new[plot_type]
 
-    if frames_available:
-        back_new = cv2.imread(frames_list[val], cv2.COLOR_BGR2RGB)[::-1]
-        back_shown.set_data(back_new)
+	if frames_available:
+		back_new = cv2.imread(frames_list[val], cv2.COLOR_BGR2RGB)[::-1]
+		back_shown.set_data(back_new)
 
-    img_shown.set_data(img_new)
-    img_shown.set_clim(vmin=np.nanmin(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
-                       vmax=np.nanmax(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
-    ax.set_title('{}, frame #{}/{}'.format(data_type, sl_ax_vmax.val, num_frames - 1))
-    plt.draw()
+	img_shown.set_data(img_new)
+	img_shown.set_clim(vmin=np.nanmin(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
+					   vmax=np.nanmax(img_new[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
+	ax.set_title(f'{data_type}, frame #{sl_ax_vmax.val}/{num_frames - 1}')
+	plt.draw()
 
-    return
+	return
 
 
 def keypress(event):
-    if event.key == 'escape':
-        exit()
+	if event.key == 'escape':
+		exit()
 
-    elif event.key == 'down':
-        if sl_ax_vmax.val == 0:
-            sl_ax_vmax.set_val(num_frames - 1)
-        else:
-            sl_ax_vmax.set_val(sl_ax_vmax.val - 1)
+	elif event.key == 'down':
+		if sl_ax_vmax.val == 0:
+			sl_ax_vmax.set_val(num_frames - 1)
+		else:
+			sl_ax_vmax.set_val(sl_ax_vmax.val - 1)
 
-    elif event.key == 'up':
-        if sl_ax_vmax.val == num_frames - 1:
-            sl_ax_vmax.set_val(0)
-        else:
-            sl_ax_vmax.set_val(sl_ax_vmax.val + 1)
+	elif event.key == 'up':
+		if sl_ax_vmax.val == num_frames - 1:
+			sl_ax_vmax.set_val(0)
+		else:
+			sl_ax_vmax.set_val(sl_ax_vmax.val + 1)
 
-    elif event.key == 'pageup':
-        if sl_ax_vmax.val >= num_frames - 10:
-            sl_ax_vmax.set_val(0)
-        else:
-            sl_ax_vmax.set_val(sl_ax_vmax.val + 10)
+	elif event.key == 'pageup':
+		if sl_ax_vmax.val >= num_frames - 10:
+			sl_ax_vmax.set_val(0)
+		else:
+			sl_ax_vmax.set_val(sl_ax_vmax.val + 10)
 
-    elif event.key == 'pagedown':
-        if sl_ax_vmax.val <= 9:
-            sl_ax_vmax.set_val(num_frames - 1)
-        else:
-            sl_ax_vmax.set_val(sl_ax_vmax.val - 10)
+	elif event.key == 'pagedown':
+		if sl_ax_vmax.val <= 9:
+			sl_ax_vmax.set_val(num_frames - 1)
+		else:
+			sl_ax_vmax.set_val(sl_ax_vmax.val - 10)
 
-    update_slider(sl_ax_vmax.val)
+	update_slider(sl_ax_vmax.val)
 
 
 def try_load_file(fname):
-    try:
-        return np.loadtxt(fname)
-    except Exception:
-        return None
+	try:
+		return np.loadtxt(fname)
+	except Exception:
+		return None
 
 
 if __name__ == '__main__':
-    try:
-        parser = ArgumentParser()
-        parser.add_argument('--cfg', type=str, help='Path to project configuration file')
-        parser.add_argument('--mode', type=int, help='0 = time averaged, 1 = maximal, 2 = instantaneous', default=0)
-        parser.add_argument('--data', type=int, help='Which data to plot, see __types__ for more details')
-        args = parser.parse_args()
+	try:
+		parser = ArgumentParser()
+		parser.add_argument('--cfg', type=str, help='Path to project configuration file')
+		parser.add_argument('--mode', type=int, help='0 = time averaged, 1 = maximal, 2 = instantaneous', default=0)
+		parser.add_argument('--data', type=int, help='Which data to plot, see __types__ for more details')
+		args = parser.parse_args()
 
-        cfg = configparser.ConfigParser()
-        cfg.optionxform = str
+		cfg = configparser.ConfigParser()
+		cfg.optionxform = str
 
-        try:
-            cfg.read(args.cfg, encoding='utf-8-sig')
-        except Exception:
-            tag_print('error', 'There was a problem reading the configuration file!')
-            tag_print('error', 'Check if project has valid configuration.')
-            input('\nPress ENTER/RETURN key to exit...')
-            exit()
+		try:
+			cfg.read(args.cfg, encoding='utf-8-sig')
+		except Exception:
+			tag_print('error', 'There was a problem reading the configuration file!')
+			tag_print('error', 'Check if project has valid configuration.')
+			exit_message()
 
-        plot_mode = args.mode
-        plot_type = args.data
-        data_type = __types__[plot_type]
-        units = __units__[plot_type]
-        project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
+		plot_mode = args.mode
+		plot_type = args.data
+		data_type = __types__[plot_type]
+		units = __units__[plot_type]
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 
-        section = 'Optical flow'
+		section = 'Optical flow'
 
-        frames_step = cfg_get(cfg, 'Frames', 'Step', float)
-        optical_flow_step = cfg_get(cfg, section, 'Step', float)
-        scale = cfg_get(cfg, section, 'Scale', float)
-        fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
-        try:
-            gsd = cfg_get(cfg, section, 'GSD', float)       # px/m
-        except Exception as ex:
-            gsd = cfg_get(cfg, 'Transformation', 'GSD', float)        # px/m
+		frames_step = cfg_get(cfg, 'Frames', 'Step', float)
+		optical_flow_step = cfg_get(cfg, section, 'Step', float)
+		scale = cfg_get(cfg, section, 'Scale', float)
+		fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
 
-        gsd_units = cfg_get(cfg, section, 'GSDUnits', str, 'px/m')           # px/m
-        if gsd_units != 'px/m':
-            gsd = 1/gsd
-            
-        pooling = cfg_get(cfg, section, 'Pooling', float)   	# px
-        gsd_pooled = gsd / pooling  				# blocks/m, 1/m
+		try:
+			gsd = cfg_get(cfg, section, 'GSD', float)       # px/m
+		except Exception as ex:
+			gsd = cfg_get(cfg, 'Transformation', 'GSD', float)        # px/m
 
-        v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
+		gsd_units = cfg_get(cfg, section, 'GSDUnits', str, 'px/m')           # px/m
+		
+		if gsd_units != 'px/m':
+			gsd = 1/gsd
+			
+		pooling = cfg_get(cfg, section, 'Pooling', float)   	# px
+		gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
-        average_only = cfg_get(cfg, section, 'AverageOnly', int)    # px
-        frames_folder = cfg_get(cfg, section, 'Folder', str)
-        frames_ext = cfg_get(cfg, 'section', 'Extension', str, 'jpg')
-        frames_list = glob('{}/*.{}'.format(frames_folder, frames_ext))
-        frames_available = len(frames_list) > 0
+		v_ratio = fps / gsd / (frames_step * optical_flow_step) / scale         	# (frame*m) / (s*px)
 
-        alpha = 1.0 if not frames_available else 0.5
+		average_only = cfg_get(cfg, section, 'AverageOnly', int)    # px
+		frames_folder = cfg_get(cfg, section, 'Folder', str)
+		frames_ext = cfg_get(cfg, 'section', 'Extension', str, 'jpg')
+		frames_list = glob(f'{frames_folder}/*.{frames_ext}')
+		frames_available = len(frames_list) > 0
 
-        if average_only == 0:
-            mag_list = glob('{}/optical_flow/magnitudes/*.txt'.format(project_folder))
-            dir_list = glob('{}/optical_flow/directions/*.txt'.format(project_folder))
-            num_frames = len(mag_list)
+		alpha = 1.0 if not frames_available else 0.5
 
-            if num_frames == 0:
-                print()
-                tag_print('error', 'No optical flow data found in [{}/optical_flow/]'.format(project_folder))
-                input('\nPress ENTER/RETURN to exit...')
-                exit()
+		if average_only == 0:
+			mag_list = glob(f'{project_folder}/optical_flow/magnitudes/*.txt')
+			dir_list = glob(f'{project_folder}/optical_flow/directions/*.txt')
+			num_frames = len(mag_list)
 
-        fig, ax = plt.subplots()
-        plt.subplots_adjust(bottom=0.13)
-        plt.axis('off')
+			if num_frames == 0:
+				print()
+				tag_print('error', f'No optical flow data found in [{project_folder}/optical_flow/]')
+				exit_message()
 
-        legend = 'Use slider to select frame,\n' \
-                 'use UP and DOWN keys to move by +/- 1 frame\n' \
-                 'or PageUP and PageDOWN keys to move by +/- 10 frames\n' \
-                 'Press ESC or Q to exit'
+		fig, ax = plt.subplots()
+		plt.subplots_adjust(bottom=0.13)
+		plt.axis('off')
 
-        legend_toggle = plt.text(0.02, 0.97, legend,
-                                 horizontalalignment='left',
-                                 verticalalignment='top',
-                                 transform=ax.transAxes,
-                                 bbox=dict(facecolor='white', alpha=0.5),
-                                 fontsize=9,
-                                 )
+		legend = 'Use slider to select frame,\n' \
+				 'use UP and DOWN keys to move by +/- 1 frame\n' \
+				 'or PageUP and PageDOWN keys to move by +/- 10 frames\n' \
+				 'Press ESC or Q to exit'
 
-        if plot_mode == 0:       # Time averaged
-            legend_toggle.set_visible(False)
+		legend_toggle = plt.text(0.02, 0.97, legend,
+								 horizontalalignment='left',
+								 verticalalignment='top',
+								 transform=ax.transAxes,
+								 bbox=dict(facecolor='white', alpha=0.5),
+								 fontsize=9,
+								 )
 
-            mags = try_load_file('{}/optical_flow/mag_mean.txt'.format(project_folder)) * v_ratio	# px/frame
-            dirs = try_load_file('{}/optical_flow/angle_mean.txt'.format(project_folder))
-            thrs = try_load_file('{}/optical_flow/threshold_ratios.txt'.format(project_folder))
-            h, w = mags.shape
+		if plot_mode == 0:       # Time averaged
+			legend_toggle.set_visible(False)
 
-            us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data_list = [us, vs, mags, dirs, thrs]
-            data = data_list[plot_type]
+			mags = try_load_file(f'{project_folder}/optical_flow/mag_mean.txt') * v_ratio	# px/frame
+			dirs = try_load_file(f'{project_folder}/optical_flow/angle_mean.txt')
+			thrs = try_load_file(f'{project_folder}/optical_flow/threshold_ratios.txt')
+			h, w = mags.shape
 
-        elif plot_mode == 1:     # Maximal
-            legend_toggle.set_visible(False)
+			us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
+			data_list = [us, vs, mags, dirs, thrs]
+			data = data_list[plot_type]
 
-            mags = try_load_file('{}/optical_flow/mag_max.txt'.format(project_folder)) * v_ratio	# px/frame
-            dirs = try_load_file('{}/optical_flow/angle_mean.txt'.format(project_folder))
-            h, w = mags.shape
+		elif plot_mode == 1:     # Maximal
+			legend_toggle.set_visible(False)
 
-            us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data_list = [us, vs, mags]
-            data = data_list[plot_type]
+			mags = try_load_file(f'{project_folder}/optical_flow/mag_max.txt') * v_ratio	# px/frame
+			dirs = try_load_file(f'{project_folder}/optical_flow/angle_mean.txt')
+			h, w = mags.shape
 
-        elif plot_mode == 2:     # Instantaneous      
-            mags = try_load_file(mag_list[0]) * v_ratio
-            dirs = try_load_file(dir_list[0])
-            h, w = mags.shape
+			us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
+			data_list = [us, vs, mags]
+			data = data_list[plot_type]
 
-            us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
-            data_list = [us, vs, mags, dirs]
-            data = data_list[plot_type]
-            
-            axcolor = 'lightgoldenrodyellow'
-            valfmt = "%d"
+		elif plot_mode == 2:     # Instantaneous      
+			mags = try_load_file(mag_list[0]) * v_ratio
+			dirs = try_load_file(dir_list[0])
+			h, w = mags.shape
 
-            fig.canvas.mpl_connect('key_press_event', keypress)
-            ax_vmax = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
-            sl_ax_vmax = Slider(ax_vmax, 'Frame #', 0, num_frames-1, valinit=0, valstep=1, valfmt=valfmt)
-            sl_ax_vmax.on_changed(update_slider)
+			us, vs = cv2.polarToCart(mags, dirs, angleInDegrees=True)
+			data_list = [us, vs, mags, dirs]
+			data = data_list[plot_type]
+			
+			axcolor = 'lightgoldenrodyellow'
+			valfmt = "%d"
 
-        cbar_cutoff_h = h//5
-        cbar_cutoff_w = w//5
+			fig.canvas.mpl_connect('key_press_event', keypress)
+			ax_vmax = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
+			sl_ax_vmax = Slider(ax_vmax, 'Frame #', 0, num_frames-1, valinit=0, valstep=1, valfmt=valfmt)
+			sl_ax_vmax.on_changed(update_slider)
+
+		cbar_cutoff_h = h//5
+		cbar_cutoff_w = w//5
 
 
-        if plot_mode in [0, 1]:
-            axcolor = 'lightgoldenrodyellow'
-            valfmt = "%.3f"
+		if plot_mode in [0, 1]:
+			axcolor = 'lightgoldenrodyellow'
+			valfmt = "%.3f"
 
-            ax_vmax = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
+			ax_vmax = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
 
-            real_max = np.nanmax(data)
-            cut_max = np.nanmax(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w])
+			real_max = np.nanmax(data)
+			cut_max = np.nanmax(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w])
 
-            sl_ax_vmax = Slider(ax_vmax, 'Max. value [m/s]', np.nanmin(data), np.nanmax(data), valinit=cut_max, valstep=real_max/100, valfmt=valfmt)
-            sl_ax_vmax.on_changed(update_vmax)
+			sl_ax_vmax = Slider(ax_vmax, 'Max. value [m/s]', np.nanmin(data), np.nanmax(data), valinit=cut_max, valstep=real_max/100, valfmt=valfmt)
+			sl_ax_vmax.on_changed(update_vmax)
 
-        if frames_available:
-            back = cv2.imread(frames_list[0], cv2.COLOR_BGR2RGB)[::-1]
-            padd_x = back.shape[1] % pooling // 2
-            padd_y = back.shape[0] % pooling // 2
-            back_shown = ax.imshow(back, extent=(padd_x / pooling, (back.shape[1] - padd_x) / pooling, padd_y / pooling, (back.shape[0] - padd_y) / pooling))
+		if frames_available:
+			back = cv2.imread(frames_list[0], cv2.COLOR_BGR2RGB)[::-1]
+			padd_x = back.shape[1] % pooling // 2
+			padd_y = back.shape[0] % pooling // 2
+			back_shown = ax.imshow(back, extent=(-padd_x / pooling, (back.shape[1] - padd_x) / pooling, -padd_y / pooling, (back.shape[0] - padd_y) / pooling))
 
-        img_shown = ax.imshow(data, cmap='jet', interpolation='hanning', alpha=alpha)
+		img_shown = ax.imshow(data, cmap='jet', interpolation='hanning', alpha=alpha)
 
-        if plot_type == 4:
-            img_shown.set_clim(vmin=0, vmax=L1)
-        else:
-            img_shown.set_clim(vmin=np.nanmin(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
-                               vmax=np.nanmax(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
-        
-        cbar = plt.colorbar(img_shown, ax=ax)
-        cbar.set_label('{} {}'.format(data_type, units))
+		if plot_type == 4:
+			img_shown.set_clim(vmin=0, vmax=L1)
+		else:
+			img_shown.set_clim(vmin=np.nanmin(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]),
+							   vmax=np.nanmax(data[cbar_cutoff_h: -cbar_cutoff_h, cbar_cutoff_w: -cbar_cutoff_w]))
+		
+		cbar = plt.colorbar(img_shown, ax=ax)
+		cbar.set_label(f'{data_type} {units}')
 
-        try:
-            mng = plt.get_current_fig_manager()
-            mng.window.state('zoomed')
-            mng.set_window_title('Inspect frames')
-        except Exception:
-            pass
+		try:
+			mng = plt.get_current_fig_manager()
+			mng.window.state('zoomed')
+			mng.set_window_title('Inspect frames')
+		except Exception:
+			pass
 
-        ax.set_title('{}, frame #0/{}'.format(data_type, num_frames - 1)
-                     if plot_mode == 2
-                     else 'Time averaged values: {}'.format(data_type))
-        
-        plt.show()
+		ax.set_title(f'{data_type}, frame #0/{num_frames - 1}'
+					 if plot_mode == 2
+					 else f'Time averaged values: {data_type}')
+		
+		plt.show()
 
-    except Exception as ex:
-        print()
-        tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-        print('\n{}'.format(format_exc()))
-        input('\nPress ENTER/RETURN key to exit...')
+	except Exception as ex:
+		present_exception_and_exit()

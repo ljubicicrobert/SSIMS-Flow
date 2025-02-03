@@ -6,10 +6,11 @@ This tool represents a feature-complete solution for the estimation of open-chan
 2. Camera calibration and removal of camera distortions,
 3. Digital image stabilization,
 4. Image orthorectification,
-5. Image filtering/enhancement,
-6. Application of optical flow to estimate surface velocity field,
-7. Estimation of open channel flow/discharge using surface velocity field and bathymetric data,
-8. Creation of videos from individual frames.
+5. Estimation of best frame sequences for velocity estimation,
+6. Image filtering/enhancement,
+7. Application of optical flow to estimate surface velocity field,
+8. Estimation of open channel flow/discharge using surface velocity field and bathymetric data,
+9. Creation of videos from individual frames.
 
 The tool replaces an older tool [SSIMS](https://github.com/ljubicicrobert/SSIMS), which was only aimed at image preprocessing for UAV velocimetry.
 
@@ -18,27 +19,37 @@ The tool replaces an older tool [SSIMS](https://github.com/ljubicicrobert/SSIMS)
 
 The package consists of a backend (written in Python 3 and C/C++) and frontend GUI (written in C# with .NET Framework 4.5.1). **Unlike its predecessor ([SSIMS](https://github.com/ljubicicrobert/SSIMS)), this tool is written entirely (backend and GUI) for Windows OS and compiled for x64 architecture only**. At request, I can compile for x86 version, but will likely not bother otherwise.
 
-The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework).
+The GUI requires .NET Framework 4.5.1+, which can be downloaded from the [official site](https://dotnet.microsoft.com/download/dotnet-framework). However, if the appropriate framework is missing upon starting SSIMS-Flow.exe, Windows should offer to install the .NET Framework automatically.
 
-> **IMPORTANT**: Some parts of the code are written in C++ and are available through DLLs. These require [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) as they depend on MSVCR140.dll. This DLL is now shipped with SSIMS-Flow. However, if you get a message that DLL import has failed, please install the required MS Redistributable manually.
+> **IMPORTANT**: Some parts of the code are written in C++ and are available through DLLs. These require [Microsoft Visual C++ Redistributable packages for Visual Studio 2015, 2017, 2019, and 2022](https://aka.ms/vs/17/release/vc_redist.x64.exe) as they depend on MSVCR140.dll. This DLL is now shipped with every version of SSIMS-Flow. However, if you get a message that DLL import has failed, please install the required MS Redistributable manually.
 
 The backend requires that Python 3+ interpreter exists on the computer:
 1. either as a path listing in the **`%PATH%` environmental variable** in Windows. The tool will recognize multiple instances of Python in `%PATH%` and allow you to choose the correct interpreter in the GUI.
-2. manually selected using the + button next to the Python interpreters dropdown list in the Mein form. Alternatively, Python interpreter path can be manually added as a new line entry to the file `python_interpreters.txt` in the `scripts` folder.
+2. manually selected using the + button next to the Python interpreters dropdown list in the Mein form. Alternatively, Python interpreter path can be manually added as a new line entry to the file `python_interpreters.txt` in the `%INSTALATION_FOLDER%\scripts` folder.
 
-Please keep in mind that the software will test the version of the Python interpreter to make sure that the correct version (3.x+) is selected.
+Please keep in mind that the software will test the version of the Python interpreter to make sure that the correct version (3.X+) is selected.
 
-So far, the package was tested using **Python** versions **[3.6.8, 3.7.2, 3.7.6, 3.8.5, 3.9.5, 3.9.10, 3.10.7, 3.10.10]**. You can download latest Python from the [official site](https://www.python.org/downloads/).
+So far, the package was tested using **Python** versions **3.7** through **3.12**. You can download latest Python from the [official site](https://www.python.org/downloads/). As of SSIMS-Flow v0.6.0.0 Python versions 3.6 and lower are no longer supported (it been almost 7 years, it's time for you to move on).
 
-All the required Python libraries can be installed using the command:
-```
-pip install -r [path to requirements.txt]
+>**IMPORTANT**: In the Python installation wizard, make sure to select and install both **PIP** and **TCL/TK** packages to enable some interactive Matplotlib plots. **PIP** is required for installing additional required Python libraries. If **TCL/TK** is not installed, many of the features will not work properly. If you forgot to install them, just run the installation wizard again and use the Modify option for add the required packages.
+
+> **Note:** Symantec Norton appears to flag the SSIMS-Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
+
+### Automated installation of Python libraries
+
+Starting from SSIMS-Flow version v0.6.0.0 you can install all the required Python libraries for the selected interpreter with one click by using the yellow **lib** button next to the Python interpreter dropdown. A command window will open in which you can monitor the installation process. If this process fails for any reason, please refer to the section below and perform a manual installation of the remaining libraries.
+
+### Manual installation of Python libraries (if automated installation fails or if not using GUI)
+
+All the required Python libraries can be installed using one of the commands:
+```bash
+pip install -r [path-to-requirements.txt]
+python -m pip install -r [path-to-requirements.txt]
 ```
 The `requirements.txt` file is available in the root folder of the SSIMS-Flow package.
->**Note**: You can specify the Python version during PIP installation as pip[version] install ... For example `pip3.12 install ...` will target Python version 3.12 if it is available in %PATH%.
 
 If you want to install individual Python library requirements manually (other than the standard library), use the following:
-```python
+```bash
 numpy >= 1.19                             # pip install numpy
 opencv-python >= 4.7                      # pip install opencv-python
 opencv-contrib-python >= 4.7              # pip install opencv-contrib-python
@@ -50,16 +61,21 @@ comtypes (optional, for taskbar progress) # pip install comtypes
 PyGetWindow (optional, taskbar progress)  # pip install PyGetWindow
 ```
 
+If multiple Python versions are installed on one computer, you can target a specific version for installing libraries in several ways, for example:
+```bash
+pip3.12 install numpy
+py -3.12 -m pip install numpy   # If Python is installed using installer from Python.org
+python3.12 -m pip install numpy # If Python is installed using Microsoft Store or using Linux
+```
+
+If you want to upgrade a certain library to the newest version use the -U flag, for example:
+```bash
+pip3.12 install -U numpy
+py -3.12 -m pip install -U numpy   # If Python is installed using installer from Python.org
+python3.12 -m pip install -U numpy # If Python is installed using Microsoft Store or using Linux
+```
+
 >**Note**: If you are using distributions of Python such as Anaconda or WinPython, you will likely have all the necessary libraries with the possible exception of `opencv-python` and `opencv-contrib-python`.
-
->**Note**: The tool might also work fine with `opencv-python` version 3.6, but this is yet to be tested.
-
->**Note**: It has been noted that newer versions of `matplotlib` (apparently those which have been installed using PIP) are failing to be properly imported due to missing `ft2font` DLL. In this case you can try installing `matplotlib` version 3.2.1 which worked well during testing:
->```bash
->pip install matplotlib==3.2.1
->```
-
-> Symantec Norton appears to flag the SSIMS-Flow.exe and C++ DLLs as threats due to "low reputation". However, Norton 360 scan finds no malware attached. No issues have been found through Windows Defender/Security.
 
 
 ## New versions
@@ -71,7 +87,7 @@ The tool will automatically check for latest releases of the tool on program sta
 
 ## Usage
 
-Unlike its predecessor, SSIMS-Flow is **meant to be used ONLY through the graphical user interface (GUI)**. Usage through the terminal is possible but discouraged. Those interested in such approach can check the `ArgumentParser` objects in source files for more details.
+SSIMS-Flow is **meant to be used primarily through the graphical user interface (GUI)**. Usage through the command line terminal is possible but discouraged unless the user is well familiar with Python. Those interested in such approach can check the `ArgumentParser` objects in source files for more details on how to properly call certain scripts.
 
 
 ### Project settings
@@ -86,13 +102,13 @@ You can choose to either:
 3. **Load** a project from recent history dropdown (up to 10 recent projects), or
 4. **Save** modified project settings.
 
-Creating a new project involves a selection of a folder which will host all of the resulting files created by this tool. **Selected folder should be empty, or will it be emptied for the user after prompt**. Project folder **does not** have to contain the video itself - the video can be hosted anywhere on disk and will not be moved/copied/deleted.
+Creating a new project involves a selection of a folder which will host all of the resulting files created by this tool. **Selected folder should be empty, or will it be emptied for the user after prompt**, with the exception of any video files in the folder root. Project folder **does not** have to contain the video itself - the video can be hosted anywhere on disk and will not be moved/copied/deleted.
 
 All of the project metadata will be contained in the file `%PROJECT_FOLDER%\project.ssims` in the selected project folder, which is automatically created.
 
 Loading an existing project requires that you select an appropriate `project.ssims` file, which will load all the project information to the GUI.
 
-Once a project is successfully loaded, it will appear in the Recent history dropdown.
+Once a project is successfully loaded, it will also appear in the Recent history dropdown.
 
 > **Note**: Some sections of the GUI will be unavailable until you create a new project or load an existing one.
 
@@ -105,10 +121,11 @@ In the lower section of the **Project settings** panel a summary of the project 
 - **TR** = Feature tracking,
 - **ST** = Stabilization,
 - **OR** = Orthorectification,
+- **BF** = Best frame estimation,
 - **EN** = Image enhancement,
 - **OF** = Optical flow.
 
-Completed project stages, which have available results, will be indicated by the green icons in the lower right of the GUI footer, while uncompleted stages will be indicated by the gray icons.
+Completed project stages, which have available results, will be indicated by the green icons in the lower right of the GUI footer, while uncompleted stages will be indicated by the gray ones.
 
 
 ### Video unpacking
@@ -157,7 +174,7 @@ Despite the modern UAVs having sophisticated in-built camera/video stabilization
 
 Clicking the **Track features** button in the bottom-left corner of the **Stabilize/Orthorectify** panel will open a new window to allow you to manually select static features which will be tracked in order to estimate the direction and magnitude of camera motion. This information will later be used to annul such motion and to provide a constant coordinate system. Selected static features should be motionless and (optimally) present throughout the entire video.
 
-If the first frame contains **ArUco markers** (from the default 4x4_50 dictionary), they will be automatically detected. A prompt will ask you if you want them to be preselected as features to be tracked. Features will be sorted in order of the detected ArUco markers, starting from 1.
+If the first frame contains **ArUco markers** (from the default ArUco 4x4_50 dictionary), they will be automatically detected. A prompt will ask you if you want them to be preselected as features to be tracked. Features will be sorted in order of the detected ArUco markers, starting from 1.
 
 Use the RIGHT mouse button to select the static feature. Once a feature is selected, a regions representing interrogation area (IA) and search area (SA) will be shown around it.
 
@@ -170,7 +187,7 @@ Use keys O and P to zoom and pan the image. Use keys LEFT and RIGHT to undo and 
 
 The results of the feature tracking will be stored in the `%PROJECT_FOLDER\transformation%` folder.
 
-> **Note**: Feature tracking will not immediately produce stabilized images. This will be done after the two following steps have been completed.
+> **Note**: Feature tracking will not immediately produce stabilized images. This will be done after the two following steps (Feature selection and Image transformation) have been completed.
 
 
 #### Feature selection
@@ -181,7 +198,7 @@ Not all of the tracked features have to be used for the transformation (stabiliz
 
 > **Note**: An average SSIM tracking score (higher is better, 1 is ideal) will be shown next to each feature coordinates on the right side of the form.
 
-To further help you choose the best features, an additional analysis is available by clicking the **Plot SSIM** scores button in the top-left corner of the Select features for transformation window. This will run the ssim_scores.py script and will show a bar graph of SSIM tracking scores for all frames. In the bar graph, better features will have a higher SSIM score and lower variance, which can help you decide which ones to keep and which ones to remove from the transformation.
+To further help you choose the best features, an additional analysis is available by clicking the **Plot SSIM** scores button in the top-left corner of the Select features for transformation window. This will run the `ssim_scores.py` script and will show a bar graph of SSIM tracking scores for all frames. In the bar graph, better features will have a higher SSIM score and lower variance, which can help you decide which ones to keep and which ones to remove from the transformation.
 
 <img align="right" width="500" src="screenshots/ssim_scores.png">
 
@@ -218,26 +235,49 @@ Clicking **Cancel** will turn the orthorectification step off for the project wo
 You should also set a ground sampling distance (GSD, in px/m) to rescale the image and plays an important role during postprocessing - use this feature carefully as it will always introduce additional errors/noise in the transformed images. **It's best to keep this ratio as close as possible to the original GSD!**. For these reasons you can click **Measure** button in the **Orthorectification** form to quickly measure in-image distances and to compare them with real-world data in order to help determine appropriate GSD value.
 
 
+### Best frame estimation
+
+<img align="right" width="500" src="screenshots/sdi.png">
+
+Starting from v0.6.0.0, SSIMS-Flow includes an additional tab allowing users to estimate sequences of frames (i.e., sections of videos) with optimal seeding density for image velocimetry. The underlying method is based on estimating **Seeding Density Index (SDI)** developed by Silvano Dal Sasso and Alonso Pizzaro and explained in detail in papers:
+
+1. [Dal Sasso et al. (2020)](https://doi.org/10.3390/rs12111789)
+2. [Pizarro et al. (2020a)](https://doi.org/10.1002/hyp.13919)
+3. [Pizarro et al. (2020b)](https://doi.org/10.5194/hess-24-5173-2020)
+
+This method is developed primarily for improving the accuracy of the Particle Image Velocimetry (PIV) method, and has not yet been tested with optical flow algorithms. However, it can still be useful in order to find the frame sequence with uniform seeding density in both space and time. Once the optimal frame sequence has been estimated, this frame range can be used to narrow down the scope of **Image enhancement** and **Optical flow** stages by only applying those steps to the optimal frame range. This option can be turned on the in those respective forms by checking the box next to the action buttons.
+
+The user must first interactively select the ROI in which the SDI analysis will be performed, along with the threshold for tracer particle identification which best accentuates the particles against the background.
+
+> **Note**: While this step can also be performed after the **Image enhancement** step (described below), prior image enhancement is not required since the user can interactively select and apply a binary thresholding filter for tracer particle detection while selecting ROI.
+
+For more explanation on the parameters and algorithm of the SDI method, see the papers referenced above. 
+
+
 ### Image enhancement
 
 <img align="right" width="830" src="screenshots/filtering.png">
 
 Image filtering/enhancement is often a crucial part of the image velocimetry workflow. This tools offers a form in which such filtering can easily be performed. For those users unfamiliar with the image filtering/enhancement process, it is advisable to visit the [Image enhancement for UAV velocimetry](https://github.com/ljubicicrobert/Image-enhancement-for-UAV-velocimetry) repository. In that repository, a detailed overview of different aspects of image enhancement is provided through a series of Jupyter notebooks.
 
-By clicking the **Start filtering** button in the **Enhance images** tab, a new form will open. The form consists of:
-1. The sidebar, which allows users to create a **filtering stack**. Available filters are listed in the dropdown menu through which they can be added to the filtering stack. Filters will be added to the end of the stack by default, but can be reordered using the buttons on the righthand side. Filter parameters will also be shown in the brackets for each filter in the stack. By clicking on the filter, its parameters will be shown on the righthand side of the panel, which can be modified using either the trackbar or the corresponding boxes. Changes made through these will instantly be reflected in the filtering stack.
+By clicking the **Open enhancement form** button in the **Enhance images** tab, a new form will open which consists of:
+1. The sidebar, which allows users to create a **filtering stack**. Available filters are listed in the **Select filters** dropdown menu through which they can be added to the filtering stack. Filters will be added to the end of the stack by default, but can be reordered using the buttons on the righthand side. Filter parameters will also be shown in the brackets for each filter in the stack. By clicking on the filter, its parameters will be shown on the righthand side of the panel, which can be modified using either the trackbar or the corresponding boxes. Changes made through these will instantly be reflected in the filtering stack.
 2. The central preview window, which allows for immediate interactive preview of the results of the filtering. Users can drag the slider to change between the filtered and the original image, or click the **Toggle filtered/original** button to show one or the other.
 3. The frame searchbar in the lower section of the form, which can be used to seek frame to be used for preview.
 
-Before filtering, it is highly advisable to inspect the different colorspace models of the frames. This can be done by clicking on the **Explore colorspaces** button at the bottom-left of the panel.
+Before filtering, it is sometimes useful to inspect the different colorspace models of the frames. This can be done by clicking on the **Explore colorspaces** button at the bottom-left of the panel.
 
-> **IMPORTANT**: Filters will be applied in the top-down order in the filtering stack.
+> **Note**: Filters will be applied in the top-down order in the filtering stack.
 
 Some of the available filter are just colorspace model conversions (titled _Convert to..._). These will transform the image from the previous colorspace to the chosen one. **Default colorspace model**, which is active when the image is loaded for filtering, is **RGB**. Once a filter has been selected, the resulting colorspace will be shown below the filtering stack.
 
-> SSIMS-Flow will keep track of the colorspace conversions during filtering. For example, if _Convert to L\*a\*b\*_ is in the stack, followed by the _Single image channel_, by choosing the channel in the **Filter parameters** form, the user will effectively be selecting a channel of the image from its L\*a\*b\* colorspace model. Some filters will implicitly convert the image to a single-channel grayscale colorspace.
+> **Note:** SSIMS-Flow will keep track of the colorspace conversions during filtering. For example, if _Convert to L\*a\*b\*_ is in the stack, followed by the _Single image channel_, by choosing the channel in the **Filter parameters** form, the user will effectively be selecting a channel of the image from its L\*a\*b\* colorspace model. Some filters will implicitly convert the image to a single-channel grayscale colorspace.
+
+> **Note**: Users can write their own filters and make them available in the GUI. Starting from SSIMS-Flow v0.6.0.0 this should be done by editing the `custom_filters.json` and `custom_filters.py` files found in the `%INSTALATION_FOLDER%\scripts` folder. These files will keep the user defined filters separate from the default ones so that they can easily be migrated from old version of the software to the new one without the risk of breaking the default filters defined in `filters.json` and `filters.py` files. See these files for more explanation on how to create own user defined filters.
 
 Once you are happy with the results, you can start creating filtered/enhanced images by clicking the **Filter frames** button in the lower right corner. This will apply the selected filters to all frames in the selected folder, and the resulting images will be stored in the `%PROJECT_FOLDER\enhancement%` folder.
+
+> **Note**: There is also a script provided for batch image enhancement for multiple projects at once called `filter_frames_batch.py`. See the script in the `%INSTALATION_FOLDER%\scripts` folder for more information on how to use it.
 
 
 ### Optical flow (OF)
@@ -257,7 +297,9 @@ However, keeping information about per-pixel motion in high-resolution images re
 
 The users can also specify the distance between two frames used for velocity estimation - frame step. This is useful in cases where the displacement of tracer particles between consecutive frames is too low (especially when it's in subpixel range). Ideally, this displacement is around 4-8 pixels per frame, but higher values are usually better than lower. Users can also specify frame pairing mode: sliding window by step size (less data will be used but is faster), or sliding window by 1 frame (more data, slower).
 
-Finally, frame pairing method can be selected as stepwise, sliding, or reference.
+Finally, frame pairing method can be selected as stepwise, sliding, or reference (explanation and example in the actual dropdown menu).
+
+> **Note**: There is also a script provided for batch velocity estimation for multiple projects at once called `optical_flow_batch.py`. See the script in the `%INSTALATION_FOLDER%\scripts` folder for more information on how to use it.
 
 
 ### Post-OF analyses
@@ -266,7 +308,7 @@ Finally, frame pairing method can be selected as stepwise, sliding, or reference
 
 Once the optical flow analyses have been completed and the surface velocity field has been estimated, an estimation of the flow/discharge can be obtained by clicking on the **Analyze results** button in the Optical flow panel. This will open a new window, where you can define a profile (cross-section) of the channel, either from pixel coordinate values, or by choosing two points from an appropriate image.
 
-> KEEP IN MIND that if you choose the profile from an image, you should choose it from a frame of the same folder which was used for optical flow analysis. In certain cases the image enhancement step will degrade visual information which can be used to identify the channel cross-section. If this is the case, you should use the frames from folder which was used to obtain enhanced images (e.g., orthorectified or stabilized frames).
+> KEEP IN MIND that if you choose the profile from an image, you should choose it from a frame of the same folder which was used for optical flow analysis. In certain cases the image enhancement step will degrade visual information which can be used to identify the channel cross-section. If this is the case, you should use the frames from folder which was used to obtain enhanced images (e.g., raw, orthorectified, or stabilized frames).
 
 Once the profile (cross-section) has been selected, click the **Generate profile data** to create an analysis of the time averaged surface velocities in that profile. You can control the interpolation of values from 2D optical flow data onto 1D profile data by defining a number of interpolation points.
 
@@ -295,6 +337,8 @@ User can choose to delete unnecessary intemediary data after project completion 
 
 &#9744; Compiling bottlenecks into C++ to improve the overall computational efficiency
 
+&#9744; Adding new ways to obtain tracer particle information in the SDI analysis.
+
 
 ## Acknowledgements
 
@@ -314,6 +358,8 @@ I wish to express my gratitude to the following people (in no particular order):
 
 [Dr Matthew T. Perks](https://www.ncl.ac.uk/gps/staff/profile/matthewperks.html) - for providing me with helpful comments, as well as providing most of the camera parameters.
 
+[Dr Silvano Fortunato Dal Sasso](https://www.researchgate.net/profile/Silvano_Fortunato_Dal_Sasso) and [Dr Alonso Pizarro](https://www.researchgate.net/profile/Alonso_Pizarro) for providing the original source code for the SDI analysis, and helping me with implementing and testing the SDI code in SSIMS-Flow.
+
 
 ## References
 
@@ -325,13 +371,15 @@ Farnebäck, G. (2003) *Two-frame motion estimation based on polynomial expansion
 
 
 ## How to cite
-Ljubicic, R. (2022) *SSIMS-Flow: Image velocimetry workbench*, [https://github.com/ljubicicrobert/SSIMS-Flow](https://github.com/ljubicicrobert/SSIMS-Flow)
+Ljubičić, R., Dal Sasso, S.F. and Zindovic, B. (2024) _SSIMS-Flow: Image velocimetry workbench for open-channel flow rate estimation_, Environmental Modelling & Software 173, 105938, [10.1016/j.envsoft.2023.105938](https://doi.org/10.1016/j.envsoft.2023.105938)
+
+Ljubičić, R. _SSIMS-Flow: Image velocimetry workbench_, [github.com/ljubicicrobert/SSIMS-Flow](https://github.com/ljubicicrobert/SSIMS-Flow) (date last accessed ___)
 
 &nbsp;&nbsp;&nbsp;&nbsp;or (for image stabilization/orthorectification only)
 
-Ljubičić R., Strelnikova D., Perks M.T., Eltner A., Pena-Haro S., Pizarro A., Dal Sasso S.F., Scherling U., Vuono P. and Manfreda S (2021) _A comparison of tools and techniques for stabilising unmanned aerial system (UAS) imagery for surface flow observations_. Hydrology and Earth System Sciences. 25 (9), pp.5105--5132, [https://doi.org/10.5194/hess-25-5105-2021](https://doi.org/10.5194/hess-25-5105-2021)
+Ljubičić R., Strelnikova D., Perks M.T., Eltner A., Pena-Haro S., Pizarro A., Dal Sasso S.F., Scherling U., Vuono P. and Manfreda S. (2021) _A comparison of tools and techniques for stabilising unmanned aerial system (UAS) imagery for surface flow observations_, Hydrology and Earth System Sciences, 25 (9), pp.5105--5132, [10.5194/hess-25-5105-2021](https://doi.org/10.5194/hess-25-5105-2021)
 
-Performance evaluation of image stabilization accuracy and comparison of results to similar tools available at [https://doi.org/10.5281/zenodo.4557921](https://doi.org/10.5281/zenodo.4557921).
+Performance evaluation of image stabilization accuracy and comparison of results to similar tools available at [10.5281/zenodo.4557921](https://doi.org/10.5281/zenodo.4557921).
 
 
 ## License and disclaimer

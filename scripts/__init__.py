@@ -1,14 +1,20 @@
-import cv2
-import numpy as np
-import configparser
-from traceback import format_exc
-from argparse import ArgumentParser
+# Common imports for all scripts
+try:
+	import cv2
+	import numpy as np
+	import configparser
+	from traceback import format_exc
+	from argparse import ArgumentParser
+except Exception as ex:
+	from utilities import present_exception_and_exit
+	present_exception_and_exit('Import failed! See traceback below:')
 
-__package_name__ = 'SSIMS-Flow: UAV image velocimetry workbench'
-__description__ = 'Workbench for obtaining open-channel flow from UAV videos using dense optical flow'
-__version__ = '0.5.6.0'
+
+__package_name__ = 'SSIMS-Flow: Image velocimetry workbench'
+__description__ = 'Workbench for obtaining open-channel flow rate from videos.'
+__version__ = '0.6.0.0'
 __status__ = 'beta'
-__date_deployed__ = '2024-09-16'
+__date_deployed__ = '2025-02-03'
 
 __author__ = 'Robert Ljubicic @ Faculty of Civil Engineering, University of Belgrade'
 __author_email__ = 'rljubicic@grf.bg.ac.rs, ljubicicrobert@gmail.com'

@@ -20,7 +20,6 @@ Created by Robert Ljubicic.
 try:
 	from __init__ import *
 	from os import path
-	from feature_tracking import fresh_folder
 	from math import log10, floor
 	from glob import glob
 	from class_console_printer import Console_printer, tag_string, tag_print, unix_path
@@ -30,9 +29,10 @@ try:
 	from ctypes import c_int, c_double, c_size_t
 	from warnings import catch_warnings, simplefilter
 	from vel_ratio import vel_ratio, L1
-	from utilities import cfg_get
+	from utilities import fresh_folder, cfg_get, exit_message, present_exception_and_exit
 
 	import matplotlib.pyplot as plt
+	import ctypes
 
 	dll_path = path.split(path.realpath(__file__))[0]
 	dll_name = 'CPP/pooling.dll'
@@ -45,11 +45,7 @@ try:
 	spatial_pooling = dll_loader.get_function('void', 'spatial_pooling', ['float*', 'float*', 'float*', 'float*', 'int', 'int', 'int'])
 	
 except Exception:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 DISPLACEMENT_THRESHOLD_MIN = 0.40
@@ -91,46 +87,68 @@ if __name__ == '__main__':
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			exit_message()
 		
 		section = 'Optical flow'
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
-		results_folder = unix_path('{}/optical_flow'.format(project_folder))
+		results_folder = unix_path(f'{project_folder}/optical_flow')
 		ext = cfg_get(cfg, section, 'Extension', str)
-		optical_flow_step = cfg_get(cfg, section, 'Step', int, 1)
-		pairing = cfg_get(cfg, section, 'Pairing', int, 0)		# 0 = stepwise, 1 = sliding by 1
+		useOnlySDIFrames = cfg_get(cfg, section, 'UseSDIFramesOnly', int, 0)
+		velocity_step = cfg_get(cfg, section, 'Step', int, 1)
+		pairing = cfg_get(cfg, section, 'Pairing', int, 0)		# 0 = stepwise, 1 = sliding by 1, 2 = reference to first
 		scale = cfg_get(cfg, section, 'Scale', float, 1.0)
 		pooling = cfg_get(cfg, section, 'Pooling', int)
 		angle_main = cfg_get(cfg, section, 'AngleMain', float)
 		angle_range = cfg_get(cfg, section, 'AngleRange', float)
 		average_only = cfg_get(cfg, section, 'AverageOnly', int, 0)
 		live_preview = cfg_get(cfg, section, 'LivePreview', int, 0)
+		min_magnitude = cfg_get(cfg, section, 'MinMagnitude', float, 0.3)
+		max_magnitude = cfg_get(cfg, section, 'MaxMagnitude', float, -1)
 
 		fresh_folder(results_folder, exclude=['depth_profile.txt'])
 		fresh_folder(results_folder + '/magnitudes')
 		fresh_folder(results_folder + '/directions')
+		fresh_folder(results_folder + '/U')
+		fresh_folder(results_folder + '/V')
 		fresh_folder(results_folder + '/diagnostics')
 		
-		paths_frames = glob('{}/*.{}'.format(frames_folder, ext))
-		num_frames = len(paths_frames)
+		img_list = glob(f'{frames_folder}/*.{ext}')
+
+		if useOnlySDIFrames:
+			try:
+				optimal_window = np.loadtxt(f'{project_folder}/SDI/optimal_frame_window.txt', dtype=int)
+				optimal_window_len = optimal_window[1] - optimal_window[0] + 1
+				if optimal_window_len < len(img_list):
+					img_list = img_list[optimal_window[0]: optimal_window[1] + 1]
+			except Exception:
+				MessageBox = ctypes.windll.user32.MessageBoxW
+
+				response = MessageBox(None, f'There was a problem reading the optimal frame window. Was the SDI analysis performed?\n' +
+						  				     'Would you like to proceed with optical flow using all frames?',
+											 'Optimal frame window read error', 68)
+
+				if response != 6:
+					tag_print('end', 'Optical flow estimation aborted!')
+					exit_message()
+
+		num_frames = len(img_list)
 		num_digits = floor(log10(num_frames)) + 1
 		angle_func, angle_lower, angle_upper = get_angle_range(angle_main, angle_range)
 		
 		if pairing == 0:
-			paths_frame_A = paths_frames[0:-optical_flow_step:optical_flow_step]
-			paths_frame_B = paths_frames[optical_flow_step::optical_flow_step]
+			paths_frame_A = img_list[0:-velocity_step:velocity_step]
+			paths_frame_B = img_list[velocity_step::velocity_step]
 		elif pairing == 1:
-			paths_frame_A = paths_frames[:-optical_flow_step]
-			paths_frame_B = paths_frames[optical_flow_step:]
+			paths_frame_A = img_list[:-velocity_step]
+			paths_frame_B = img_list[velocity_step:]
 		elif pairing == 2:
-			paths_frame_B = paths_frames[optical_flow_step::optical_flow_step]
-			paths_frame_A = paths_frames[0] * len(paths_frame_B)
+			paths_frame_B = img_list[velocity_step::velocity_step]
+			paths_frame_A = img_list[0] * len(paths_frame_B)
 		
-		indices_frame_A = [paths_frames.index(x) for x in paths_frame_A]
-		indices_frame_B = [paths_frames.index(x) for x in paths_frame_B]
+		indices_frame_A = [img_list.index(x) for x in paths_frame_A]
+		indices_frame_B = [img_list.index(x) for x in paths_frame_B]
 
 		assert len(paths_frame_A) == len(paths_frame_B), f'Frames A list length = {len(paths_frame_A)} != Frames B list length = {len(paths_frame_B)}'
 		num_frame_pairs = len(paths_frame_A)
@@ -164,6 +182,8 @@ if __name__ == '__main__':
 
 		flow_hsv = np.zeros([h_pooled, w_pooled, 2], dtype='uint8')
 		mag_stack = np.zeros([h_pooled, w_pooled, num_frame_pairs], dtype='float32')
+		U_stack = np.zeros([h_pooled, w_pooled, num_frame_pairs], dtype='float32')
+		V_stack = np.zeros([h_pooled, w_pooled, num_frame_pairs], dtype='float32')
 		mag_max = np.zeros(mag_stack.shape[:2])
 		angle_stack = np.zeros(mag_stack.shape)
 
@@ -189,7 +209,7 @@ if __name__ == '__main__':
 			cbar.solids.set(alpha=1.0)
 			cbar.set_label('Velocity magnitude [px/frame]')
 			
-			plt.title('Frames {}+{} of {} total'.format(indices_frame_A[0], indices_frame_B[0], num_frames))
+			plt.title(f'Frames {indices_frame_A[0]}+{indices_frame_B[0]} of {num_frames} total')
 			plt.axis('off')
 			plt.tight_layout()
 
@@ -198,15 +218,16 @@ if __name__ == '__main__':
 		timer = Timer(total_iter=num_frame_pairs)
 
 		tag_print('start', 'Optical flow estimation using Farneback algorithm\n')
-		tag_print('info', 'Using frames from folder [{}]'.format(frames_folder))
-		tag_print('info', 'Frame extension = {}'.format(ext))
-		tag_print('info', 'Number of frames = {}'.format(num_frames))
-		tag_print('info', 'Number of frame pairs = {}'.format(num_frame_pairs))
-		tag_print('info', 'Optical flow step = {}'.format(optical_flow_step))
-		tag_print('info', 'Frame scaling = {:.1f}'.format(scale))
-		tag_print('info', 'Pooling = {} px'.format(pooling))
-		tag_print('info', 'Main flow direction = {:.0f} deg'.format(angle_main))
-		tag_print('info', 'Direction range = {:.0f} deg\n'.format(angle_range))
+		tag_print('info', f'Using frames from folder [{frames_folder}]')
+		tag_print('info', f'Results folder [{results_folder}]')
+		tag_print('info', f'Frame extension = {ext}')
+		tag_print('info', f'Number of frames = {num_frames}')
+		tag_print('info', f'Number of frame pairs = {num_frame_pairs}')
+		tag_print('info', f'Velocity step = {velocity_step}')
+		tag_print('info', f'Frame scaling = {scale:.1f}')
+		tag_print('info', f'Pooling = {pooling} px')
+		tag_print('info', f'Main flow direction = {angle_main:.0f} deg')
+		tag_print('info', f'Direction range = {angle_range:.0f} deg\n')
 		tag_print('info', 'Starting motion detection...\n')
 
 		j = 0
@@ -226,8 +247,11 @@ if __name__ == '__main__':
 			flow = cv2.calcOpticalFlowFarneback(frame_A, frame_B, None, *farneback_params)
 
 			magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
-			# magnitude[magnitude < DISPLACEMENT_THRESHOLD_MIN] = 0
-			# magnitude[magnitude > DISPLACEMENT_THRESHOLD_MAX] = 0
+
+			if min_magnitude > 0:
+				magnitude[magnitude < min_magnitude] = 0
+			if max_magnitude > 0:
+				magnitude[magnitude > max_magnitude] = 0
 
 			# Filter by vector angle
 			angle = np.where(angle_func((angle >= angle_lower), (angle <= angle_upper)), angle, np.NaN)
@@ -280,8 +304,13 @@ if __name__ == '__main__':
 
 			if not average_only:
 				n = str(i).rjust(num_digits, '0')
-				np.savetxt('{}/magnitudes/{}.txt'.format(results_folder, n), pooled_mag, fmt='%.2f')
-				np.savetxt('{}/directions/{}.txt'.format(results_folder, n), pooled_dir, fmt='%.1f')
+				np.savetxt(f'{results_folder}/magnitudes/{n}.txt', pooled_mag, fmt='%.2f')
+				np.savetxt(f'{results_folder}/directions/{n}.txt', pooled_dir, fmt='%.1f')
+
+				us, vs = cv2.polarToCart(pooled_mag, pooled_dir, angleInDegrees=True)
+
+				np.savetxt(f'{results_folder}/U/{n}.txt', us, fmt='%.2f')
+				np.savetxt(f'{results_folder}/V/{n}.txt', vs, fmt='%.2f')
 
 			if live_preview:
 				max_cbar = np.max(mag_max[h_buffer: -h_buffer, w_buffer: -w_buffer])
@@ -292,40 +321,25 @@ if __name__ == '__main__':
 
 				cbar.solids.set(alpha=1.0)
 				
-				plt.title('Frames {}+{} of {}'.format(indices_frame_A[i], indices_frame_B[i], num_frames))
+				plt.title(f'Frames {indices_frame_A[i]}+{indices_frame_B[i]} of {num_frames}')
 				plt.pause(0.001)
 				plt.draw()
 
 			timer.update()
 
 			console_printer.add_line(progress_bar.get(i))
-			console_printer.add_line(
-				tag_string('info', 'Frames {}+{} of {}'
-		   			.format(indices_frame_A[i] + 1, indices_frame_B[i] + 1, num_frames)
-				)
-			)
-			
-			console_printer.add_line(
-				tag_string('info', 'Frame processing time = {:.3f} sec'
-					.format(timer.interval())
-				)
-			)
-			console_printer.add_line(
-				tag_string('info', 'Elapsed time = {} hr {} min {} sec'
-					.format(*time_hms(timer.elapsed()))
-				)
-			)
-			console_printer.add_line(
-				tag_string('info', 'Remaining time = {} hr {} min {} sec'
-					.format(*time_hms(timer.remaining()))
-				)
-			)
+			console_printer.add_line(tag_string('info', f'Frames {indices_frame_A[i] + 1}+{indices_frame_B[i] + 1} of {num_frames}'))
+			console_printer.add_line(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'))
+			he, me, se = time_hms(timer.elapsed())
+			console_printer.add_line(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'))
+			hr, mr, sr = time_hms(timer.remaining())
+			console_printer.add_line(tag_string('info', f'Remaining time = {hr} hr {mr} min {sr} sec'))
 
 			console_printer.add_line(tag_string('info', 'Detection metrics:'))
-			console_printer.add_line(' '*11 + 'Coverage =             {:.2f} %'.format(disp_coverage))
-			console_printer.add_line(' '*11 + 'Mean displacement =    {:.3f} px'.format(disp_mean))
-			console_printer.add_line(' '*11 + 'Median displacement =  {:.3f} px'.format(disp_median))
-			console_printer.add_line(' '*11 + 'Maximal displacement = {:.3f} px'.format(disp_max))
+			console_printer.add_line(' '*11 + f'Coverage =             {disp_coverage:.2f} %')
+			console_printer.add_line(' '*11 + f'Mean displacement =    {disp_mean:.3f} px')
+			console_printer.add_line(' '*11 + f'Median displacement =  {disp_median:.3f} px')
+			console_printer.add_line(' '*11 + f'Maximal displacement = {disp_max:.3f} px')
 
 			console_printer.overwrite()
 			
@@ -389,30 +403,26 @@ if __name__ == '__main__':
 			angle_mean += angle_upper
 			angle_mean = np.where(angle_mean >= 360, angle_mean - 360, angle_mean)
 
-		np.savetxt('{}/diagnostics/T1.txt'.format(results_folder), T1_array, fmt='%.3f')
-		np.savetxt('{}/diagnostics/T2.txt'.format(results_folder), T2_array, fmt='%.3f')
-		np.savetxt('{}/diagnostics/T3.txt'.format(results_folder), T3_array, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/T1.txt', T1_array, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/T2.txt', T2_array, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/T3.txt', T3_array, fmt='%.3f')
 
-		np.savetxt('{}/diagnostics/coverage.txt'.format(results_folder), coverage_list, fmt='%.3f')
-		np.savetxt('{}/diagnostics/disp_mean.txt'.format(results_folder), disp_mean_list, fmt='%.3f')
-		np.savetxt('{}/diagnostics/disp_median.txt'.format(results_folder), disp_median_list, fmt='%.3f')
-		np.savetxt('{}/diagnostics/disp_max.txt'.format(results_folder), disp_max_list, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/coverage.txt', coverage_list, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/disp_mean.txt', disp_mean_list, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/disp_median.txt', disp_median_list, fmt='%.3f')
+		np.savetxt(f'{results_folder}/diagnostics/disp_max.txt', disp_max_list, fmt='%.3f')
 
-		np.savetxt('{}/mag_mean.txt'.format(results_folder), mag_mean, fmt='%.3f')
-		np.savetxt('{}/mag_max.txt'.format(results_folder), mag_max, fmt='%.3f')
-		np.savetxt('{}/angle_mean.txt'.format(results_folder), angle_mean, fmt='%.3f')
-		np.savetxt('{}/threshold_ratios.txt'.format(results_folder), threshold_ratios, fmt='%.3f')
+		np.savetxt(f'{results_folder}/mag_mean.txt', mag_mean, fmt='%.3f')
+		np.savetxt(f'{results_folder}/mag_max.txt', mag_max, fmt='%.3f')
+		np.savetxt(f'{results_folder}/angle_mean.txt', angle_mean, fmt='%.3f')
+		np.savetxt(f'{results_folder}/threshold_ratios.txt', threshold_ratios, fmt='%.3f')
 		
 		print()
 		tag_print('end', 'Optical flow estimation complete!')
-		tag_print('end', 'Results available in [{}]!'.format(results_folder))
 		print('\a')
 
 		if args.quiet == 0:
-			input('\nPress ENTER/RETURN key to exit...')
+			exit_message()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit('Import failed! See traceback below:')

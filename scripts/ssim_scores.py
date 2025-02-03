@@ -20,15 +20,12 @@ try:
 	from __init__ import *
 	from os import path
 	from class_console_printer import tag_print, unix_path
+	from utilities import exit_message, present_exception_and_exit
 
 	import matplotlib.pyplot as plt
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def keypress(event):
@@ -42,11 +39,11 @@ try:
 	args = parser.parse_args()
 
 	folder = unix_path(args.folder)
-	ssim_path = '{}/ssim_scores.txt'.format(folder)
+	ssim_path = f'{folder}/ssim_scores.txt'
 
 	if not path.exists(ssim_path):
-		tag_print('error', 'SSIM scores file not found in folder [{}]'.format(folder))
-		exit()
+		tag_print('error', f'SSIM scores file not found in folder [{folder}]')
+		exit_message()
 
 	data = np.loadtxt(ssim_path, dtype='float')
 	num_markers = data.shape[1]
@@ -94,7 +91,4 @@ try:
 	plt.show()
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
+	present_exception_and_exit()

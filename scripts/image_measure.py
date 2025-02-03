@@ -18,19 +18,15 @@ Created by Robert Ljubicic.
 
 try:
 	from __init__ import *
-	from sys import exit
 	from os import path
 	from glob import glob
 	from class_console_printer import tag_print, unix_path
+	from utilities import exit_message, present_exception_and_exit
 
 	import matplotlib.pyplot as plt
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def xy2str(points_list: list, distance: float) -> str:
@@ -41,11 +37,11 @@ def xy2str(points_list: list, distance: float) -> str:
 	s = ''
 	i = 1
 	for x, y in points_list:
-		s += 'Point {}: x={}, y={}\n'.format(i, x, y)
+		s += f'Point {i}: x={x}, y={y}\n'
 		i += 1
 
 	if distance > 0:
-		s += 'Distance = {:.1f} px'.format(distance)
+		s += f'Distance = {distance:.1f} px'
 	if get_profile:
 		s += '\nPress ENTER/RETURN to accept profile'
 
@@ -109,8 +105,8 @@ def select_profile(event):
 		if len(points) == 2:
 			section = 'Optical flow'
 
-			cfg[section]['ChainStart'] = '{}, {}'.format(points[0][0], points[0][1])
-			cfg[section]['ChainEnd'] = '{}, {}'.format(points[1][0], points[1][1])
+			cfg[section]['ChainStart'] = f'{points[0][0]}, {points[0][1]}'
+			cfg[section]['ChainEnd'] = f'{points[1][0]}, {points[1][1]}'
 
 			with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 				cfg.write(configfile)
@@ -141,8 +137,7 @@ if __name__ == '__main__':
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			exit_message()
 
 		img_path = unix_path(args.img_path)
 		ext = args.ext
@@ -156,7 +151,7 @@ if __name__ == '__main__':
 		if path.isfile(img_path):
 			img = cv2.imread(img_path)
 		elif path.isdir(img_path):
-			images = glob('{}/*.{}'.format(img_path, ext))
+			images = glob(f'{img_path}/*.{ext}')
 			img = cv2.imread(images[0])
 		else:
 			raise ValueError('The path argument [--img_path] does not seem to correspond to an image or folder with images, or could be missing!')
@@ -201,7 +196,4 @@ if __name__ == '__main__':
 		plt.show()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit('Import failed! See traceback below:')

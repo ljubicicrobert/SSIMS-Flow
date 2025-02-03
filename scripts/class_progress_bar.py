@@ -45,7 +45,7 @@ class Progress_bar:
         self.percent = 0
         self.num_digits = floor(log10(total)) + 1
         self.bar_length = width - len(prefix) - 2*self.num_digits - 8
-        self.bar = '[{}]'.format(char_remain * self.bar_length)
+        self.bar = f'[{char_remain * self.bar_length}]'
 
     def set_total(self, total):
         self.total = total
@@ -57,10 +57,7 @@ class Progress_bar:
             self.done()
         len_done = int(self.percent / 100 * self.bar_length)
         len_remain = self.bar_length - len_done
-        self.bar = '{}/{} [\033[32m{}\033[0m\033[31m{}\033[0m]'.format(str(iteration+1).rjust(self.num_digits, ' '),
-                                                                       self.total,
-                                                                       self.char_done * len_done,
-                                                                       self.char_remain * len_remain)
+        self.bar = f"{str(iteration+1).rjust(self.num_digits, ' ')}/{self.total} [\033[32m{self.char_done * len_done}\033[0m\033[31m{self.char_remain * len_remain}\033[0m]"
         self.update_taskbar()
 
     def done(self):
@@ -81,11 +78,11 @@ class Progress_bar:
 
     def show(self, iteration: int):
         self.update(iteration)
-        print('{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len))
+        print(f'{self.prefix}{self.bar} {self.suffix_fmt.format(self.percent):>{f"{self.max_suffix_len}"}}')
 
     def get(self, iteration: int) -> str:
         self.update(iteration)
-        return '{}{} {:>{}}'.format(self.prefix, self.bar, self.suffix_fmt.format(self.percent), self.max_suffix_len)
+        return f'{self.prefix}{self.bar} {self.suffix_fmt.format(self.percent):>{f"{self.max_suffix_len}"}}'
 
 
 if __name__ == '__main__':

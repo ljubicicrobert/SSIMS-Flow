@@ -23,14 +23,10 @@ try:
 	from os import path, listdir
 	from datetime import timedelta
 	from glob import glob
-	from utilities import cfg_get
+	from utilities import cfg_get, exit_message, present_exception_and_exit
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 MAX_FRAMES_DEFAULT = 60**3  # 60 minutes at 60fps
@@ -82,7 +78,7 @@ def framesToVideo(output, folder='.', ext='jpg', codec='MJPG', fps=30.00, scale=
 		tag_print('error', 'Could not obtain image shape. Check frames folder path or file type!')
 
 	# TODO: Should I include other extensions?
-	saveStr = '{}/{}.avi'.format(folder, output)
+	saveStr = f'{folder}/{output}.avi'
 
 	out = cv2.VideoWriter(saveStr, cv2.VideoWriter_fourcc(*codec), fps,
 						  (int(scale * width), int(scale * height)))
@@ -90,11 +86,11 @@ def framesToVideo(output, folder='.', ext='jpg', codec='MJPG', fps=30.00, scale=
 	if verbose:
 		tag_print('start', 'Creating video from frames')
 		print()
-		tag_print('info', 'Encoding frames to video from folder [{}]'.format(folder))
-		tag_print('info', 'Writing results to [{}]'.format(saveStr))
-		tag_print('info', 'Codec: {}'.format(codec))
-		tag_print('info', 'Framerate: {:.2f}'.format(fps))
-		tag_print('info', 'Scale: {:.2f}'.format(scale))
+		tag_print('info', f'Encoding frames to video from folder [{folder}]')
+		tag_print('info', f'Writing results to [{saveStr}]')
+		tag_print('info', f'Codec: {codec}')
+		tag_print('info', f'Framerate: {fps:.2f}')
+		tag_print('info', f'Scale: {scale:.2f}')
 		print()
 
 	i = 0
@@ -112,12 +108,11 @@ def framesToVideo(output, folder='.', ext='jpg', codec='MJPG', fps=30.00, scale=
 				# Happens sometimes with oddly packed videos
 				if h != height or w != width:
 					if not size_adj:
-						tag_print('error', 'Frame {} does not have the same size as the first frame!'.format(i))
+						tag_print('error', f'Frame {i} does not have the same size as the first frame!')
 						tag_print('error', 'OpenCV Video writer requires all frames to be the same size!')
-						input('\nPress ENTER/RETURN to exit...')
-						exit()
+						exit_message()
 					else:
-						tag_print('warning', 'Adjusting the size of frame {} to {}x{} px'.format(i, width, height))
+						tag_print('warning', f'Adjusting the size of frame {i} to {width}x{height} px')
 						cv2.resize(image, [height, width], interpolation=interp)
 
 				if scale != 1.0:
@@ -134,7 +129,7 @@ def framesToVideo(output, folder='.', ext='jpg', codec='MJPG', fps=30.00, scale=
 				if cp and pb:
 					cp.single_line(pb.get(i))
 				else:
-					tag_print('info', 'Writting frame {}'.format(i))
+					tag_print('info', f'Writting frame {i}')
 
 			i += 1
 
@@ -143,11 +138,11 @@ def framesToVideo(output, folder='.', ext='jpg', codec='MJPG', fps=30.00, scale=
 
 	if verbose:
 		print()
-		tag_print('end', 'Video written to {} using {} codec'.format(saveStr, codec))
-		tag_print('end', 'Total number of frames written is {}'.format(i))
-		tag_print('end', 'Total duration of the video is {}'.format(timedelta(seconds=(i / fps))))
+		tag_print('end', f'Video written to {saveStr} using {codec} codec')
+		tag_print('end', f'Total number of frames written is {i}')
+		tag_print('end', f'Total duration of the video is {timedelta(seconds=(i / fps))}')
 		size = path.getsize(saveStr) / (1024 * 1024)
-		tag_print('end', 'Total size of the file is {:.2f} MB'.format(size))
+		tag_print('end', f'Total size of the file is {size:.2f} MB')
 
 	return True
 
@@ -167,7 +162,6 @@ if __name__ == '__main__':
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			exit()
 
 		interp_methods = {0: cv2.INTER_LINEAR,
 						  1: cv2.INTER_CUBIC,
@@ -181,7 +175,7 @@ if __name__ == '__main__':
 		video_scale = cfg_get(cfg, section, 'Scale', float, 1.0)
 		scale_interp = interp_methods[cfg_get(cfg, section, 'Interpolation', int, 0)]
 
-		frames_list = glob('{}/*.{}'.format(frames_folder, frames_ext))
+		frames_list = glob(f'{frames_folder}/*.{frames_ext}')
 		num_frames = min(len(frames_list), MAX_FRAMES_DEFAULT)
 
 		progress_bar = Progress_bar(total=num_frames, prefix=tag_string('info', 'Writing frame '))
@@ -199,10 +193,7 @@ if __name__ == '__main__':
 					  )
 
 		print('\a')
-		input('\nPress ENTER/RETURN to exit...')
+		exit_message()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

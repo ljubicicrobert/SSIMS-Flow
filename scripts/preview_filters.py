@@ -17,65 +17,63 @@ Created by Robert Ljubicic.
 """
 
 try:
-    from __init__ import *
-    import filters
-    from os import path, remove
-    from class_console_printer import unix_path, tag_print
-    from glob import glob
-    from utilities import cfg_get
-
-    import shutil
+	from __init__ import *
+	from os import path, remove
+	from class_console_printer import unix_path, tag_print
+	from glob import glob
+	from utilities import cfg_get, exit_message, present_exception_and_exit
+	from filters import *
+	
+	import shutil
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 if __name__ == '__main__':
-    try:
-        parser = ArgumentParser()
-        parser.add_argument('--cfg', type=str, help='Path to configuration file')
-        parser.add_argument('-i', type=int, help='Image number', default=0)
-        args = parser.parse_args()
+	try:
+		parser = ArgumentParser()
+		parser.add_argument('--cfg', type=str, help='Path to configuration file')
+		parser.add_argument('-i', type=int, help='Image number', default=0)
+		args = parser.parse_args()
 
-        cfg = configparser.ConfigParser()
-        cfg.optionxform = str
+		cfg = configparser.ConfigParser()
+		cfg.optionxform = str
 
-        try:
-            cfg.read(args.cfg, encoding='utf-8-sig')
-        except Exception:
-            tag_print('error', 'There was a problem reading the configuration file!')
-            tag_print('error', 'Check if project has valid configuration.')
-            exit()
+		try:
+			cfg.read(args.cfg, encoding='utf-8-sig')
+		except Exception:
+			tag_print('error', 'There was a problem reading the configuration file!')
+			tag_print('error', 'Check if project has valid configuration.')
+			exit_message()
 
-        section = 'Enhancement'
+		section = 'Enhancement'
 
-        project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
-        frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str, '{}/frames'.format(project_folder)))
-        results_folder = '{}/enhancement'.format(project_folder)
-        ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
-        
-        save_path_original = r'{}/original.{}'.format(project_folder, ext)
-        save_path_filtered = r'{}/preview.{}'.format(project_folder, ext)
-        if path.exists(save_path_filtered):
-            remove(save_path_filtered)
-        
-        img_list = glob('{}/*.{}'.format(frames_folder, ext))
-        num_frames = len(img_list)
-        filters_data = np.loadtxt(results_folder + '/filters_preview.txt', dtype='str', delimiter='/', ndmin=2)
+		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
+		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str, f'{project_folder}/frames'))
+		results_folder = f'{project_folder}/enhancement'
+		ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
+		
+		save_path_original = f'{project_folder}/original.{ext}'
+		save_path_filtered = f'{project_folder}/preview.{ext}'
+		if path.exists(save_path_filtered):
+			remove(save_path_filtered)
+		
+		img_list = glob(f'{frames_folder}/*.{ext}')
+		num_frames = len(img_list)
+		filters_data = np.loadtxt(results_folder + '/filters_preview.txt', dtype='str', delimiter='/', ndmin=2)
 
-        img_path = img_list[args.i]
-        img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
+		img_path = img_list[args.i]
+		img = cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB)
 
-        img = filters.apply_filters(img, filters_data, img_list, ext)
-        img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        
-        shutil.copyfile(img_path, save_path_original)
-        cv2.imwrite(save_path_filtered, img_bgr)
+		img = apply_filters(img, filters_data, img_list, ext)
+		img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+		
+		shutil.copyfile(img_path, save_path_original)
+		cv2.imwrite(save_path_filtered, img_bgr)
 
-    except Exception as ex:
-        print('[ERROR] An exception has occurred! See traceback bellow: \n\n')
-        print('{}'.format(format_exc()))
-        input()     # Pause for .WaitForExit() to timeout in GUI
+	except Exception as ex:
+		print('[EXCEPTION] An exception has occurred! See traceback below: \n')
+		print(format_exc())
+		print('[END_TRACEBACK]')
+		exit_message()

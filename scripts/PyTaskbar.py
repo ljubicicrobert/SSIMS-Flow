@@ -32,7 +32,7 @@ class Progress(object):
         self.progress = 0
         self.initialised = True
 
-    def setState(self,value):
+    def setState(self, value):
         if not self.initialised == False:
             if value == 'normal':
                 taskbar.SetProgressState(self.thisWindow,0)
@@ -55,17 +55,15 @@ class Progress(object):
                 self.state = 'done'
             
             else:
-                warnings.warn('Invalid Argument {} .Please selece one from (normal,warning,error,loading,done).'.format(value))
+                warnings.warn(f'Invalid argument {value}. Please select one from (normal, warning, error, loading, done).')
 
         else:
             warnings.warn('Please initialise the object (method:Progress.initialise())')
 
-    def setProgress(self,value:int):
+    def setProgress(self, value: int):
         if not self.initialised == False:
             taskbar.setProgressValue(self.thisWindow,value,100)
-
-        elif value>100 or value<0:
-            warnings.warn('Invalid Argument {} .Please selece one from (<100,>0).'.fromat(value))
-
+        elif not (0 <= value <= 100):
+            warnings.warn(f'Invalid argument [{value}]. Please selece one from range [0, 100].')
         else:
             warnings.warn('Please initialise the object (method:Progress.initialise())')

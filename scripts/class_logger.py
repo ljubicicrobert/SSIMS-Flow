@@ -38,7 +38,7 @@ class Logger:
 			h = str(h + 2).rjust(2, '0')
 			m = str(m).rjust(2, '0')
 			s = str(s).rjust(2, '0')
-			self.file.write('{}:{}:{} -> {}\n'.format(h, m, s, self.strip_esc_codes(string)))
+			self.file.write(f'{h}:{m}:{s} -> {self.strip_esc_codes(string)}\n')
 
 			if to_print:
 				print(string)

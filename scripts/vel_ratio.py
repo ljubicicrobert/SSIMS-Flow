@@ -92,5 +92,5 @@ if __name__ == '__main__':
     plt.legend(['C0', 'C1', 'C2'])
     plt.xlabel('R [-]')
     plt.ylabel('C [-]')
-    plt.xticks([L3, L2, L1], ['L1=0.33', 'L2=0.67', 'L3=1.00'])
+    plt.xticks([L3, L2, L1], [f'L3={L3}', f'L2={L2}', f'L1={L1}'])
     plt.show()

@@ -22,15 +22,10 @@ try:
 	from math import log
 	from class_console_printer import Console_printer, tag_string, tag_print, unix_path
 	from class_progress_bar import Progress_bar
-	from feature_tracking import fresh_folder
-	from utilities import cfg_get
+	from utilities import fresh_folder, cfg_get, exit_message, present_exception_and_exit
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 MAX_FRAMES_DEFAULT = 60**3
@@ -102,9 +97,8 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 	"""
 
 	if not path.exists(video):
-		tag_print('error', 'Video file not found at {}'.format(video))
-		input('\nPress ENTER/RETURN to exit...')
-		exit()
+		tag_print('error', f'Video file not found at {video}')
+		exit_message()
 
 	vidcap = cv2.VideoCapture(video)
 	num_frames_total = int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -118,18 +112,18 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 	if verbose:
 		tag_print('start', 'Starting frame extraction')
 		print()
-		tag_print('info', 'Extraction of frames from [{}] starting from frame {}/{}'.format(video, start, num_frames_total))
-		tag_print('info', 'Extension: {}'.format(ext))
-		tag_print('info', 'Quality: {}'.format(qual))
-		tag_print('info', 'Scale: {:.2f}'.format(scale))
-		tag_print('info', 'Step: {}'.format(step))
+		tag_print('info', f'Extraction of frames from [{video}] starting from frame {start}/{num_frames_total}')
+		tag_print('info', f'Extension: {ext}')
+		tag_print('info', f'Quality: {qual}')
+		tag_print('info', f'Scale: {scale:.2f}')
+		tag_print('info', f'Step: {step}')
 		if crop:
-			tag_print('info', 'Crop: X={}..{}, Y={}..{}'.format(*crop))
+			tag_print('info', f'Crop: X={crop[0]}..{crop[1]}, Y={crop[2]}..{crop[3]}')
 		print()
 
 	i = start
 	j = start_num
-	extracted_frames = 0
+	num_extracted_frames = 0
 	extracted_size = 0
 
 	if not end:
@@ -146,10 +140,10 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 	while success and i < end:  # If new frame exists
 		if folder is None:
 			n = str(j).zfill(num_len)
-			save_str = '{}{}.{}'.format(frame_prefix, n, ext)
+			save_str = f'{frame_prefix}{n}.{ext}'
 		else:
 			n = str(j).zfill(num_len)
-			save_str = '{}/{}{}.{}'.format(folder, frame_prefix, n, ext)
+			save_str = f'{folder}/{frame_prefix}{n}.{ext}'
 
 		if camera_matrix and dist:
 			camera_matrix[0, 0] = camera_matrix[0, 0] * width			# fx
@@ -169,17 +163,14 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 			if cp and pb:
 				cp.single_line(pb.get(int(i - start)))
 			else:
-				tag_print('info', 'Extracting frame: {}'.format(int(i)))
+				tag_print('info', f'Extracting frame: {int(i)}')
 
 		if ext.lower() in ['jpg', 'jpeg']:
-			cv2.imwrite(save_str, image,
-						[int(cv2.IMWRITE_JPEG_QUALITY), qual])
+			cv2.imwrite(save_str, image, [int(cv2.IMWRITE_JPEG_QUALITY), qual])
 		elif ext.lower() == 'png':
-			cv2.imwrite(save_str, image,
-						[int(cv2.IMWRITE_PNG_COMPRESSION), 9 - int(0.09 * qual)])
+			cv2.imwrite(save_str, image, [int(cv2.IMWRITE_PNG_COMPRESSION), 9 - int(0.09 * qual)])
 		elif ext.lower() == 'webp':
-			cv2.imwrite(save_str, image,
-						[int(cv2.IMWRITE_WEBP_QUALITY), qual + 1])
+			cv2.imwrite(save_str, image, [int(cv2.IMWRITE_WEBP_QUALITY), qual + 1])
 		else:
 			cv2.imwrite(save_str, image)
 
@@ -194,13 +185,13 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 
 		i = int(i + step)
 		j = int(j + step)
-		extracted_frames += 1
+		num_extracted_frames += 1
 
 	if verbose:
 		print()
-		tag_print('end', 'Images written to folder [{}]'.format(folder))
-		tag_print('end', 'Total number of extracted images is {}'.format(extracted_frames))
-		tag_print('end', 'Total size of extracted images is {:.2f} MB'.format(extracted_size))
+		tag_print('end', f'Images written to folder [{folder}]')
+		tag_print('end', f'Total number of extracted images is {num_extracted_frames}')
+		tag_print('end', f'Total size of extracted images is {extracted_size:.2f} MB')
 
 	vidcap.release()  # Clear video from memory
 
@@ -223,10 +214,10 @@ if __name__ == '__main__':
 			cfg.read(args.cfg, encoding='utf-8-sig')
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!\nCheck if project has valid configuration.')
-			exit()
+			exit_message()
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
-		frames_folder = '{}/frames'.format(project_folder)
+		frames_folder = f'{project_folder}/frames'
 
 		section = 'Frames'
 
@@ -258,19 +249,19 @@ if __name__ == '__main__':
 
 				for i, c in enumerate(crop_limits):
 					if c < 0:
-						tag_print('error', 'Crop limit {} (={}) is lower than 0!'.format(crop_labels[i], crop_limits[i]))
+						tag_print('error', f'Crop limit {crop_labels[i]} (={crop_limits[i]}) is lower than 0!')
 						skip_crop_prompt = True
 				if crop_limits[0] >= crop_limits[1]:
-					tag_print('error', 'Crop limit X_start (={}) is larger than or equal to crop limit X_end (={})!'.format(crop_limits[0], crop_limits[1]))
+					tag_print('error', f'Crop limit X_start (={crop_limits[0]}) is larger than or equal to crop limit X_end (={crop_limits[1]})!')
 					skip_crop_prompt = True
 				if crop_limits[2] >= crop_limits[3]:
-					tag_print('error', 'Crop limit Y_start (={}) is larger than or equal to crop limit Y_end (={})!'.format(crop_limits[2], crop_limits[3]))
+					tag_print('error', f'Crop limit Y_start (={crop_limits[2]}) is larger than or equal to crop limit Y_end (={crop_limits[3]})!')
 					skip_crop_prompt = True
 				if max(crop_limits[0], crop_limits[1]) > w:
-					tag_print('error', 'Crop limits X ([{}, {}]) out of image bounds: width = {}!'.format(crop_limits[0], crop_limits[1], w))
+					tag_print('error', f'Crop limits X ([{crop_limits[0]}, {crop_limits[1]}]) out of image bounds: width = {w}!')
 					skip_crop_prompt = True
 				if max(crop_limits[2], crop_limits[3]) > h:
-					tag_print('error', 'Crop limits Y ([{}, {}]) out of image bounds: height = {}!'.format(crop_limits[2], crop_limits[3], h))
+					tag_print('error', f'Crop limits Y ([{crop_limits[2]}, {crop_limits[3]}]) out of image bounds: height = {h}!')
 					skip_crop_prompt = True
 
 				if skip_crop_prompt:
@@ -280,12 +271,11 @@ if __name__ == '__main__':
 					else:
 						print()
 						tag_print('end', 'Terminated by user!')
-						input('\nPress ENTER/RETURN key to exit...')
-						exit()
+						exit_message()
 		except Exception as ex:
 			pass
 
-		camera_matrix, distortion = get_camera_parameters('{}/camera_parameters.cpf'.format(project_folder))\
+		camera_matrix, distortion = get_camera_parameters(f'{project_folder}/camera_parameters.cpf')\
 										if remove_distortion else None, None
 
 		console_printer = Console_printer()
@@ -308,10 +298,7 @@ if __name__ == '__main__':
 					  )
 
 		print('\a')
-		input('\nPress ENTER/RETURN to exit...')
+		exit_message()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

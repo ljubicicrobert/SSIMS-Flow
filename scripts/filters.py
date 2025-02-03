@@ -19,10 +19,14 @@ Created by Robert Ljubicic.
 try:
 	from __init__ import *
 	from os import path
-	from class_console_printer import tag_print
 	from CPP.dll_import import DLL_Loader
 	from ctypes import c_size_t, c_double
-	from scipy.ndimage import convolve
+	from utilities import present_exception_and_exit
+
+	try:
+		from custom_filters import *
+	except ImportError:
+		pass
 
 	import scipy.stats as stats
 
@@ -32,11 +36,8 @@ try:
 	cpp_intensity_capping = dll_loader.get_function('void', 'intensity_capping', ['byte*', 'size_t', 'double'])
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
+	
 
 colorspaces_list = ['rgb', 'hsv', 'lab', 'grayscale', 'ycrcb']
 
@@ -101,6 +102,7 @@ def is_grayscale(img: np.ndarray) -> bool:
 	Checks whether all three image channels are identical,
 	i.e., if image is grayscale.
 	"""
+
 	try:
 		img[:, :, 0]
 	except IndexError:
@@ -165,6 +167,8 @@ def select_channel(img, channel=1):
 
 
 def channel_ratio(img, c1=1, c2=2, limit=2.0):
+	global colorspace
+	
 	divisor = img[:, :, int(c2 - 1)]
 	divisor[divisor == 0] = 255
 
@@ -172,9 +176,21 @@ def channel_ratio(img, c1=1, c2=2, limit=2.0):
 	ratio[ratio > limit] = limit
 	ratio = ((ratio - np.min(ratio)) / (np.max(ratio) - np.min(ratio)) * 255).astype('uint8')
 
+	colorspace = 'grayscale'
+	return three_channel(ratio)
+
+
+def channel_addition(img, a=1, b=1, c=-1):
+	channel_1 = img[:, :, 0].astype(float)
+	channel_2 = img[:, :, 1].astype(float)
+	channel_3 = img[:, :, 2].astype(float)
+
+	ratio = a*channel_1 + b*channel_2 + c*channel_3
+	ratio = ((ratio - ratio.min()) / (ratio.max() - ratio.min()) * 255).astype('uint8')
+
 	return three_channel(ratio)
 	
-	
+
 def highpass(img, sigma=1.0):
 	if is_grayscale(img):
 		img = img[:, :, 0]
@@ -185,15 +201,10 @@ def highpass(img, sigma=1.0):
 	return three_channel(img_highpass)
 	
 	
-def normalize_image(img, lower=None, upper=None):
+def normalize_image(img, lower=0, upper=255):
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0]
 	img_max = img_gray.max()
 	img_min = img_gray.min()
-	
-	if lower is None:
-		lower = img_min
-	if upper is None:
-		upper = img_max
 
 	img_norm = ((img_gray - img_min) / (img_max - img_min) * (upper - lower) + lower).astype('uint8')
 
@@ -279,36 +290,12 @@ def denoise(img, ksize=3):
 	return cv2.medianBlur(img, int(ksize))
 
 
-def sobel_kernel(ksize=3, dir='x'):
-	assert ksize % 2 == 1
-
-	kernel = np.zeros((ksize, ksize))
-	pivot = ksize // 2
-
-	for i in range(ksize):
-		for j in range(ksize):
-			try:
-				dy = pivot - i
-				dx = pivot - j
-				kernel[i, j] = dy / (abs(dy) ** 2 + abs(dx) ** 2)
-			except ZeroDivisionError:
-				kernel[i, j] = 0
-
-	return kernel
-
-
 def sobel_filter(img, k_size=3, x_dir=1, y_dir=1):
 	img_gray = convert_img(img, colorspace, 'grayscale')[:, :, 0].astype('float')
+	img_sobel = np.abs(cv2.Sobel(img_gray, cv2.CV_64F, int(x_dir), int(y_dir), ksize=int(k_size)))
+	img_sobel *= 255.0 / np.max(img_sobel)
 
-	kernel = sobel_kernel(int(k_size))
-
-	sobel_x = convolve(img_gray, kernel.T, mode='nearest') if x_dir == 1 else np.zeros(img_gray.shape)
-	sobel_y = convolve(img_gray, kernel, mode='nearest') if y_dir == 1 else np.zeros(img_gray.shape)
-
-	mag = np.sqrt(sobel_x**2 + sobel_y**2)
-	mag *= 255.0 / np.max(mag)
-
-	return three_channel(mag.astype('uint8'))
+	return three_channel(img_sobel.astype('uint8'))
 
 
 def canny_edge_detection(img, thr1, thr2):
@@ -349,7 +336,7 @@ def remove_background(img, num_frames_background, gray=1, use_mean=0, img_list =
 	prefix = 'median' if not use_mean else 'mean'
 	suffix = 'gray' if gray else 'color'
 
-	img_back_path = '{}/../{}_{}_{}.{}'.format(path.dirname(img_list[0]), prefix, num_frames_background, suffix, ext)
+	img_back_path = f'{path.dirname(img_list[0])}/../{prefix}_{num_frames_background}_{suffix}.{ext}'
 
 	if path.exists(img_back_path):
 		back = cv2.imread(img_back_path)
@@ -408,5 +395,7 @@ def apply_filters(img: np.ndarray, filters_data: np.ndarray, img_list: list, ext
 		if func_name.startswith('to_'):
 			colorspace = func_name.split('_')[1]
 
+	# I forgot why I wrote this line, but don't touch
 	colorspace = 'rgb'
+	
 	return img

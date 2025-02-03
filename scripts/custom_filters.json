@@ -1,0 +1,16 @@
+{
+    "_comment" : "Place the definitions of your custom filters here. See the original filters.json file for appropriate structure.",
+
+    "Filters": [
+        {
+            "Name": "Custom negative",
+            "Func": "custom_negative",
+            "Group": "10. Custom filters",
+            "Description": "Custom filter test, returns negative. See custom_filters.json and custom_filters.py for more info.",
+            "ColorspaceAfter": "",
+            "Parameters": [
+
+            ]
+        }
+    ]
+}

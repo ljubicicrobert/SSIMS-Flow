@@ -24,22 +24,20 @@ try:
 	from class_timing import Timer, time_hms
 	from glob import glob
 	from inspect import getfullargspec
-	from feature_tracking import fresh_folder
 	from filters import *
-	from utilities import cfg_get
+	from utilities import fresh_folder, cfg_get, exit_message, present_exception_and_exit
+
+	import ctypes
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 if __name__ == '__main__':
 	try:
 		parser = ArgumentParser()
 		parser.add_argument('--cfg', type=str, help='Path to configuration file')
+		parser.add_argument('--quiet', type=int, help='Quiet mode for batch processing, no RETURN confirmation on success', default=0)
 		args = parser.parse_args()
 
 		cfg = configparser.ConfigParser()
@@ -50,35 +48,49 @@ if __name__ == '__main__':
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			exit_message()
 
 		section = 'Enhancement'
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
 		frames_folder = frames_folder if frames_folder != '' else project_folder + '/frames'
-		results_folder = unix_path('{}/enhancement'.format(project_folder))
+		results_folder = unix_path(f'{project_folder}/enhancement')
 		ext = cfg_get(cfg, section, 'Extension', str)
+		useOnlySDIFrames = cfg_get(cfg, section, 'UseSDIFramesOnly', int, 0)
 		
-		img_list = glob('{}/*.{}'.format(frames_folder, ext))
+		img_list = glob(f'{frames_folder}/*.{ext}')
+
+		if useOnlySDIFrames:
+			try:
+				optimal_window = np.loadtxt(f'{project_folder}/SDI/optimal_frame_window.txt', dtype=int)
+				img_list = img_list[optimal_window[0]: optimal_window[1] + 1]
+			except Exception:
+				MessageBox = ctypes.windll.user32.MessageBoxW
+
+				response = MessageBox(None, f'There was a problem reading the optimal frame window. Was the SDI analysis performed?\n' +
+						  				     'Would you like to proceed with filtering all frames?',
+											 'Optimal frame window read error', 68)
+
+				if response != 6:
+					tag_print('end', 'Filtering aborted!')
+					exit_message()
+
 		num_frames = len(img_list)
 		filters_data = np.loadtxt(results_folder + '/filters.txt', dtype='str', delimiter='/', ndmin=2)
 
 		progress_bar = Progress_bar(total=num_frames, prefix=tag_string('info', 'Frame '))
 		console_printer = Console_printer()
 
-		legend = 'Filters:'
-
 		tag_print('start', 'Frame filtering\n')
-		tag_print('info', 'Filtering frames from folder [{}]'.format(frames_folder))
-		tag_print('info', 'Filters to apply:')
+		tag_print('info', f'Filtering frames from folder [{frames_folder}]')
+		tag_print('info', f'Results folder [{results_folder}]')
+		tag_print('info', 'Filters and parameters:')
 		for f in filters_data:
 			func_args_names = globals()[f[0]]
 			func_args = getfullargspec(func_args_names)[0][1:] if f[1] != '' else []
 			arg_values = ['{}={}'.format(p, v) for p, v in zip(func_args, f[1].split(','))]
 			filter_text = '{}: {}'.format(f[0], ', '.join(arg_values if f[1] != '' else ''))
-			legend += '\n    ' + filter_text
 			print(' ' * 11, filter_text)
 		print()
 
@@ -98,35 +110,25 @@ if __name__ == '__main__':
 			img = apply_filters(img, filters_data, img_list, ext)
 			img_bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
-			cv2.imwrite('{}/{}'.format(results_folder, path.basename(img_path)), img_bgr)
+			cv2.imwrite(f'{results_folder}/{path.basename(img_path)}', img_bgr)
 
 			timer.update()
+
 			console_printer.add_line(progress_bar.get(j))
-			console_printer.add_line(
-				tag_string('info', 'Frame processing time = {:.3f} sec'
-					.format(timer.interval())
-				)
-			)
-			console_printer.add_line(
-				tag_string('info', 'Elapsed time = {} hr {} min {} sec'
-					.format(*time_hms(timer.elapsed()))
-				)
-			)
-			console_printer.add_line(
-				tag_string('info', 'Remaining time = {} hr {} min {} sec'
-					.format(*time_hms(timer.remaining()))
-				)
-			)
+			console_printer.add_line(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'))
+			he, me, se = time_hms(timer.elapsed())
+			console_printer.add_line(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'))
+			hr, mr, sr = time_hms(timer.remaining())
+			console_printer.add_line(tag_string('info', f'Remaining time = {hr} hr {mr} min {sr} sec'))
+
 			console_printer.overwrite()
 
 		print()
 		tag_print('end', 'Filtering complete!')
-		tag_print('end', 'Results available in folder [{}]'.format(results_folder))
 		print('\a')
-		input('\nPress ENTER/RETURN to exit...')
+
+		if args.quiet == 0:
+			exit_message()
 	
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

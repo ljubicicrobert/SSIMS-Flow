@@ -1,8 +1,11 @@
 {
+    "_comment": "Avoid changing this file for adding new user defined filters. Define custom filters in custom_filters.json and custom_filters.py.",
+
     "Filters": [
         {
             "Name": "Negative",
             "Func": "negative",
+            "Group": "1. Colorspace conversions",
             "Description": "Creates a negative of an 8bit image.",
             "ColorspaceAfter": "",
             "Parameters": []
@@ -11,6 +14,7 @@
         {
             "Name": "Convert to Grayscale",
             "Func": "to_grayscale",
+            "Group": "1. Colorspace conversions",
             "Description": "Converts a color image to a single-channel 8bit grayscale [0..255].",
             "ColorspaceAfter": "Grayscale",
             "Parameters": []
@@ -19,6 +23,7 @@
         {
             "Name": "Convert to RGB",
             "Func": "to_rgb",
+            "Group": "1. Colorspace conversions",
             "Description": "Converts to three-channel 8bit RGB (red-green-blue) colorspace.",
             "ColorspaceAfter": "RGB",
             "Parameters": []
@@ -27,6 +32,7 @@
         {
             "Name": "Convert to HSV",
             "Func": "to_hsv",
+            "Group": "1. Colorspace conversions",
             "Description": "Converts to three-channel 8bit HSV (hue-saturation-value) colorspace.",
             "ColorspaceAfter": "HSV",
             "Parameters": []
@@ -35,6 +41,7 @@
         {
             "Name": "Convert to L*a*b*",
             "Func": "to_lab",
+            "Group": "1. Colorspace conversions",
             "Description": "Converts to three-channel 8bit L*a*b* (CIELab) colorspace.",
             "ColorspaceAfter": "L*a*b*",
             "Parameters": []
@@ -43,14 +50,34 @@
         {
             "Name": "Convert to YCrCb",
             "Func": "to_lab",
+            "Group": "1. Colorspace conversions",
             "Description": "Converts to three-channel 8bit YCrCb colorspace.",
             "ColorspaceAfter": "YCrCb",
             "Parameters": []
         },
 
         {
+            "Name": "Single image channel",
+            "Func": "select_channel",
+            "Group": "1. Colorspace conversions",
+            "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b*).",
+            "ColorspaceAfter": "Grayscale",
+            "Parameters": [
+                {
+                    "PName": "Channel number",
+                    "PType": "int",
+                    "PUpper": 3,
+                    "PStart": 1,
+                    "PLower": 1,
+                    "PStep": 1
+                }
+            ]
+        },
+
+        {
             "Name": "Rearrange channels",
             "Func": "rearrange_channels",
+            "Group": "2. Channel manipulation",
             "Description": "Rearranges channels of a three-channel image in the last selected colorspace.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -84,6 +111,7 @@
         {
             "Name": "Adjust channels",
             "Func": "adjust_channels",
+            "Group": "2. Channel manipulation",
             "Description": "Add values to pixels of individual image channels. Can be used for hue shifting in HSV colorspace.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -117,11 +145,12 @@
         {
             "Name": "Channel ratio",
             "Func": "channel_ratio",
-            "Description": "",
+            "Group": "2. Channel manipulation",
+            "Description": "Estimated as (R-min(R))/(max(R)-min(R)), where R=Ch1/Ch2, with max limiter for R.",
             "ColorspaceAfter": "",
             "Parameters": [
                 {
-                    "PName": "Channel main",
+                    "PName": "Channel 1",
                     "PType": "int",
                     "PUpper": 3,
                     "PStart": 1,
@@ -129,7 +158,7 @@
                     "PStep": 1
                 },
                 {
-                    "PName": "Channel secondary",
+                    "PName": "Channel 2",
                     "PType": "int",
                     "PUpper": 3,
                     "PStart": 2,
@@ -148,18 +177,35 @@
         },
 
         {
-            "Name": "Single image channel",
-            "Func": "select_channel",
-            "Description": "Select a single channel from a three-channel image. Channel order depends on the image colorspace (RGB, HSV, L*a*b*).",
-            "ColorspaceAfter": "Grayscale",
+            "Name": "Channel addition",
+            "Func": "channel_addition",
+            "Group": "2. Channel manipulation",
+            "Description": "Calculated as (a*Ch1 + b*Ch2 + c*Ch3) and normalized to range [0, 255]. Can be especially useful in cases of spatially changing turbidity.",
+            "ColorspaceAfter": "",
             "Parameters": [
                 {
-                    "PName": "Channel number",
-                    "PType": "int",
-                    "PUpper": 3,
+                    "PName": "a",
+                    "PType": "float",
+                    "PUpper": 1,
                     "PStart": 1,
-                    "PLower": 1,
-                    "PStep": 1
+                    "PLower": -1,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "b",
+                    "PType": "float",
+                    "PUpper": 1,
+                    "PStart": 1,
+                    "PLower": -1,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "c",
+                    "PType": "float",
+                    "PUpper": 1,
+                    "PStart": -1,
+                    "PLower": -1,
+                    "PStep": 0.1
                 }
             ]
         },
@@ -167,6 +213,7 @@
         {
             "Name": "Normalization",
             "Func": "normalize_image",
+            "Group": "3. Spatial operations",
             "Description": "Normalize (stretch) pixel intensities between a chosen lower and upper value, usually between 0 and 255.",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
@@ -192,6 +239,7 @@
         {
             "Name": "Highpass",
             "Func": "highpass",
+            "Group": "3. Spatial operations",
             "Description": "Accentuates high frequency image content such as tracer particles.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -209,6 +257,7 @@
         {
             "Name": "Intensity capping",
             "Func": "intensity_capping",
+            "Group": "3. Spatial operations",
             "Description": "Limits pixel values using global mean and variance. If tracer particles are darker than the water surface, apply negative filter before this one.",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
@@ -234,6 +283,7 @@
         {
             "Name": "Manual capping",
             "Func": "manual_capping",
+            "Group": "3. Spatial operations",
             "Description": "Similar to Intensity capping but uses a fixed capping value instead of a calculated one using mean and variance.",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
@@ -251,6 +301,7 @@
         {
             "Name": "Adjust brightness/contrast",
             "Func": "brightness_contrast",
+            "Group": "3. Spatial operations",
             "Description": "Adjusts overall brightness and contrast using linear transformation [Alpha*Y + Beta].",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -276,6 +327,7 @@
         {
             "Name": "Gamma adjustment",
             "Func": "gamma",
+            "Group": "3. Spatial operations",
             "Description": "Adjusts gamma exposure of the image using linear transformation [Gamma*Y].",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -293,6 +345,7 @@
         {
             "Name": "Gaussian CDF lookup",
             "Func": "gaussian_lookup",
+            "Group": "3. Spatial operations",
             "Description": "Adjusts exposure using Gaussian cumulative distribution function as a lookup table.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -318,6 +371,7 @@
         {
             "Name": "Global thresholding",
             "Func": "global_thresholding",
+            "Group": "3. Spatial operations",
             "Description": "Filter image by global thresholding (returns a binarized [0, 1] image).",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
@@ -341,8 +395,9 @@
         },
 
         {
-            "Name": "Channel thresholding",
+            "Name": "Thresholding by channel",
             "Func": "channel_thresholding",
+            "Group": "3. Spatial operations",
             "Description": "Filter image by thresholding individual image channels (returns a binarized [0, 1] image).",
             "ColorspaceAfter": "Grayscale",
             "Parameters": [
@@ -400,6 +455,7 @@
         {
             "Name": "Denoise",
             "Func": "denoise",
+            "Group": "3. Spatial operations",
             "Description": "Removes salt-and-pepper type noise with a median filter.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -417,6 +473,7 @@
         {
             "Name": "Sobel filter",
             "Func": "sobel_filter",
+            "Group": "4. Edge detection",
             "Description": "Detects edges in image using Sobel filter.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -450,6 +507,7 @@
         {
             "Name": "Canny edge detection",
             "Func": "canny_edge_detection",
+            "Group": "4. Edge detection",
             "Description": "Detects edges in image using gradient analysis.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -473,8 +531,44 @@
         },
 
         {
+            "Name": "Histogram equalization",
+            "Func": "histeq",
+            "Group": "3. Spatial operations",
+            "Description": "Stretches the histogram of the image to improve dynamic range and accentuate details.",
+            "ColorspaceAfter": "Grayscale",
+            "Parameters": []
+        },
+
+        {
+            "Name": "CLAHE",
+            "Func": "clahe",
+            "Group": "3. Spatial operations",
+            "Description": "Adaptive version of the histogram equalization with histogram clipping.",
+            "ColorspaceAfter": "Grayscale",
+            "Parameters": [
+                {
+                    "PName": "Clip limit",
+                    "PType": "float",
+                    "PUpper": 10.0,
+                    "PStart": 2.0,
+                    "PLower": 0.1,
+                    "PStep": 0.1
+                },
+                {
+                    "PName": "Tile size",
+                    "PType": "int",
+                    "PUpper": 64,
+                    "PStart": 8,
+                    "PLower": 4,
+                    "PStep": 4
+                }
+            ]
+        },
+
+        {
             "Name": "Background removal",
             "Func": "remove_background",
+            "Group": "5. Temporal operations",
             "Description": "Subtracts background (median of sequence) from individual images.",
             "ColorspaceAfter": "",
             "Parameters": [
@@ -501,39 +595,6 @@
                     "PStart": 0,
                     "PLower": 0,
                     "PStep": 1
-                }
-            ]
-        },
-
-        {
-            "Name": "Histogram equalization",
-            "Func": "histeq",
-            "Description": "Stretches the histogram of the image to improve dynamic range and accentuate details.",
-            "ColorspaceAfter": "Grayscale",
-            "Parameters": []
-        },
-
-        {
-            "Name": "CLAHE",
-            "Func": "clahe",
-            "Description": "Adaptive version of the histogram equalization with histogram clipping.",
-            "ColorspaceAfter": "Grayscale",
-            "Parameters": [
-                {
-                    "PName": "Clip limit",
-                    "PType": "float",
-                    "PUpper": 10.0,
-                    "PStart": 2.0,
-                    "PLower": 0.1,
-                    "PStep": 0.1
-                },
-                {
-                    "PName": "Tile size",
-                    "PType": "int",
-                    "PUpper": 64,
-                    "PStart": 8,
-                    "PLower": 4,
-                    "PStep": 4
                 }
             ]
         }

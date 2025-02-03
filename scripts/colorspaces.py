@@ -21,16 +21,12 @@ try:
 	from matplotlib.widgets import Slider
 	from sys import exit
 	from glob import glob
-	from class_console_printer import tag_print
+	from utilities import present_exception_and_exit
 
 	import matplotlib.pyplot as plt
 
 except Exception:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def snr(x: np.ndarray) -> float:
@@ -121,7 +117,7 @@ def get_colospaces(path: str, xlim: list, ylim: list):
 				ax_list[i].set_title(cs_names[i])
 			else:
 				ax_snr = snr(img[ylim[1]: ylim[0], xlim[0]: xlim[1]])
-				ax_list[i].set_title('{}, SNR={:.2f}'.format(cs_names[i], ax_snr))
+				ax_list[i].set_title(f'{cs_names[i]}, SNR={ax_snr:.2f}')
 
 
 def on_lims_change(event_ax):
@@ -132,9 +128,10 @@ def on_lims_change(event_ax):
 	global xlim
 	global ylim
 
-	cid_list = list(event_ax.callbacks.callbacks['ylim_changed'].keys())
 	for cid in cid_list:
 		event_ax.callbacks.disconnect(cid)
+	cid_list = list(event_ax.callbacks.callbacks['ylim_changed'].keys())
+	
 
 	xlim = [int(x) for x in event_ax.get_xlim()]
 	ylim = [int(y) for y in event_ax.get_ylim()]
@@ -150,7 +147,7 @@ def on_lims_change(event_ax):
 			ax_img_crop = ax_img[ylim[1]: ylim[0], xlim[0]: xlim[1]]
 			ax_snr = snr(ax_img_crop)
 
-			a.set_title('{}, SNR={:.2f}'.format(ax_title, ax_snr))
+			a.set_title(f'{ax_title}, SNR={ax_snr:.2f}')
 
 	event_ax.callbacks.connect('ylim_changed', on_lims_change)
 
@@ -162,7 +159,7 @@ if __name__ == '__main__':
 		parser.add_argument('--ext', type=str, help='Path to image file')
 		args = parser.parse_args()
 
-		frames_list = glob('{}/*.{}'.format(args.folder, args.ext))
+		frames_list = glob(f'{args.folder}/*.{args.ext}')
 		num_frames = len(frames_list)
 		first_frame = cv2.imread(frames_list[0], 0)
 
@@ -193,7 +190,7 @@ if __name__ == '__main__':
 		valfmt = "%d"
 
 		ax_frame_num = plt.axes([0.2, 0.02, 0.63, 0.03], facecolor=axcolor)
-		sl_ax_frame_num = Slider(ax_frame_num, 'Frame #\n({} total)'.format(num_frames), 0, num_frames - 1, valinit=0, valstep=1, valfmt=valfmt)
+		sl_ax_frame_num = Slider(ax_frame_num, f'Frame #\n({num_frames} total)', 0, num_frames - 1, valinit=0, valstep=1, valfmt=valfmt)
 		sl_ax_frame_num.on_changed(update_frame)
 
 		cs_names = [
@@ -249,7 +246,7 @@ if __name__ == '__main__':
 					ax_list[i].set_title(cs_names[i])
 				else:
 					ax_snr = snr(img[ylim[1]: ylim[0], xlim[0]: xlim[1]])
-					ax_list[i].set_title('{}, SNR={:.2f}'.format(cs_names[i], ax_snr))
+					ax_list[i].set_title(f'{cs_names[i]}, SNR={ax_snr:.2f}')
 
 		[a.set_axis_off() for a in ax_list]
 		[a.callbacks.connect('ylim_changed', on_lims_change) for a in ax_list]
@@ -264,7 +261,4 @@ if __name__ == '__main__':
 		plt.show()
 
 	except Exception:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

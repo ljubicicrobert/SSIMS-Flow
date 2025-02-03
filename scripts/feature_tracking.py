@@ -20,8 +20,7 @@ try:
 	from __init__ import *
 	from math import log
 	from itertools import product
-	from os import makedirs, remove, path
-	from sys import exit
+	from os import path
 	from matplotlib.widgets import Slider
 	from class_logger import Logger
 	from class_console_printer import Console_printer, tag_string, tag_print, unix_path
@@ -29,23 +28,19 @@ try:
 	from class_timing import Timer, time_hms
 	from glob import glob
 	from CPP.dll_import import DLL_Loader
-	from utilities import cfg_get
+	from utilities import fresh_folder, cfg_get, exit_message, present_exception_and_exit
 
 	import matplotlib.pyplot as plt
 	import ctypes
 
-	dll_path = path.split(path.realpath(__file__))[0] + '\\CPP'
+	dll_path = path.split(path.realpath(__file__))[0] + '/CPP'
 	dll_name = 'ssim.dll'
 	dll_loader = DLL_Loader(dll_path, dll_name)
 	# float SSIM_Byte(Byte* pDataX, Byte* pDataY, int step, int width, int height, int win_size, int maxVal);
 	fast_ssim = dll_loader.get_function('float', 'SSIM_Byte', ['byte*', 'byte*', 'int', 'int', 'int', 'int', 'int'])
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 show_legend = True
@@ -112,7 +107,7 @@ def get_gcps_from_image(image_orig: np.ndarray, initial=[], verbose=False, ia=11
 		s = ''
 		i = 1
 		for x, y in l:
-			s += '#{}: X={}, Y={}\n'.format(i, x, y)
+			s += f'#{i}: X={x}, Y={y}\n'
 			i += 1
 
 		return s[:-1]
@@ -179,8 +174,8 @@ def get_gcps_from_image(image_orig: np.ndarray, initial=[], verbose=False, ia=11
 
 		elif event.key in ['escape', 'q']:
 			plt.close()
-			input(tag_string('abort', 'EXECUTION STOPPED: Operation aborted by user! Press ENTER/RETURN key to exit...'))
-			exit()
+			input(tag_string('abort', 'EXECUTION STOPPED: Operation aborted by user!'))
+			exit_message()
 
 		elif event.key == 'f1':
 			show_legend = not show_legend
@@ -388,16 +383,6 @@ def find_gcp(search_area: np.ndarray, kernel: np.ndarray) -> tuple:
 	return (x_sub, y_sub), score_max
 
 
-def fresh_folder(folder_path, ext='*', exclude=list()):
-	if not path.exists(folder_path):
-		makedirs(folder_path)
-	else:
-		files = glob('{}/*.{}'.format(folder_path, ext))
-		for f in files:
-			if path.basename(f) not in exclude:
-				remove(f)
-
-
 def print_and_log(string, printer_obj: Console_printer, logger_obj: Logger):
 	logger_obj.log(printer_obj.add_line(string))
 
@@ -415,40 +400,28 @@ if __name__ == '__main__':
 			cfg.read(args.cfg, encoding='utf-8-sig')
 		except Exception:
 			input(tag_string('error', 'There was a problem reading the configuration file!\nCheck if project has valid configuration.'))
-			exit()
+			exit_message()
 
 		# Project root
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		# Folder with raw frames
-		frames_folder = '{}/frames'.format(project_folder)
+		frames_folder = f'{project_folder}/frames'
 
 		# Folder for result output
-		results_folder = '{}/transformation'.format(project_folder)
+		results_folder = f'{project_folder}/transformation'
 		if not path.exists(results_folder):
 			fresh_folder(results_folder)
 
-		# Extension for image files
 		ext = cfg_get(cfg, 'Frames', 'Extension', str, 'jpg')
 
 		section = 'Feature tracking'
 
-		# Search area size (high cost)
 		search_size = cfg_get(cfg, section, 'SearchAreaSize', int, 21)
-
-		# Interrogation area size (low cost)
 		k_size = cfg_get(cfg, section, 'InterrogationAreaSize', int, 11)
 		k_span = k_size // 2
-
-		# Expand the search area width/height if SSIM score is below :expand_ssim_thr:
 		expand_ssim_search = cfg_get(cfg, section, 'ExpandSA', int, 0)
-
-		# Search area expansion factor (high cost)
 		expand_coef = cfg_get(cfg, section, 'ExpandSACoef', float, 2.0)
-
-		# SSIM score threshold for expanded search
 		expand_ssim_thr = cfg_get(cfg, section, 'ExpandSAThreshold', float, 0.5)
-
-		# If significant image rotation is expected
 		update_kernels = cfg_get(cfg, section, 'UpdateKernels', int, 0)
 
 		# Do not change from this point on ------------------------------------------------------------
@@ -461,7 +434,7 @@ if __name__ == '__main__':
 		assert 0 < expand_ssim_thr < 1, \
 			tag_string('error', 'Search area expansion threshold must be in range (0, 1)!')
 
-		raw_frames_list = glob('{}/*.{}'.format(frames_folder, ext))
+		raw_frames_list = glob(f'{frames_folder}/*.{ext}')
 		num_frames = len(raw_frames_list)
 		numbering_len = int(log(num_frames, 10)) + 1
 
@@ -486,8 +459,8 @@ if __name__ == '__main__':
 				ids_sorted = ids[:, 0].argsort()
 				corners = [corners[x] for x in ids_sorted]
 				MessageBox = ctypes.windll.user32.MessageBoxW
-				response = MessageBox(None, 'A total of {} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?'.format(ids.shape[0]),
-									  'ArUco markers detected', 36)
+				response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?',
+									  'ArUco markers detected', 68)
 
 				if response == 6:
 					for i in range(len(ids)):
@@ -500,8 +473,7 @@ if __name__ == '__main__':
 
 		if len(markers) < 2:
 			tag_print('error', 'Number of GCPs must be at least 2!')
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			exit_message()
 
 		# Override initial configuration
 		cfg[section]['SearchAreaSize'] = str(search_size)
@@ -513,23 +485,23 @@ if __name__ == '__main__':
 
 		markers_mask = [1] * len(markers)
 
-		folders_to_check = ['{}/gcps_csv'.format(results_folder),
-							'{}/kernels'.format(results_folder)]
+		folders_to_check = [f'{results_folder}/gcps_csv',
+							f'{results_folder}/kernels']
 
 		for f in folders_to_check:
 			fresh_folder(f)
 
 		try:
-			log_path = '{}/log_gcps.txt'.format(results_folder)
+			log_path = f'{results_folder}/log_gcps.txt'
 			logger = Logger(log_path)
-			logger.log(tag_string('start', 'Feature tracking for frames in [{}]'.format(frames_folder)), to_print=True)
+			logger.log(tag_string('start', f'Feature tracking for frames in [{frames_folder}]'), to_print=True)
 			print()
-			logger.log(tag_string('info', 'Output to [{}]'.format(results_folder)), to_print=True)
-			logger.log(tag_string('info', 'Total frames = {}'.format(num_frames)), to_print=True)
-			logger.log(tag_string('info', 'Number of markers = {}'.format(len(markers))), to_print=True)
-			logger.log(tag_string('info', 'IA size = {} px'.format(k_size)), to_print=True)
-			logger.log(tag_string('info', 'SA size = {} px'.format(search_size)), to_print=True)
-			logger.log(tag_string('info', 'Log file {}/\n'.format(log_path)), to_print=True)
+			logger.log(tag_string('info', f'Results folder [{results_folder}]'), to_print=True)
+			logger.log(tag_string('info', f'Total frames = {num_frames}'), to_print=True)
+			logger.log(tag_string('info', f'Number of markers = {len(markers)}'), to_print=True)
+			logger.log(tag_string('info', f'IA size = {k_size} px'), to_print=True)
+			logger.log(tag_string('info', f'SA size = {search_size} px'), to_print=True)
+			logger.log(tag_string('info', f'Log file {log_path}/\n'), to_print=True)
 
 			printer = Console_printer()
 			progress_bar = Progress_bar(total=num_frames, prefix=tag_string('info', 'Frame '))
@@ -538,7 +510,7 @@ if __name__ == '__main__':
 
 			for m in markers:
 				k = cv2.getRectSubPix(img_gray, (k_size, k_size), (m[0], m[1]))
-				cv2.imwrite('{}/kernels/{}.{}'.format(results_folder, len(kernels), ext), k)
+				cv2.imwrite(f'{results_folder}/kernels/{len(kernels)}.{ext}', k)
 				kernels.append(k)
 
 			timer = Timer(total_iter=num_frames)
@@ -566,7 +538,7 @@ if __name__ == '__main__':
 								# print_and_log(
 								# 	tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)), printer, logger
 								# )
-								logger.log(tag_string('warning', 'Expanding the search area, SSIM={:.3f} < {:.3f}'.format(ssim_max, expand_ssim_thr)))
+								logger.log(tag_string('warning', f'Expanding the search area, SSIM={ssim_max:.3f} < {expand_ssim_thr:.3f}'))
 
 								is_expanded_search = True
 								search_size = exp_search_size
@@ -595,7 +567,7 @@ if __name__ == '__main__':
 								# print_and_log(
 								# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
 								# )
-								logger.log(tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)))
+								logger.log(tag_string('warning', f'Marker {j} lost! Setting coordinates to (0, 0).'))
 
 								markers[j] = [0, 0]
 								markers_mask[j] = 0
@@ -604,7 +576,7 @@ if __name__ == '__main__':
 							# print_and_log(
 							# 	tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)), printer, logger
 							# )
-							logger.log(tag_string('warning', 'Marker {} lost! Setting coordinates to (0, 0).'.format(j)))
+							logger.log(tag_string('warning', f'Marker {j} lost! Setting coordinates to (0, 0).'))
 
 							markers[j] = [0, 0]
 							markers_mask[j] = 0
@@ -614,20 +586,13 @@ if __name__ == '__main__':
 
 				timer.update()
 
-				np.savetxt('{}/gcps_csv/{}.txt'.format(results_folder, str(n).rjust(numbering_len, '0')), markers, fmt='%.3f', delimiter=' ')
+				np.savetxt(f'{results_folder}/gcps_csv/{str(n).rjust(numbering_len, "0")}.txt', markers, fmt='%.3f', delimiter=' ')
 
-				print_and_log(
-					tag_string('info', 'Frame processing time = {:.3f} sec'.format(timer.interval())), printer, logger
-				)
-
-				print_and_log(
-					tag_string('info', 'Elapsed time = {} hr {} min {} sec'.format(*time_hms(timer.elapsed()))), printer, logger
-				)
-
-				print_and_log(
-					tag_string('info', 'Remaining time ~ {} hr {} min {} sec'.format(*time_hms(timer.remaining()))), printer, logger
-				)
-
+				print_and_log(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'), printer, logger)
+				he, me, se = time_hms(timer.elapsed())
+				print_and_log(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'), printer, logger)
+				hr, mr, sr = time_hms(timer.remaining())
+				print_and_log(tag_string('info', f'Remaining time ~ {hr} hr {mr} min {sr} sec'), printer, logger)
 				print_and_log('', printer, logger)
 
 				for i in range(len(markers)):
@@ -641,7 +606,7 @@ if __name__ == '__main__':
 
 					bar = '[' + color + '#'*num_blocks + ' '*(10 - num_blocks) + '\033[0m]'
 
-					printer.add_line(tag_string('info', 'Feature #{} SSIM = {:.3f} {}{}'.format(i+1, ssim_scores[n, i], ' '*int(np.log10(i+1)), bar)))
+					printer.add_line(tag_string('info', f'Feature #{i+1} SSIM = {ssim_scores[n, i]:.3f} {" "*int(np.log10(i+1))}{bar}'))
 
 				printer.overwrite()
 
@@ -651,17 +616,14 @@ if __name__ == '__main__':
 		else:
 			logger.close()
 
-		np.savetxt('{}/markers_mask.txt'.format(results_folder), markers_mask, fmt='%d', delimiter=' ')
-		np.savetxt('{}/ssim_scores.txt'.format(results_folder), ssim_scores, fmt='%.3f', delimiter=' ')
-		np.savetxt('{}/ssim_score_averages.txt'.format(results_folder), np.average(ssim_scores, axis=0), fmt='%.3f', delimiter=' ')
+		np.savetxt(f'{results_folder}/markers_mask.txt', markers_mask, fmt='%d', delimiter=' ')
+		np.savetxt(f'{results_folder}/ssim_scores.txt', ssim_scores, fmt='%.3f', delimiter=' ')
+		np.savetxt(f'{results_folder}/ssim_score_averages.txt', np.average(ssim_scores, axis=0), fmt='%.3f', delimiter=' ')
 
 		print()
 		tag_print('end', 'Feature tracking complete!')
 		print('\a')
-		input('\nPress ENTER/RETURN key to exit...')
+		exit_message()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

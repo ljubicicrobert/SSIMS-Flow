@@ -1,3 +1,95 @@
+SSIMS-Flow v0.6.0.0
+
+Major:
+- Added Seeding Density Index (SDI) estimation in "Best frame sequence" tab.
+This metric is developed by Silvano Dal Sasso and Alonso Pizzaro and explained
+in detail in papers:
+>> https://doi.org/10.3390/rs12111789
+>> https://doi.org/10.1002/hyp.13919
+>> https://doi.org/10.5194/hess-24-5173-2020
+- SDI is developed and tested specifically for PIV workflows to allow users to
+estimate optimal sections of the frame sequences in terms of tracer particle
+seeding density to improve velocity estimation accuracy. While it hasn't yet
+been tested with optical flow methods, it can serve as a starting point for
+finding sections with adequate seeding density, regardless of whether SSIMS-Flow
+or any other tool is used for velocity/flow rate estimation. Huge thanks to
+Silvano and Alonso for helping me implement this workflow.
+- All projects will now include folder called "SDI" which will contain diagnostic
+results from the SDI estimation. This change is both backward and forward
+compatible, meaning that projects created using older version can be opened
+and used with the current version (v0.6.0.0), and vice versa.
+
+Minor:
+- Python library dependencies can now be installed with one click using the
+"lib" button next to the Python interpreters dropdown in the main form. This is
+done for the currently selected interpreted in the dropdown. Libraries already
+installed will be updated to their latest versions.
+- Project files can now be dragged and dropped into the SSIMS-Flow form to
+load them. Only one file can be dropped at a time.
+- SSIMS-Flow.exe can now be opened from CMD using the project file path as an
+argument to load it upon start.
+- Image enhancement and optical flow analyses can now be performed only for
+the best frame window estimated using SDI analysis (if available). To enable
+this option, check the box next to the "Enhance frames" or "Estimate velocities"
+buttons in the corresponding forms.
+- Added a more convenient way to add user defined filters. Instead of directly 
+changing the [filters.json] and [filters.py] files, the users can now add custom
+filters by defining them in the custom_filters.json file and providing an
+appropriate script in [custom_filters.py] file. Check the original [filters.json]
+for a guide on how to properly define a filter. Check the [filters.py] to understand
+how to properly write a Python script for your custom filters. This change makes it
+easier for users to migrate custom scripts between different SSIMS-Flow versions
+without interfering with stock filters and scripts - just copy the
+[custom_filters.json] and [custom_filters.py] files from old version to new one.
+- New "Channel addition" filter for image enhancement, which can be useful when
+dealing with spatially changing water turbidity (e.g., plumes).
+- Sobel filter implementation changed from of scipy.ndimage.convolve to OpenCV
+to try to improve performance with large kernels.
+- Sorted filters into group in the "Add filter" dropdown of the "Image enhancement"
+form. Filters are sorted using the new "Group" parameter defined in the
+[filters.json] and [custom_filters.json] files. Use numerical prefixes to properly
+sort the filter groups in the "Image enhancement" form.
+- Added velocity filter in the "Optical flow" tab, which allows the removal of
+results which fall outside the defined range. The filter uses pixels-per-frame
+units, since the GSD is applied later in the "Optical flow analysis" form. To turn
+the filter off, set the Min value to -1 or 0 and Max to -1, 0, or some very large
+number. An appropriate hint is can be shown by clicking the "?" button next to
+the filter boxes.
+- Added a "quiet" cmd flag for the [filter_frames.py] script which allows for
+uninterruptible batch scripting, similar to [optical_flow.py] and [profile_data.py].
+See script file for more information.
+- Added scripts [filter_frames_batch.py] and [optical_flow_batch.py] for automated
+sequential processing of multiple projects. These scripts can provide faster way to
+(re)process a large number of files without the need to manually open each one
+through the GUI. See the scripts for explanations.
+- Added a script [update_cfg_settings.py] to enable batch editing of project.ssims
+configuration files for multiple projects. This can save time for projects which
+have same parameter values, removing the need to edit each project through the GUI.
+See the script for explanations.
+- Added a hint for Alpha coefficient selection in the "Optical flow analysis" form,
+available through the button labeled "?" next to the box.
+- Fixed a bug where the filtering preview would sometimes fail on the first try
+causing the "Image enhancement" form to hang until timeout.
+- Fixed a slider behavior in "Image enhancement" form where mouse-dragging the
+filter parameter slider causes the refresh of the preview on every single step
+of the slider. The user can now freely drag the slider and the preview refreshes
+only when mouse click is released.
+- Fixed "Normalization" filter underflow and overflow issues.
+- Replaced almost all occurrences of str.filter() with f-strings. This should
+slightly increase performance when printing out diagnostics, but also makes this
+and future versions incompatible with Python versions lower than 3.7. However, 
+since Python 3.7 was released almost 7 years ago, it's time for us to move on.
+- Other minor bugfixes and tweaks.
+
+===============================================================================
+
+SSIMS-Flow v0.5.6.1 (internal release)
+
+Minor:
+- Bugfixes related to the 2D plotting.
+
+===============================================================================
+
 SSIMS-Flow v0.5.6.0
 
 Major:

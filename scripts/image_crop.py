@@ -18,21 +18,14 @@ Created by Robert Ljubicic.
 
 try:
 	from __init__ import *
-	from sys import exit
-	from os import path
-	from glob import glob
 	from class_console_printer import tag_print, unix_path
-	from utilities import cfg_get
+	from utilities import cfg_get, exit_message, present_exception_and_exit
 
 	import matplotlib.pyplot as plt
 	import matplotlib.patches as patches
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def xy2str(points_list: list) -> str:
@@ -43,11 +36,11 @@ def xy2str(points_list: list) -> str:
 	s = ''
 	i = 1
 	for x, y in points_list:
-		s += 'Point {}: x={}, y={}\n'.format(i, x, y)
+		s += f'Point {i}: x={x}, y={y}\n'
 		i += 1
 
-	s += 'Resulting W = {} px\n'.format(int(abs(points_list[0][0] - points_list[1][0])))
-	s += 'Resulting H = {} px'.format(int(abs(points_list[0][1] - points_list[1][1])))
+	s += f'Resulting W = {int(abs(points_list[0][0] - points_list[1][0]))} px\n'
+	s += f'Resulting H = {int(abs(points_list[0][1] - points_list[1][1]))} px'
 	s += '\nPress ENTER/RETURN to accept profile'
 
 	return s
@@ -82,7 +75,7 @@ def get_measurement(event):
 
 			ax.plot(points[1][0], points[1][1],
 					points[1][0], points[1][1], 'ro')
-			roi = patches.Rectangle((xs[0], ys[0]), xs[1] - xs[0], ys[1] - ys[0], linewidth=2, edgecolor='r', facecolor='none')
+			roi = patches.Rectangle((xs[0], ys[0]-1), xs[1] - xs[0], ys[1] - ys[0], linewidth=2, edgecolor='r', facecolor='none')
 			ax.add_patch(roi)
 
 			roi_box.set_text(xy2str(points))
@@ -111,7 +104,7 @@ def select_roi(event):
 		if len(points) == 2:
 			section = 'Frames'
 
-			cfg[section]['Crop'] = '{}, {}, {}, {}'.format(int(points[0][0]), int(points[1][0]), int(points[0][1]), int(points[1][1]))
+			cfg[section]['Crop'] = f'{int(points[0][0])}, {int(points[1][0])}, {int(points[0][1])}, {int(points[1][1])}'
 
 			with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 				cfg.write(configfile)
@@ -137,8 +130,7 @@ if __name__ == '__main__':
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			exit_message()
 
 		section = 'Frames'
 			
@@ -189,7 +181,4 @@ if __name__ == '__main__':
 		plt.show()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

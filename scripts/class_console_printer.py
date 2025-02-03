@@ -56,7 +56,7 @@ tags = {
 
 
 def tag_string(tag: str, string: str) -> str:
-    return '{} {}'.format(tags[tag], string)
+    return f'{tags[tag]} {string}'
 
 
 def tag_print(tag: str, string: str, *kwargs):

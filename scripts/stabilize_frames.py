@@ -16,29 +16,25 @@ https://www.gnu.org/licenses/gpl-3.0.en.html.
 Created by Robert Ljubicic.
 """
 
+
 try:
 	from __init__ import *
 	from shutil import copy, SameFileError
 	from time import time
 	from os import path, makedirs, remove
-	from feature_tracking import get_gcps_from_image, fresh_folder
+	from feature_tracking import get_gcps_from_image
 	from math import log
-	from frames_to_video import framesToVideo
 	from glob import glob
 	from class_console_printer import Console_printer, tag_string, tag_print, unix_path
 	from class_progress_bar import Progress_bar
 	from class_logger import time_hms
 	from class_timing import Timer, time_hms
-	from utilities import cfg_get
+	from utilities import fresh_folder, cfg_get, exit_message, present_exception_and_exit
 
 	import ctypes
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def coordTransform(image: np.ndarray,
@@ -108,7 +104,7 @@ def coordTransform(image: np.ndarray,
 
 	else:
 		tag_print('error', 'Unknown transformation method for stabilization point set!')
-		input('\nPress ENTER/RETURN to exit...')
+		exit_message()
 
 	if M_ortho is None:
 		M_ortho = np.identity(3)
@@ -202,56 +198,30 @@ if __name__ == '__main__':
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			exit_message()
 
-		# Project root
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
-
-		# Folder in which the data is located
-		frames_folder = '{}/frames'.format(project_folder)
-
-		# Output folder location
-		results_folder = '{}/transformation'.format(project_folder)
+		frames_folder = f'{project_folder}/frames'
+		results_folder = f'{project_folder}/transformation'
 
 		try:
 			copy(args.cfg, results_folder)
 		except SameFileError:
 			pass
 
-		# Extension for input frame files
 		ext_in = cfg_get(cfg, 'Frames', 'Extension', str, 'jpg')
 
 		section = 'Transformation'
 
-		# Skip stabilization for fixed cameras
 		moving_camera = cfg_get(cfg, "Feature tracking", 'MovingCamera', int, 1)
-
-		# Extension for output frame files
 		ext_out = cfg_get(cfg, section, 'Extension', str, 'jpg')
-
-		# Output image quality [1-100]
 		qual = cfg_get(cfg, section, 'Quality', int, 95)
-
-		# See available methods below in :methods:
 		stabilization_method = cfg_get(cfg, section, 'Method', int)
-
-		# Detection and filtering of outliers, if available for the chosen method
 		use_ransac_filtering = cfg_get(cfg, section, 'UseRANSAC', int, 0)
-
-		# Acceptable reprojection error for outlier detection
 		ransac_filtering_thr = cfg_get(cfg, section, 'RANSACThreshold', float, 2.0)
-
-		# Perform orthorectification
 		orthorectify = cfg_get(cfg, section, 'Orthorectify', int, 0)
-
-		# px/meter
 		gsd = cfg_get(cfg, section, 'GSD', float)
-
-		# Select/discard GCPs
 		gcps_mask = cfg_get(cfg, section, 'FeatureMask', str)
-
-		# Image padding outside GCP area
 		pdx = cfg_get(cfg, section, 'PaddX', str)
 		pdy = cfg_get(cfg, section, 'PaddX', str)
 
@@ -271,10 +241,10 @@ if __name__ == '__main__':
 						 'projective_strict',
 						 'projective_optimal']
 
-		gcp_folder = '{}/gcps_csv'.format(results_folder)
-		stabilized_folder = '{}/frames_{}'.format(results_folder, 'orthorectified' if orthorectify else 'stabilized')
-		transform_folder = '{}/transform_{}'.format(results_folder, 'orthorectified' if orthorectify else 'stabilized')
-		end_file = '{}/end'.format(results_folder)
+		gcp_folder = f'{results_folder}/gcps_csv'
+		stabilized_folder = f'{results_folder}/frames_{"orthorectified" if orthorectify else "stabilized"}'
+		transform_folder = f'{results_folder}/transform_{"orthorectified" if orthorectify else "stabilized"}'
+		end_file = f'{results_folder}/end'
 
 		fresh_folder(stabilized_folder)
 		fresh_folder(transform_folder)
@@ -282,7 +252,7 @@ if __name__ == '__main__':
 		if path.exists(end_file):
 			remove(end_file)
 
-		tag_print('start', 'Starting image transformation for data in [{}]'.format(results_folder))
+		tag_print('start', f'Starting image transformation using data in [{results_folder}]')
 		print()
 
 		folders_to_check = [stabilized_folder,
@@ -292,7 +262,7 @@ if __name__ == '__main__':
 			if not path.exists(f):
 				makedirs(f)
 
-		raw_frames_list = glob('{}/*.{}'.format(frames_folder, ext_in))
+		raw_frames_list = glob(f'{frames_folder}/*.{ext_in}')
 		num_frames = len(raw_frames_list)
 		num_len = int(log(num_frames, 10)) + 1
 		
@@ -302,7 +272,7 @@ if __name__ == '__main__':
 		h, w = img.shape[:2]
 
 		if moving_camera:
-			features_coord = glob('{}/*.txt'.format(gcp_folder))
+			features_coord = glob(f'{gcp_folder}/*.txt')
 			anchors = np.loadtxt(features_coord[0], dtype='float32', delimiter=' ')
 
 			if gcps_mask == '1':
@@ -331,19 +301,19 @@ if __name__ == '__main__':
 		if orthorectify:
 			overwrite_GCPs = True
 
-			if path.exists('{}/gcps_image.txt'.format(results_folder)):
+			if path.exists(f'{results_folder}/gcps_image.txt'):
 				MessageBox = ctypes.windll.user32.MessageBoxW
 
 				response = MessageBox(None, f'Ground control point positions have already been set.\n' +
 						  				     'Do you wish to overwrite them?\n' + 
 											 'YES = select new GCP positions\n' +
-											 'NO = use previously selected GCP positions', 'Overwrite GCPs', 36)
+											 'NO = use previously selected GCP positions', 'Overwrite GCPs', 68)
 
 				if response != 6:
 					overwrite_GCPs = False
-					gcps_image = np.loadtxt('{}/gcps_image.txt'.format(results_folder), dtype='float32', delimiter=' ')
+					gcps_image = np.loadtxt(f'{results_folder}/gcps_image.txt', dtype='float32', delimiter=' ')
 
-			gcps_real = np.multiply(np.loadtxt('{}/gcps_real.txt'.format(results_folder), dtype='float32', delimiter=' '), gsd)
+			gcps_real = np.multiply(np.loadtxt(f'{results_folder}/gcps_real.txt', dtype='float32', delimiter=' '), gsd)
 
 			if overwrite_GCPs:
 				initial_gcps = []
@@ -358,7 +328,7 @@ if __name__ == '__main__':
 						ids_sorted = ids[:, 0].argsort()
 						corners = [corners[x] for x in ids_sorted]
 						MessageBox = ctypes.windll.user32.MessageBoxW
-						response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 36)
+						response = MessageBox(None, f'A total of {ids.shape[0]} ArUco markers have been detected in the first frame.\nDo you wish to add them to the list of tracked GCPs?', 'ArUco markers detected', 68)
 
 						if response == 6:
 							for i in range(len(ids)):
@@ -369,10 +339,10 @@ if __name__ == '__main__':
 					pass
 
 				gcps_image = np.asarray(get_gcps_from_image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), initial=initial_gcps, verbose=False, hide_sliders=True))
-				np.savetxt('{}/gcps_image.txt'.format(results_folder), gcps_image, fmt='%.3f', delimiter=' ')
+				np.savetxt(f'{results_folder}/gcps_image.txt', gcps_image, fmt='%.3f', delimiter=' ')
 
 			assert gcps_real.shape == gcps_image.shape,\
-				tag_string('error', 'Number of GCPs [{}] not equal to number of selected features [{}]'.format(gcps_real.shape[0], gcps_image.shape[0]))
+				tag_string('error', f'Number of GCPs [{gcps_real.shape[0]}] not equal to number of selected features [{gcps_image.shape[0]}]')
 
 			min_x = np.min(gcps_real[:, 0])
 			min_y = np.min(gcps_real[:, 1])
@@ -429,8 +399,8 @@ if __name__ == '__main__':
 					stabilized = stabilized[::-1]
 
 				n = str(i).rjust(num_len, '0')
-				np.savetxt('{}/{}.txt'.format(transform_folder, n), M, delimiter=' ')
-				save_str_img = '{}/{}.{}'.format(stabilized_folder, n, ext_out)
+				np.savetxt(f'{transform_folder}/{n}.txt', M, delimiter=' ')
+				save_str_img = f'{stabilized_folder}/{n}.{ext_out}'
 
 				if ext_out.lower() in ['jpg', 'jpeg']:
 					cv2.imwrite(save_str_img,
@@ -452,25 +422,17 @@ if __name__ == '__main__':
 					note = '{}'.format([i[0] for i in status])			
 
 				if use_ransac_filtering:
-					console_printer.add_line(tag_string('info', 'Outliers: {}'.format(note)))
+					console_printer.add_line(tag_string('info', f'Outliers: {note}'))
 
 				timer.update()
+				
 				console_printer.add_line(progress_bar.get(i))
-				console_printer.add_line(
-					tag_string('info', 'Frame processing time = {:.3f} sec'
-						.format(timer.interval())
-					)
-				)
-				console_printer.add_line(
-					tag_string('info', 'Elapsed time = {} hr {} min {} sec'
-						.format(*time_hms(timer.elapsed()))
-					)
-				)
-				console_printer.add_line(
-					tag_string('info', 'Remaining time = {} hr {} min {} sec'
-						.format(*time_hms(timer.remaining()))
-					)
-				)
+				console_printer.add_line(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'))
+				he, me, se = time_hms(timer.elapsed())
+				console_printer.add_line(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'))
+				hr, mr, sr = time_hms(timer.remaining())
+				console_printer.add_line(tag_string('info', f'Remaining time = {hr} hr {mr} min {sr} sec'))
+
 				console_printer.overwrite()
 
 				i += 1
@@ -484,10 +446,7 @@ if __name__ == '__main__':
 		print()
 		tag_print('end', 'Image stabilization complete!')
 		print('\a')
-		input('\nPress ENTER/RETURN key to exit...')
+		exit_message()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()

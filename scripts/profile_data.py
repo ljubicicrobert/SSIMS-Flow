@@ -19,21 +19,16 @@ Created by Robert Ljubicic.
 
 try:
 	from __init__ import *
-	from sys import exit
 	from class_console_printer import tag_print, unix_path
 	from scipy.ndimage import map_coordinates
 	from scipy.signal import medfilt
 	from math import atan2
-	from utilities import cfg_get
+	from utilities import cfg_get, exit_message, present_exception_and_exit
 	from glob import glob
 	from optical_flow import nan_locate
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def main(cfg_path=None):
@@ -53,17 +48,17 @@ def main(cfg_path=None):
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
-			print('\n{}'.format(format_exc()))
-			input('\nPress ENTER/RETURN key to exit...')
-			exit()
+			print()
+			print(format_exc())
+			exit_message()
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
-		tag_print('start', 'Getting profile data for project in [{}]'.format(project_folder))
+		input_folder = unix_path(project_folder + '/optical_flow')
+		tag_print('start', f'Getting profile data for project in [{project_folder}]')
 
 		section = 'Optical flow'
 
-		input_folder = unix_path(project_folder) + '/optical_flow'
-		frames_folder = cfg_get(cfg, section, 'Folder', str)
+		frames_folder = unix_path(cfg_get(cfg, section, 'Folder', str))
 		frames_ext = cfg_get(cfg, section, 'Extension', str, 'jpg')
 		frames_list = glob(f'{frames_folder}/*.{frames_ext}')
 
@@ -71,22 +66,22 @@ def main(cfg_path=None):
 		h, w = img.shape
 
 		sources = [
-			'{}/mag_mean.txt'.format(input_folder),
-			'{}/diagnostics/T1.txt'.format(input_folder),
-			'{}/diagnostics/T2.txt'.format(input_folder),
-			'{}/diagnostics/T3.txt'.format(input_folder),
-			'{}/mag_max.txt'.format(input_folder),
+			f'{input_folder}/mag_mean.txt',
+			f'{input_folder}/diagnostics/T1.txt',
+			f'{input_folder}/diagnostics/T2.txt',
+			f'{input_folder}/diagnostics/T3.txt',
+			f'{input_folder}/mag_max.txt',
 	    ]
 
 		version_created = int(cfg_get(cfg, 'Project settings', 'VersionCreated', str, '0').replace('v', '').replace('.', ''))
 		if 0 < version_created < 500:
-			sources[1] = '{}/diagnostics/T0.txt'.format(input_folder)
-			sources[2] = '{}/diagnostics/T1.txt'.format(input_folder)
-			sources[3] = '{}/diagnostics/T2.txt'.format(input_folder)
+			sources[1] = f'{input_folder}/diagnostics/T0.txt'
+			sources[2] = f'{input_folder}/diagnostics/T1.txt'
+			sources[3] = f'{input_folder}/diagnostics/T2.txt'
 
 		source_index = cfg_get(cfg, section, 'ProfileSource', int)
 		field_raw_mag = np.loadtxt(sources[source_index])
-		field_raw_angle = np.loadtxt('{}/angle_mean.txt'.format(input_folder))
+		field_raw_angle = np.loadtxt(f'{input_folder}/angle_mean.txt')
 
 		angle_main = cfg_get(cfg, section, 'AngleMain', float)
 		nans, x = nan_locate(field_raw_angle)
@@ -100,6 +95,9 @@ def main(cfg_path=None):
 		except ValueError:
 			pass
 
+		nans, x = nan_locate(field_raw_mag)
+		field_raw_mag[nans] = np.interp(x(nans), x(~nans), field_raw_mag[~nans])
+
 		frames_step = cfg_get(cfg, 'Frames', 'Step', float, 1.0)
 		optical_flow_step = cfg_get(cfg, section, 'Step', float)
 		scale = cfg_get(cfg, section, 'Scale', float)
@@ -108,7 +106,7 @@ def main(cfg_path=None):
 		gsd_units = cfg_get(cfg, section, 'GSDUnits', str, 'px/m')           # px/m
 		if gsd_units != 'px/m':
 			gsd = 1/gsd
-		pooling = cfg_get(cfg, section, 'Pooling', float)  	# px
+		pooling = cfg_get(cfg, section, 'Pooling', float)
 		gsd_pooled = gsd / pooling  				# blocks/m, 1/m
 
 		padd_x = w % pooling // 2
@@ -227,18 +225,15 @@ def main(cfg_path=None):
 		table_data_header_str = str(',').join(table_data_header)
 		table_data_fmt_str = str(',').join(table_data_fmt)
 
-		np.savetxt('{}/profile_data.txt'.format(input_folder), table_data, fmt=table_data_fmt_str, header=table_data_header_str, delimiter=',', comments='')
+		np.savetxt(f'{input_folder}/profile_data.txt', table_data, fmt=table_data_fmt_str, header=table_data_header_str, delimiter=',', comments='')
 
-		tag_print('end', 'Chainage data saved to [{}/profile_data.txt]'.format(input_folder))
+		tag_print('end', f'Chainage data saved to [{input_folder}/profile_data.txt]')
 
 		if args.quiet == 0:
-			input('\nPress ENTER/RETURN key to exit...')
+			exit_message()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit()
 
 
 if __name__ == '__main__':

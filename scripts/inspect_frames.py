@@ -22,15 +22,12 @@ try:
 	from sys import exit
 	from glob import glob
 	from class_console_printer import tag_print, unix_path
+	from utilities import exit_message, present_exception_and_exit
 
 	import matplotlib.pyplot as plt
 
 except Exception as ex:
-	print()
-	tag_print('exception', 'Import failed! \n')
-	print('\n{}'.format(format_exc()))
-	input('\nPress ENTER/RETURN key to exit...')
-	exit()
+	present_exception_and_exit('Import failed! See traceback below:')
 
 
 def update_frame(val):
@@ -39,7 +36,7 @@ def update_frame(val):
 	h, w = img_new.shape[:2]
 
 	img_shown.set_data(img_new)
-	ax.set_title('Frame #{}/{}, {}x{}px'.format(sl_ax_frame_num.val, num_frames - 1, w, h))
+	ax.set_title(f'Frame #{sl_ax_frame_num.val}/{num_frames - 1}, {w}x{h}px')
 	plt.draw()
 
 	return
@@ -89,22 +86,19 @@ if __name__ == '__main__':
 		if frames_folder is None:
 			print()
 			tag_print('error', 'Frames folder not provided!')
-			input('\nPress ENTER/RETURN to exit...')
-			exit()
+			exit_message()
 		elif ext is None:
 			print()
 			tag_print('error', 'No frame extension provided!')
-			input('\nPress ENTER/RETURN to exit...')
-			exit()
+			exit_message()
 
-		frames_list = glob('{}/*.{}'.format(frames_folder, ext))
+		frames_list = glob(f'{frames_folder}/*.{ext}')
 		num_frames = len(frames_list)
 
 		if num_frames == 0:
 			print()
-			tag_print('error', 'No frames were found in folder [{}] with extension [{}]'.format(frames_folder, ext))
-			input('\nPress ENTER/RETURN to exit...')
-			exit()
+			tag_print('error', f'No frames were found in folder [{frames_folder}] with extension [{ext}]')
+			exit_message()
 
 		fig, ax = plt.subplots()
 		plt.subplots_adjust(bottom=0.13)
@@ -142,11 +136,8 @@ if __name__ == '__main__':
 		except Exception:
 			pass
 
-		ax.set_title('Frame #0/{}, {}x{}px'.format(num_frames - 1, w, h))
+		ax.set_title(f'Frame #0/{num_frames - 1}, {w}x{h}px')
 		plt.show()
 
 	except Exception as ex:
-		print()
-		tag_print('exception', 'An exception has occurred! See traceback bellow: \n')
-		print('\n{}'.format(format_exc()))
-		input('\nPress ENTER/RETURN key to exit...')
+		present_exception_and_exit('Import failed! See traceback below:')
