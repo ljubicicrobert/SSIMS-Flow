@@ -244,6 +244,7 @@ Starting from v0.6.0.0, SSIMS-Flow includes an additional tab allowing users to 
 1. [Dal Sasso et al. (2020)](https://doi.org/10.3390/rs12111789)
 2. [Pizarro et al. (2020a)](https://doi.org/10.1002/hyp.13919)
 3. [Pizarro et al. (2020b)](https://doi.org/10.5194/hess-24-5173-2020)
+4. [Dal Sasso et al. (2021)](https://doi.org/10.1016/j.jhydrol.2021.126438)
 
 This method is developed primarily for improving the accuracy of the Particle Image Velocimetry (PIV) method, and has not yet been tested with optical flow algorithms. However, it can still be useful in order to find the frame sequence with uniform seeding density in both space and time. Once the optimal frame sequence has been estimated, this frame range can be used to narrow down the scope of **Image enhancement** and **Optical flow** stages by only applying those steps to the optimal frame range. This option can be turned on the in those respective forms by checking the box next to the action buttons.
 
