@@ -48,8 +48,7 @@ except Exception:
 	present_exception_and_exit('Import failed! See traceback below:')
 
 
-DISPLACEMENT_THRESHOLD_MIN = 0.40
-DISPLACEMENT_THRESHOLD_MAX = 100
+COVERAGE_FILTER = 0.4
 DIRECTION_FILTER_THRESHOLD = 0.001
 
 
@@ -104,8 +103,9 @@ if __name__ == '__main__':
 		angle_range = cfg_get(cfg, section, 'AngleRange', float)
 		average_only = cfg_get(cfg, section, 'AverageOnly', int, 0)
 		live_preview = cfg_get(cfg, section, 'LivePreview', int, 0)
-		min_magnitude = cfg_get(cfg, section, 'MinMagnitude', float, 0.3)
 		max_magnitude = cfg_get(cfg, section, 'MaxMagnitude', float, -1)
+		chain_start = cfg_get(cfg, section, 'ChainStart', str, '0, 0')
+		chain_end = cfg_get(cfg, section, 'ChainEnd', str, '0, 0')
 
 		fresh_folder(results_folder, exclude=['depth_profile.txt'])
 		fresh_folder(results_folder + '/magnitudes')
@@ -224,10 +224,11 @@ if __name__ == '__main__':
 		tag_print('info', f'Number of frames = {num_frames}')
 		tag_print('info', f'Number of frame pairs = {num_frame_pairs}')
 		tag_print('info', f'Velocity step = {velocity_step}')
-		tag_print('info', f'Frame scaling = {scale:.1f}')
+		tag_print('info', f'Frame scaling = {scale:.2f}')
 		tag_print('info', f'Pooling = {pooling} px')
 		tag_print('info', f'Main flow direction = {angle_main:.0f} deg')
-		tag_print('info', f'Direction range = {angle_range:.0f} deg\n')
+		tag_print('info', f'Direction range = {angle_range:.0f} deg')
+		tag_print('info', f'Maximal magnitude = {max_magnitude:.2f} px/frame\n')
 		tag_print('info', 'Starting motion detection...\n')
 
 		j = 0
@@ -248,8 +249,6 @@ if __name__ == '__main__':
 
 			magnitude, angle = cv2.cartToPolar(flow[..., 0], flow[..., 1], angleInDegrees=True)
 
-			if min_magnitude > 0:
-				magnitude[magnitude < min_magnitude] = 0
 			if max_magnitude > 0:
 				magnitude[magnitude > max_magnitude] = 0
 
@@ -278,8 +277,8 @@ if __name__ == '__main__':
 			mag_stack[:, :, j] = pooled_mag
 			mag_max = np.maximum(mag_max, pooled_mag)
 
-			disp_nonzero = pooled_mag[pooled_mag > DISPLACEMENT_THRESHOLD_MIN]
-			disp_coverage = np.where(pooled_mag > DISPLACEMENT_THRESHOLD_MIN, 1, 0).sum() / pooled_mag.size * 100
+			disp_nonzero = pooled_mag[pooled_mag > COVERAGE_FILTER]
+			disp_coverage = np.where(pooled_mag > COVERAGE_FILTER, 1, 0).sum() / pooled_mag.size * 100
 			disp_mean = disp_nonzero.mean() if disp_nonzero.size > 0 else 0
 			disp_median = np.median(disp_nonzero) if disp_nonzero.size > 0 else 0
 			disp_max = np.max(pooled_mag)
@@ -289,6 +288,7 @@ if __name__ == '__main__':
 			disp_median_list[i] = disp_median
 			disp_max_list[i] = disp_max
 
+			# Original direction interpolation code, not used anymore
 			# nans, x = nan_locate(pooled_dir)
 			# try:
 			# 	if 315 <= angle_main <= 360 or \
@@ -331,14 +331,15 @@ if __name__ == '__main__':
 			console_printer.add_line(tag_string('info', f'Frames {indices_frame_A[i] + 1}+{indices_frame_B[i] + 1} of {num_frames}'))
 			console_printer.add_line(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'))
 			he, me, se = time_hms(timer.elapsed())
-			console_printer.add_line(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'))
+			console_printer.add_line(tag_string('info', f'Elapsed time          = {he} hr {me} min {se} sec'))
 			hr, mr, sr = time_hms(timer.remaining())
-			console_printer.add_line(tag_string('info', f'Remaining time = {hr} hr {mr} min {sr} sec'))
+			console_printer.add_line(tag_string('info', f'Remaining time        ~ {hr} hr {mr} min {sr} sec'))
 
+			console_printer.add_line('')
 			console_printer.add_line(tag_string('info', 'Detection metrics:'))
-			console_printer.add_line(' '*11 + f'Coverage =             {disp_coverage:.2f} %')
-			console_printer.add_line(' '*11 + f'Mean displacement =    {disp_mean:.3f} px')
-			console_printer.add_line(' '*11 + f'Median displacement =  {disp_median:.3f} px')
+			console_printer.add_line(' '*11 + f'Coverage             = {disp_coverage:.2f} %')
+			console_printer.add_line(' '*11 + f'Mean displacement    = {disp_mean:.3f} px')
+			console_printer.add_line(' '*11 + f'Median displacement  = {disp_median:.3f} px')
 			console_printer.add_line(' '*11 + f'Maximal displacement = {disp_max:.3f} px')
 
 			console_printer.overwrite()
@@ -364,9 +365,9 @@ if __name__ == '__main__':
 				mags_xy = mag_stack[i, j, :]
 
 				# Threshold means
-				# T1 = threshold is the global mean (T0), average the rest
-				# T2 = threshold is T1, average the rest
-				# T3 = threshold is T2, average the rest
+				#     T1 = threshold is the global mean (T0), average the rest
+				#     T2 = threshold is T1, average the rest
+				#     T3 = threshold is T2, average the rest
 				T1 = temporal_pooling(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(-1.0))
 				T2 = temporal_pooling(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(T1))
 				T3 = temporal_pooling(mags_xy.ravel(), c_size_t(mags_xy.size), c_double(T2))
@@ -376,9 +377,9 @@ if __name__ == '__main__':
 				T3_array[i, j] = T3
 
 				# Final velocity:
-				# close to T1 if signal too noisy, likely not water surface,
-				# close to T2 for dense seeding,
-				# close to T3 if sparse seeding
+				#     close to T1 if signal too noisy, likely not water surface,
+				#     close to T2 for dense seeding,
+				#     close to T3 if sparse seeding
 				threshold_ratios[i, j] = (T3 - T2)/(T2 - T1) if T2 != T1 else L1
 				mag_mean[i, j] = vel_ratio(T1, T2, T3)
 
@@ -416,6 +417,12 @@ if __name__ == '__main__':
 		np.savetxt(f'{results_folder}/mag_max.txt', mag_max, fmt='%.3f')
 		np.savetxt(f'{results_folder}/angle_mean.txt', angle_mean, fmt='%.3f')
 		np.savetxt(f'{results_folder}/threshold_ratios.txt', threshold_ratios, fmt='%.3f')
+
+		if chain_start not in ['0, 0', ''] and chain_end not in ['0, 0', ''] and not args.quiet:
+			from profile_data import main as profile_data_main
+			profile_data_main(args.cfg, quiet=1)
+			print()
+			tag_print('info', 'Profile data extraction complete!')
 		
 		print()
 		tag_print('end', 'Optical flow estimation complete!')

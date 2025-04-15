@@ -54,6 +54,8 @@ if __name__ == '__main__':
 
 		data = loadmat(f'{results_folder}/SDI.mat')
 		SDI = data['SDI'].squeeze()
+		mean_density = data['MeanDensity'].squeeze()
+		mean_nu = data['MeanNu'].squeeze()
 		mean_SDI = data['MeanSDI'].squeeze()
 		optimal_start_frame = data['OptimalStartFrame'].squeeze()
 		optimal_end_frame = data['OptimalEndFrame'].squeeze()
@@ -86,6 +88,7 @@ if __name__ == '__main__':
 		except Exception:
 			pass
 
+		plt.suptitle(f'Mean values in the ROI: Density = {mean_density:.2e} ppp, Dispersion = {mean_nu:.2f}, SDI = {mean_SDI:.2f}')
 		plt.tight_layout()
 		plt.show()
 

@@ -55,8 +55,7 @@ def custom_medfilt(signal, window_size):
 def aggregate(img, block_size, min_tracer_area, max_tracer_area, mean_area_filtered):
 	img_norm = img/255
 	h, w = img_norm.shape
-		
-	# Dividing the ROI in blocks of size: blockSizeR x blockSizeC
+
 	block_rows = h // block_size
 	block_vector_rows = [h % block_size // 2] + [block_size] * block_rows
 
@@ -69,14 +68,8 @@ def aggregate(img, block_size, min_tracer_area, max_tracer_area, mean_area_filte
 	row_indices = np.cumsum(block_vector_rows)
 	col_indices = np.cumsum(block_vector_cols)
 
-	# Analysis for Grayscale or full RGB images
-	# ca = [np.split(row, row_indices, axis=1) for row in np.split(img_norm, col_indices, axis=0)]
-	# ca = [[subarray for subarray in row if subarray.size > 0] for row in ca if len(row) > 0]
-	# ca = [lst for lst in ca if lst]
-
-	# sum_area = []
-	num_particles = []
-	# particles_count = 0
+	num_particles = np.ndarray([num_rows * num_cols], dtype=int)
+	i = 0
 
 	for r in range(num_rows):
 		for c in range(num_cols):
@@ -86,7 +79,6 @@ def aggregate(img, block_size, min_tracer_area, max_tracer_area, mean_area_filte
 			col_end = col_indices[c+1]
 
 			block = img_norm[row_start: row_end, col_start: col_end]
-			block_rows, block_cols = block.shape
 
 			regions = measure.regionprops(measure.label(block, connectivity=1))
 			filtered_regions = [region for region in regions if min_tracer_area <= region.area <= max_tracer_area]
@@ -95,12 +87,11 @@ def aggregate(img, block_size, min_tracer_area, max_tracer_area, mean_area_filte
 			array_area = np.array(area, dtype=float)
 			array_area[array_area > (block_size/2)**2] = np.nan
 
-			# sum_area.append(np.nansum(area_filtered))
 			s_area_filtered = np.ceil(array_area / mean_area_filtered)
 			s_area_filtered = s_area_filtered[~np.isnan(s_area_filtered)]
-			num_particles.append(np.nansum(s_area_filtered))
+			num_particles[i] = np.nansum(s_area_filtered)
 
-			# particles_count += 1
+			i += 1
 
 	var = np.nanvar(num_particles)
 	mean = np.nanmean(num_particles)
@@ -153,9 +144,9 @@ def seeding_metrics(img_path_list, ROI, threshold, block_size, min_tracer_area, 
 		console_printer.add_line(progress_bar.get(i))
 		console_printer.add_line(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'))
 		he, me, se = time_hms(timer.elapsed())
-		console_printer.add_line(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'))
+		console_printer.add_line(tag_string('info', f'Elapsed time          = {he} hr {me} min {se} sec'))
 		hr, mr, sr = time_hms(timer.remaining())
-		console_printer.add_line(tag_string('info', f'Remaining time = {hr} hr {mr} min {sr} sec'))
+		console_printer.add_line(tag_string('info', f'Remaining time        ~ {hr} hr {mr} min {sr} sec'))
 
 		console_printer.overwrite()
 

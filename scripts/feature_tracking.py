@@ -590,9 +590,9 @@ if __name__ == '__main__':
 
 				print_and_log(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'), printer, logger)
 				he, me, se = time_hms(timer.elapsed())
-				print_and_log(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'), printer, logger)
+				print_and_log(tag_string('info', f'Elapsed time          = {he} hr {me} min {se} sec'), printer, logger)
 				hr, mr, sr = time_hms(timer.remaining())
-				print_and_log(tag_string('info', f'Remaining time ~ {hr} hr {mr} min {sr} sec'), printer, logger)
+				print_and_log(tag_string('info', f'Remaining time        ~ {hr} hr {mr} min {sr} sec'), printer, logger)
 				print_and_log('', printer, logger)
 
 				for i in range(len(markers)):

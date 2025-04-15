@@ -1,3 +1,17 @@
+SSIMS-Flow v0.6.0.1
+
+Minor:
+- Removed minimal displacement filter from "Optical flow" form.
+- Preselected profile in "Optical flow analyses" form will be shown in the plot
+when using "Get profile from image".
+- If the profile for flow rate estimation is defined in [project.ssims], either
+manually or through previous analyses, profile data will be automatically
+extracted upon the (re)estimation of velocity field to save some time.
+- Bugfixes related to the 2D plotting when Scale!=1.
+- UI tweaks and bugfixes.
+
+===============================================================================
+
 SSIMS-Flow v0.6.0.0
 
 Major:
@@ -7,6 +21,7 @@ in detail in papers:
 >> https://doi.org/10.3390/rs12111789
 >> https://doi.org/10.1002/hyp.13919
 >> https://doi.org/10.5194/hess-24-5173-2020
+>> https://doi.org/10.1016/j.jhydrol.2021.126438
 - SDI is developed and tested specifically for PIV workflows to allow users to
 estimate optimal sections of the frame sequences in terms of tracer particle
 seeding density to improve velocity estimation accuracy. While it hasn't yet

@@ -117,9 +117,9 @@ if __name__ == '__main__':
 			console_printer.add_line(progress_bar.get(j))
 			console_printer.add_line(tag_string('info', f'Frame processing time = {timer.interval():.3f} sec'))
 			he, me, se = time_hms(timer.elapsed())
-			console_printer.add_line(tag_string('info', f'Elapsed time = {he} hr {me} min {se} sec'))
+			console_printer.add_line(tag_string('info', f'Elapsed time          = {he} hr {me} min {se} sec'))
 			hr, mr, sr = time_hms(timer.remaining())
-			console_printer.add_line(tag_string('info', f'Remaining time = {hr} hr {mr} min {sr} sec'))
+			console_printer.add_line(tag_string('info', f'Remaining time        ~ {hr} hr {mr} min {sr} sec'))
 
 			console_printer.overwrite()
 

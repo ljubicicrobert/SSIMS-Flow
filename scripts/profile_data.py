@@ -31,17 +31,18 @@ except Exception as ex:
 	present_exception_and_exit('Import failed! See traceback below:')
 
 
-def main(cfg_path=None):
+def main(cfg_path=None, quiet=0):
 	try:
 		try:
-			if cfg_path is None:
-				parser = ArgumentParser()
-				parser.add_argument('--cfg', type=str, help='Path to project configuration file')
-				parser.add_argument('--quiet', type=int, help='Quiet mode for batch processing, no RETURN confirmation on success', default=0)
-				args = parser.parse_args()
+			parser = ArgumentParser()
+			parser.add_argument('--cfg', type=str, help='Path to project configuration file')
+			parser.add_argument('--quiet', type=int, help='Quiet mode for batch processing, no RETURN confirmation on success', default=0)
+			args = parser.parse_args()
 
-				cfg = configparser.ConfigParser()
-				cfg.optionxform = str
+			cfg = configparser.ConfigParser()
+			cfg.optionxform = str
+
+			if cfg_path is None:
 				cfg.read(args.cfg, encoding='utf-8-sig')
 			else:
 				cfg.read(cfg_path, encoding='utf-8-sig')
@@ -51,6 +52,8 @@ def main(cfg_path=None):
 			print()
 			print(format_exc())
 			exit_message()
+
+		is_quiet = 1 if args.quiet == 1 else quiet
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		input_folder = unix_path(project_folder + '/optical_flow')
@@ -229,7 +232,7 @@ def main(cfg_path=None):
 
 		tag_print('end', f'Chainage data saved to [{input_folder}/profile_data.txt]')
 
-		if args.quiet == 0:
+		if is_quiet == 0:
 			exit_message()
 
 	except Exception as ex:

@@ -249,10 +249,10 @@ if __name__ == '__main__':
 
 		if frames_available:
 			back = cv2.imread(frames_list[0], cv2.COLOR_BGR2RGB)[::-1]
-			padd_x = back.shape[1] % pooling // 2
-			padd_y = back.shape[0] % pooling // 2
-			extent = (-padd_x / pooling, (back.shape[1] - padd_x) / pooling, -padd_y / pooling, (back.shape[0] - padd_y) / pooling)
-			print(extent)
+			padd_x = (back.shape[1] % pooling) / 2 / pooling / scale
+			padd_y = (back.shape[0] % pooling) / 2 / pooling / scale
+
+			extent = (-padd_x, w + padd_x, -padd_y, h + padd_y)
 			back_shown = ax.imshow(back, extent=extent, zorder=-2)
 
 		ghost_plot = ax.imshow(mags, zorder=-1, alpha=0)

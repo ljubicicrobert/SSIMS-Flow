@@ -16,12 +16,13 @@ https://www.gnu.org/licenses/gpl-3.0.en.html.
 Created by Robert Ljubicic.
 """
 
+
 try:
 	from __init__ import *
 	from os import path
 	from glob import glob
 	from class_console_printer import tag_print, unix_path
-	from utilities import exit_message, present_exception_and_exit
+	from utilities import exit_message, present_exception_and_exit, cfg_get
 
 	import matplotlib.pyplot as plt
 
@@ -116,7 +117,6 @@ def select_profile(event):
 	return
 
 
-
 if __name__ == '__main__':
 	try:
 		parser = ArgumentParser()
@@ -142,6 +142,18 @@ if __name__ == '__main__':
 		img_path = unix_path(args.img_path)
 		ext = args.ext
 		get_profile = args.profile
+
+		section = 'Optical flow'
+
+		x_start, y_start = cfg_get(cfg, section, 'ChainStart', str, default='0, 0').split(', ')
+		x_end, y_end = cfg_get(cfg, section, 'ChainEnd', str, default='0, 0').split(', ')
+
+		x_start = float(x_start)
+		y_start = float(y_start)
+		x_end = float(x_end)
+		y_end = float(y_end)
+
+		initial_profile = x_start + x_end + y_start + y_end > 0
 
 		try:
 			path.exists(img_path)
@@ -192,6 +204,24 @@ if __name__ == '__main__':
 			mng.set_window_title('Inspect frames')
 		except Exception:
 			pass
+
+		if initial_profile:
+			points = [np.array([x_start, y_start]), np.array([x_end, y_end])]
+
+			try:
+				ax.lines[-1].set_visible(False)
+			except:
+				pass
+
+			xs = [row[0] for row in points]
+			ys = [row[1] for row in points]
+			
+			ax.plot(xs, ys, 'ro-')
+			d = ((points[0][0] - points[1][0])**2 + (points[0][1] - points[1][1])**2)**0.5
+
+			distance_box.set_text(xy2str(points, d))
+			distance_box.set_x((xs[0]+xs[1])/2)
+			distance_box.set_y((ys[0]+ys[1])/2)
 
 		plt.show()
 

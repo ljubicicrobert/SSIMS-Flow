@@ -113,10 +113,10 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		tag_print('start', 'Starting frame extraction')
 		print()
 		tag_print('info', f'Extraction of frames from [{video}] starting from frame {start}/{num_frames_total}')
-		tag_print('info', f'Extension: {ext}')
-		tag_print('info', f'Quality: {qual}')
-		tag_print('info', f'Scale: {scale:.2f}')
-		tag_print('info', f'Step: {step}')
+		tag_print('info', f'Extension = {ext}')
+		tag_print('info', f'Quality = {qual}')
+		tag_print('info', f'Scale = {scale:.2f}')
+		tag_print('info', f'Step = {step}')
 		if crop:
 			tag_print('info', f'Crop: X={crop[0]}..{crop[1]}, Y={crop[2]}..{crop[3]}')
 		print()
@@ -135,7 +135,6 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		pb.set_total(frame_range + 1)
 
 	num_len = int(log(end-start, 10)) + 1
-	fresh_folder(folder)
 
 	while success and i < end:  # If new frame exists
 		if folder is None:
@@ -218,6 +217,7 @@ if __name__ == '__main__':
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		frames_folder = f'{project_folder}/frames'
+		fresh_folder(frames_folder)
 
 		section = 'Frames'
 
