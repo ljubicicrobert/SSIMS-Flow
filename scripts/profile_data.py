@@ -26,9 +26,53 @@ try:
 	from utilities import cfg_get, exit_message, present_exception_and_exit
 	from glob import glob
 	from optical_flow import nan_locate
+	from profile_fit import main as profile_fit_main
 
 except Exception as ex:
 	present_exception_and_exit('Import failed! See traceback below:')
+
+
+fmt_vel = '%.4f'
+fmt_angle = '%.1f'
+
+table_data_header = [
+	'Chainage [m]',
+	'Flow direction corr. factor [-]',
+
+	'Magnitude total (raw) [m/s]',
+	'Magnitude normal (raw) [m/s]',
+	'Flow direction (raw) [deg]',
+	'U comp. (raw) [m/s]',
+	'V comp. (raw) [m/s]',
+
+	'Magnitude total (filt.) [m/s]',
+	'Magnitude normal (filt.) [m/s]',
+	'Flow direction (filt.) [deg]',
+	'U comp. (filt.) [m/s]',
+	'V comp. (filt.) [m/s]',
+	'Magnitude normal (fit) [m/s]',
+]
+
+table_data_fmt = [
+	fmt_vel,
+	fmt_vel,
+
+	fmt_vel,
+	fmt_vel,
+	fmt_angle,
+	fmt_vel,
+	fmt_vel,
+
+	fmt_vel,
+	fmt_vel,
+	fmt_angle,
+	fmt_vel,
+	fmt_vel,
+	fmt_vel,
+]
+
+table_data_header_str = str(',').join(table_data_header)
+table_data_fmt_str = str(',').join(table_data_fmt)
 
 
 def main(cfg_path=None, quiet=0):
@@ -46,6 +90,7 @@ def main(cfg_path=None, quiet=0):
 				cfg.read(args.cfg, encoding='utf-8-sig')
 			else:
 				cfg.read(cfg_path, encoding='utf-8-sig')
+
 		except Exception:
 			tag_print('error', 'There was a problem reading the configuration file!')
 			tag_print('error', 'Check if project has valid configuration.')
@@ -107,6 +152,8 @@ def main(cfg_path=None, quiet=0):
 		fps = cfg_get(cfg, section, 'Framerate', float)		# frames/sec
 		gsd = cfg_get(cfg, section, 'GSD', float)           # px/m
 		gsd_units = cfg_get(cfg, section, 'GSDUnits', str, 'px/m')           # px/m
+		magnitudes_fit_from = cfg_get(cfg, section, 'FitFrom', int, default=1)
+
 		if gsd_units != 'px/m':
 			gsd = 1/gsd
 		pooling = cfg_get(cfg, section, 'Pooling', float)
@@ -171,8 +218,7 @@ def main(cfg_path=None, quiet=0):
 		line_raw_mag_corr = line_corr * line_raw_mag
 		line_median_mag_corr = line_corr * line_median_mag
 
-		fmt_vel = '%.4f'
-		fmt_angle = '%.1f'
+		line_fitted_mag, beta, Umax, Bratio = profile_fit_main(cfg, chainage_pooled, line_median_mag if magnitudes_fit_from == 1 else line_raw_mag)
 
 		table_data = np.vstack([
 			chainage_pooled,
@@ -189,46 +235,17 @@ def main(cfg_path=None, quiet=0):
 			line_median_angle,
 			line_median_us,
 			line_median_vs,
+			line_fitted_mag,
 			]).T
 
-		table_data_header = [
-			'Chainage [m]',
-			'Flow direction corr. factor [-]',
-
-			'Magnitude total (raw) [m/s]',
-			'Magnitude normal (raw) [m/s]',
-			'Flow direction (raw) [deg]',
-			'U comp. (raw) [m/s]',
-			'V comp. (raw) [m/s]',
-
-			'Magnitude total (filt.) [m/s]',
-			'Magnitude normal (filt.) [m/s]',
-			'Flow direction (filt.) [deg]',
-			'U comp. (filt.) [m/s]',
-			'V comp. (filt.) [m/s]',
-		]
-
-		table_data_fmt = [
-			fmt_vel,
-			fmt_vel,
-
-			fmt_vel,
-			fmt_vel,
-			fmt_angle,
-			fmt_vel,
-			fmt_vel,
-
-			fmt_vel,
-			fmt_vel,
-			fmt_angle,
-			fmt_vel,
-			fmt_vel,
-		]
-
-		table_data_header_str = str(',').join(table_data_header)
-		table_data_fmt_str = str(',').join(table_data_fmt)
-
 		np.savetxt(f'{input_folder}/profile_data.txt', table_data, fmt=table_data_fmt_str, header=table_data_header_str, delimiter=',', comments='')
+
+		cfg[section]['Beta'] = f'{beta:.3f}'
+		cfg[section]['Umax'] = f'{Umax:.3f}'
+		cfg[section]['Bratio'] = f'{Bratio:.3f}'
+
+		with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
+			cfg.write(configfile)
 
 		tag_print('end', f'Chainage data saved to [{input_folder}/profile_data.txt]')
 

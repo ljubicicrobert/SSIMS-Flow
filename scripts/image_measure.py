@@ -23,6 +23,7 @@ try:
 	from glob import glob
 	from class_console_printer import tag_print, unix_path
 	from utilities import exit_message, present_exception_and_exit, cfg_get
+	from matplotlib.widgets import Slider
 
 	import matplotlib.pyplot as plt
 
@@ -49,12 +50,45 @@ def xy2str(points_list: list, distance: float) -> str:
 	return s
 
 
+def update_riverbank_start(val):
+	global riverbank_start
+	global riverbank_start_ax
+
+	riverbank_start[0] = val * dx + xs[0]
+	riverbank_start[1] = val * dy + ys[0]
+
+	riverbank_start_ax.set_offsets(riverbank_start)
+	return
+
+
+def update_riverbank_end(val):
+	global riverbank_end
+	global riverbank_end_ax
+
+	riverbank_end[0] = val * dx + xs[0]
+	riverbank_end[1] = val * dy + ys[0]
+
+	sl_ax_riverbank_end.ax.texts[-1].set_text(100 - val)
+	riverbank_end_ax.set_offsets(riverbank_end)
+	return
+
+
 def get_measurement(event):
 	global d
+	global dx
+	global dy
+	global xs
+	global ys
 	global ax
+	global riverbank_start_ax
+	global riverbank_end_ax
 	global points
 	global plt_image
-
+	global riverbank_start
+	global riverbank_end
+	global riverbank_start_ax
+	global riverbank_end_ax
+	
 	if event.button == 3:
 		d = 0
 		p = [event.xdata, event.ydata]
@@ -79,6 +113,16 @@ def get_measurement(event):
 
 			d = ((points[0][0] - points[1][0])**2 + (points[0][1] - points[1][1])**2)**0.5
 
+			dx = (xs[1] - xs[0]) / 100
+			dy = (ys[1] - ys[0]) / 100
+
+			if get_profile:
+				riverbank_start = [xs[0], ys[0]]
+				riverbank_end = [xs[1], ys[1]]
+
+				riverbank_start_ax.set_offsets(riverbank_start)
+				riverbank_end_ax.set_offsets(riverbank_end)
+
 			distance_box.set_text(xy2str(points, d))
 			distance_box.set_x((xs[0]+xs[1])/2)
 			distance_box.set_y((ys[0]+ys[1])/2)
@@ -86,6 +130,19 @@ def get_measurement(event):
 		elif len(points) > 2:
 			points = []
 			d = 0
+
+			if get_profile:
+				riverbank_start = [0, 0]
+				riverbank_end = [0, 0]
+
+				sl_ax_riverbank_start.set_val(0)
+				sl_ax_riverbank_end.set_val(100)
+
+				try:
+					riverbank_start_ax.set_offsets([-1, -1])
+					riverbank_end_ax.set_offsets([-1, -1])
+				except IndexError:
+					pass
 
 			try:
 				ax.lines[-1].set_visible(False)
@@ -108,6 +165,10 @@ def select_profile(event):
 
 			cfg[section]['ChainStart'] = f'{points[0][0]}, {points[0][1]}'
 			cfg[section]['ChainEnd'] = f'{points[1][0]}, {points[1][1]}'
+
+			if get_profile:
+				cfg[section]['RiverbankStart'] = f'{min(sl_ax_riverbank_start.val, 100 - sl_ax_riverbank_end.val)}'
+				cfg[section]['RiverbankEnd'] = f'{max(sl_ax_riverbank_start.val, 100 - sl_ax_riverbank_end.val)}'
 
 			with open(args.cfg, 'w', encoding='utf-8-sig') as configfile:
 				cfg.write(configfile)
@@ -148,6 +209,9 @@ if __name__ == '__main__':
 		x_start, y_start = cfg_get(cfg, section, 'ChainStart', str, default='0, 0').split(', ')
 		x_end, y_end = cfg_get(cfg, section, 'ChainEnd', str, default='0, 0').split(', ')
 
+		riverbank_start_val = cfg_get(cfg, section, 'RiverbankStart', int, default=0)
+		riverbank_end_val = cfg_get(cfg, section, 'RiverbankEnd', int, default=100)
+
 		x_start = float(x_start)
 		y_start = float(y_start)
 		x_end = float(x_end)
@@ -173,6 +237,7 @@ if __name__ == '__main__':
 		fig, ax = plt.subplots()
 		plt_image = ax.imshow(img_rgb)
 		fig.canvas.mpl_connect('button_press_event', get_measurement)
+
 		if get_profile:
 			fig.canvas.mpl_connect('key_press_event', select_profile)
 
@@ -205,23 +270,49 @@ if __name__ == '__main__':
 		except Exception:
 			pass
 
-		if initial_profile:
-			points = [np.array([x_start, y_start]), np.array([x_end, y_end])]
+		if get_profile:
+			if initial_profile:
+				points = [np.array([x_start, y_start]), np.array([x_end, y_end])]
 
-			try:
-				ax.lines[-1].set_visible(False)
-			except:
-				pass
+				try:
+					ax.lines[-1].set_visible(False)
+				except:
+					pass
 
-			xs = [row[0] for row in points]
-			ys = [row[1] for row in points]
+				xs = [row[0] for row in points]
+				ys = [row[1] for row in points]
+				
+				ax.plot(xs, ys, 'ro-')
+				d = ((points[0][0] - points[1][0])**2 + (points[0][1] - points[1][1])**2)**0.5
+
+				distance_box.set_text(xy2str(points, d))
+				distance_box.set_x((xs[0]+xs[1])/2)
+				distance_box.set_y((ys[0]+ys[1])/2)
+
+			axcolor = 'lightgoldenrodyellow'
+			valfmt = "%d"
+
+			ax_riverbank_start_slider = plt.axes([0.2, 0.05, 0.63, 0.03], facecolor=axcolor)
+			ax_riverbank_end_slider = plt.axes([0.2, 0.025, 0.63, 0.03], facecolor=axcolor)
+
+			sl_ax_riverbank_start = Slider(ax_riverbank_start_slider, 'Start', 0, 100, valinit=riverbank_start_val, valstep=1, valfmt=valfmt)
+			sl_ax_riverbank_end = Slider(ax_riverbank_end_slider, 'End', 0, 100, valinit=100 - riverbank_end_val, valstep=1, valfmt=valfmt)
 			
-			ax.plot(xs, ys, 'ro-')
-			d = ((points[0][0] - points[1][0])**2 + (points[0][1] - points[1][1])**2)**0.5
+			sl_ax_riverbank_start.on_changed(update_riverbank_start)
+			sl_ax_riverbank_end.on_changed(update_riverbank_end)
 
-			distance_box.set_text(xy2str(points, d))
-			distance_box.set_x((xs[0]+xs[1])/2)
-			distance_box.set_y((ys[0]+ys[1])/2)
+			if initial_profile:
+				dx = (xs[1] - xs[0]) / 100
+				dy = (ys[1] - ys[0]) / 100
+
+				riverbank_start = [xs[0], ys[0]]
+				riverbank_end = [xs[1], ys[1]]
+
+				riverbank_start_ax = ax.scatter(xs[0], ys[0], s=200, marker='x', c='b')
+				riverbank_end_ax = ax.scatter(xs[1], ys[1], s=200, marker='x', c='b')
+
+				sl_ax_riverbank_start.set_val(riverbank_start_val)
+				sl_ax_riverbank_end.set_val(100 - riverbank_end_val)
 
 		plt.show()
 

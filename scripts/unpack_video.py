@@ -69,7 +69,7 @@ def get_camera_parameters(path: str) -> tuple:
 
 def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 				  start=0, start_num=0, end=MAX_FRAMES_DEFAULT, qual=95, scale=None, step=1, interp=cv2.INTER_CUBIC,
-				  camera_matrix=None, dist=None, cp=None, pb=None, crop='', verbose=False,) -> bool:
+				  cam_matrix=None, dist=None, cp=None, pb=None, crop='', verbose=False,) -> bool:
 	"""
 	Extracts all num_frames from a video to separate images. Optionally writes to a specified folder,
 	creates one if it does not exist. If no folder is specified, it writes to the parent folder.
@@ -109,6 +109,11 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 
 	height, width = image.shape[:2]
 
+	cam_matrix[0, 0] = cam_matrix[0, 0] * width			# fx
+	cam_matrix[1, 1] = cam_matrix[1, 1] * width			# fy
+	cam_matrix[0, 2] = cam_matrix[0, 2] * width			# cx
+	cam_matrix[1, 2] = cam_matrix[1, 2] * width		    # cy
+
 	if verbose:
 		tag_print('start', 'Starting frame extraction')
 		print()
@@ -135,6 +140,7 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 		pb.set_total(frame_range + 1)
 
 	num_len = int(log(end-start, 10)) + 1
+	fresh_folder(folder)
 
 	while success and i < end:  # If new frame exists
 		if folder is None:
@@ -144,12 +150,8 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 			n = str(j).zfill(num_len)
 			save_str = f'{folder}/{frame_prefix}{n}.{ext}'
 
-		if camera_matrix and dist:
-			camera_matrix[0, 0] = camera_matrix[0, 0] * width			# fx
-			camera_matrix[1, 1] = camera_matrix[1, 1] * width			# fy
-			camera_matrix[0, 2] = camera_matrix[0, 2] * width			# cx
-			camera_matrix[1, 2] = camera_matrix[1, 2] * width		    # cy
-			image = cv2.undistort(image, camera_matrix, dist)
+		if np.any(cam_matrix) and np.any(dist):
+			image = cv2.undistort(image, cam_matrix, dist)
 
 		if crop:
 			xs, xe, ys, ye = crop
@@ -217,7 +219,6 @@ if __name__ == '__main__':
 
 		project_folder = unix_path(cfg_get(cfg, 'Project settings', 'Folder', str))
 		frames_folder = f'{project_folder}/frames'
-		fresh_folder(frames_folder)
 
 		section = 'Frames'
 
@@ -275,8 +276,10 @@ if __name__ == '__main__':
 		except Exception as ex:
 			pass
 
-		camera_matrix, distortion = get_camera_parameters(f'{project_folder}/camera_parameters.cpf')\
+		camera_parameters = get_camera_parameters(f'{project_folder}/camera_parameters.cpf')\
 										if remove_distortion else None, None
+		
+		camera_matrix, distortion = camera_parameters[0]
 
 		console_printer = Console_printer()
 		progress_bar = Progress_bar(total=1, prefix=tag_string('info', 'Extracting frame '))
@@ -289,7 +292,7 @@ if __name__ == '__main__':
 					  step=			 frame_step,
 					  start=		 unpack_start,
 					  end=			 unpack_end,
-					  camera_matrix= camera_matrix,
+					  cam_matrix= 	camera_matrix,
 					  dist=			 distortion,
 					  pb=			 progress_bar,
 					  cp=			 console_printer,
