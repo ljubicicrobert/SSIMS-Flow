@@ -1,17 +1,27 @@
-[Camera]
+﻿[Camera]
 Model = Eken 4K
 
+[Calibration]
+Total images = 44
+Detected patterns = 35
+Failed detections = 9
+Cheq. W = 9
+Cheq. H = 6
+Mean repr. error [px] = 1.5258
+Stdev repr. error [px] = 0.2086
+
 [Intrinsics]
-fx = 0.580857796877702
-fy = 0.58022423573553
-cx = 0.513079977099338
-cy = 0.283084556223302
+fx = 0.58133978
+fy = 0.58075787
+cx = 0.51461103
+cy = 0.28377253
 
 [Radial]
-k1 = -0.427185509483933
-k2 = 0.27457504540652
-k3 = -0.138381759338002
+k1 = -0.42386324
+k2 = 0.24237848
+k3 = -0.07748811
 
 [Tangential]
-p1 = 0.00140282447121341
-p2 = -0.000750855591379187
+p1 = 0.00126061
+p2 = -0.00143260
+

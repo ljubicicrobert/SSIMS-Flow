@@ -1,4 +1,30 @@
-SSIMS-Flow v0.6.0.1
+SSIMS-Flow v0.7.0.0
+
+Major:
+- Added the capability to estimate a cross-sectional velocity profile fit using
+asymmetrical power-law. Fitting is performed using a portion of the maximal
+cross-sectional velocities which are often the most reliable information.
+User has to define the left and right riverbank positions along the chainage,
+which is now done during the selection of the profile location using the two
+provided sliders. The goal of this new feature is to enable a more reliable
+flow rate estimation in low seeding conditions where the velocity information
+is typically found only in the profile center or wherever the tracers are
+located.
+- A new menu has been added to the "Optical flow analyses" form which define
+the bounds for the power-law profile fit optimization. The menu contains the
+necessary hints for easier use.
+- Fitted velocity profile is now also used to provide a third estimated flow
+rate value.
+- Fixed a problem of unpack_video.py not applying undistortion correctly.
+
+Minor:
+- Added a warning when using screens with Scaling set to other than 100% for
+which the application does not display correctly.
+- Added GSD value to optical flow summary in "Project settings" tab.
+
+===============================================================================
+
+SSIMS-Flow v0.6.1.0
 
 Minor:
 - Removed minimal displacement filter from "Optical flow" form.
