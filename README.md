@@ -303,19 +303,23 @@ Finally, frame pairing method can be selected as stepwise, sliding, or reference
 > **Note**: There is also a script provided for batch velocity estimation for multiple projects at once called `optical_flow_batch.py`. See the script in the `%INSTALATION_FOLDER%\scripts` folder for more information on how to use it.
 
 
-### Post-OF analyses
+### Optical flow analyses
 
 <img align="right" width="830" src="screenshots/optical_flow_analyses.png">
 
-Once the optical flow analyses have been completed and the surface velocity field has been estimated, an estimation of the flow/discharge can be obtained by clicking on the **Analyze results** button in the Optical flow panel. This will open a new window, where you can define a profile (cross-section) of the channel, either from pixel coordinate values, or by choosing two points from an appropriate image.
+Once the optical flow analyses have been completed and the surface velocity field has been estimated, an estimation of the flow/discharge can be obtained by clicking on the **Analyze results** button in the Optical flow panel. This will open a new window, where you can define a profile (cross-section) of the channel, either from pixel coordinate values, or by choosing two points from an appropriate image. When selecting the profile interactively, user can also select the two riverbank positions using the sliders below the image. Riverbank positions will can be used for fitting a theoretical **power-law** to the data, which can be useful in very low seeding and unseeded conditions.
 
 > KEEP IN MIND that if you choose the profile from an image, you should choose it from a frame of the same folder which was used for optical flow analysis. In certain cases the image enhancement step will degrade visual information which can be used to identify the channel cross-section. If this is the case, you should use the frames from folder which was used to obtain enhanced images (e.g., raw, orthorectified, or stabilized frames).
+
+<img align="right" width="500" src="screenshots/power_law_fit.png">
+
+Before generating profile data, user can define the parameters of the **power-law fitting**. Power-law is a theoretical cross-sectional velocity profile, defined as shown in the image. This fit uses the riverbank position information, and optimizes the fit parameters to best fit the measured data. This is very useful in very low seeding and unseeded conditions, where the tracer particles are scarce and often cover only a small portion of the channel width. The fit is based on three parameters which are optimized, and one which has to be given by the user - the **Trusted magnitudes threshold** parameter, which defines the lowers percentile of the measured magnitudes which are to be trusted for profile fitting. For extremely low seeding conditions, this parameter was shown to provide good results in range between 0.75 and 0.80, otherwise the default value of 0.66 provides good results in medium to high seeding conditions. Fitted magnitudes are shown in the far right column of the table, and additional third flow rate is estimated based on these values.
 
 Once the profile (cross-section) has been selected, click the **Generate profile data** to create an analysis of the time averaged surface velocities in that profile. You can control the interpolation of values from 2D optical flow data onto 1D profile data by defining a number of interpolation points.
 
 Graphical representation of the data can be obtained by selecting columns using checkboxes just below the column headers. Velocity data will be shown on the primary Y axis and direction/angle data on the secondary Y axis.
 
-Finally, in order to obtain the flow estimation, you need to enter the depth profile/bathymetry data in the table in the lower left of the window. Please note that the water surface is assumed to be zero, and that depths should all be defined using positive numbers. Estimated flow will be shown on the righthand size of the window.
+Finally, in order to obtain the flow estimation, you need to enter the depth profile/bathymetry data in the table in the lower left of the window. Please note that the water surface is assumed to be zero, and that depths should all be defined using positive numbers. Estimated flow rate will be shown in the bottom righthand size of the window.
 
 
 ### Video creation
