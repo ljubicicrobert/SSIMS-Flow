@@ -14,7 +14,7 @@ __package_name__ = 'SSIMS-Flow: Image velocimetry workbench'
 __description__ = 'Workbench for obtaining open-channel flow rate from videos.'
 __version__ = '0.7.0.0'
 __status__ = 'beta'
-__date_deployed__ = '2025-04-30'
+__date_deployed__ = '2025-05-20'
 
 __author__ = 'Robert Ljubicic @ Faculty of Civil Engineering, University of Belgrade'
 __author_email__ = 'rljubicic@grf.bg.ac.rs, ljubicicrobert@gmail.com'
