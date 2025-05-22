@@ -276,10 +276,11 @@ if __name__ == '__main__':
 		except Exception as ex:
 			pass
 
-		camera_parameters = get_camera_parameters(f'{project_folder}/camera_parameters.cpf')\
-										if remove_distortion else None, None
-		
-		camera_matrix, distortion = camera_parameters[0]
+		if remove_distortion:
+			camera_parameters = get_camera_parameters(f'{project_folder}/camera_parameters.cpf')
+			camera_matrix, distortion = camera_parameters[0]
+		else:
+			camera_matrix, distortion = None, None
 
 		console_printer = Console_printer()
 		progress_bar = Progress_bar(total=1, prefix=tag_string('info', 'Extracting frame '))
