@@ -109,10 +109,11 @@ def videoToFrames(video: str, folder='.', frame_prefix='', ext='jpg',
 
 	height, width = image.shape[:2]
 
-	cam_matrix[0, 0] = cam_matrix[0, 0] * width			# fx
-	cam_matrix[1, 1] = cam_matrix[1, 1] * width			# fy
-	cam_matrix[0, 2] = cam_matrix[0, 2] * width			# cx
-	cam_matrix[1, 2] = cam_matrix[1, 2] * width		    # cy
+	if np.any(cam_matrix) and np.any(dist):
+		cam_matrix[0, 0] = cam_matrix[0, 0] * width			# fx
+		cam_matrix[1, 1] = cam_matrix[1, 1] * width			# fy
+		cam_matrix[0, 2] = cam_matrix[0, 2] * width			# cx
+		cam_matrix[1, 2] = cam_matrix[1, 2] * width		    # cy
 
 	if verbose:
 		tag_print('start', 'Starting frame extraction')
