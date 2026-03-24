@@ -12,9 +12,9 @@ except Exception as ex:
 
 __package_name__ = 'SSIMS-Flow: Image velocimetry workbench'
 __description__ = 'Workbench for obtaining open-channel flow rate from videos.'
-__version__ = '0.7.0.2'
+__version__ = '0.7.0.3'
 __status__ = 'beta'
-__date_deployed__ = '2025-06-17'
+__date_deployed__ = '2026-03-24'
 
 __author__ = 'Robert Ljubicic @ Faculty of Civil Engineering, University of Belgrade'
 __author_email__ = 'rljubicic@grf.bg.ac.rs, ljubicicrobert@gmail.com'

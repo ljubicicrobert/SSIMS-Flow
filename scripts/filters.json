@@ -49,7 +49,7 @@
 
         {
             "Name": "Convert to YCrCb",
-            "Func": "to_lab",
+            "Func": "to_ycrcb",
             "Group": "1. Colorspace conversions",
             "Description": "Converts to three-channel 8bit YCrCb colorspace.",
             "ColorspaceAfter": "YCrCb",
