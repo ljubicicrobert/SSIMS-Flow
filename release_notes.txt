@@ -1,3 +1,11 @@
+SSIMS-Flow v0.7.0.3
+
+Minor:
+- Fixed a typo in filters.json for to_ycrcb filter. Thanks RepoRoast for pointing
+this out.
+
+===============================================================================
+
 SSIMS-Flow v0.7.0.2
 
 Minor:
