@@ -1,3 +1,13 @@
+SSIMS-Flow v0.7.0.4
+
+Minor:
+- Optical flow analysis now also outputs X and Y arrays of points in which the
+velocity magnitudes and flow directions are represented (centers of spatial
+pooling blocks). These can be found in the optical_flow folder. Huge thanks to
+Andrea Kovaříková from the University of Ostrava for this request.
+
+===============================================================================
+
 SSIMS-Flow v0.7.0.3
 
 Minor:

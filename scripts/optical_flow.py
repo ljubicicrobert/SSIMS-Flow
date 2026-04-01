@@ -404,6 +404,20 @@ if __name__ == '__main__':
 			angle_mean += angle_upper
 			angle_mean = np.where(angle_mean >= 360, angle_mean - 360, angle_mean)
 
+		pooling_scaled = pooling / scale
+
+		padd_Y = h % pooling_scaled / 2
+		padd_X = w % pooling_scaled / 2
+
+		h_net = h - 2 * padd_Y
+		w_net = w - 2 * padd_X
+
+		ny = int(h_net / pooling_scaled)
+		nx = int(w_net / pooling_scaled)
+
+		xs, ys = np.meshgrid([padd_X + pooling_scaled * (x + 0.5) for x in range(nx)],
+							 [padd_Y + pooling_scaled * (y + 0.5) for y in range(ny)])
+
 		np.savetxt(f'{results_folder}/diagnostics/T1.txt', T1_array, fmt='%.3f')
 		np.savetxt(f'{results_folder}/diagnostics/T2.txt', T2_array, fmt='%.3f')
 		np.savetxt(f'{results_folder}/diagnostics/T3.txt', T3_array, fmt='%.3f')
@@ -417,6 +431,9 @@ if __name__ == '__main__':
 		np.savetxt(f'{results_folder}/mag_max.txt', mag_max, fmt='%.3f')
 		np.savetxt(f'{results_folder}/angle_mean.txt', angle_mean, fmt='%.3f')
 		np.savetxt(f'{results_folder}/threshold_ratios.txt', threshold_ratios, fmt='%.3f')
+
+		np.savetxt(f'{results_folder}/xs.txt', xs, fmt='%.1f')
+		np.savetxt(f'{results_folder}/ys.txt', ys, fmt='%.1f')
 
 		if chain_start not in ['0, 0', ''] and chain_end not in ['0, 0', ''] and not args.quiet:
 			from profile_data import main as profile_data_main
